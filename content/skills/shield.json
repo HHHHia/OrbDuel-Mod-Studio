@@ -1,0 +1,15 @@
+{
+  "format": 1,
+  "id": "shield",
+  "name": { "en": "Shield", "zh": "护盾" },
+  "trigger": { "kind": "on_hit_by", "cooldown": 5.0 },
+  "modifiers": [
+    { "op": "shield", "value": 30.0, "duration": 4.0 }
+  ],
+  "vfx": [
+    { "on": "cast", "type": "flash", "color": [120, 200, 255, 180], "duration": 0.25 },
+    { "on": "cast", "type": "ring", "color": [120, 200, 255, 255], "value": 60.0 }
+  ],
+  "stack": "refresh",
+  "priority": 5
+}

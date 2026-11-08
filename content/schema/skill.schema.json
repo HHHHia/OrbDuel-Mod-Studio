@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orbduel.local/schema/skill.schema.json",
+  "title": "OrbDuel skill",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "id", "name", "trigger", "modifiers"],
+  "properties": {
+    "format": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,31}$" },
+    "name": {
+      "type": "object",
+      "required": ["en"],
+      "properties": {
+        "en": { "type": "string", "minLength": 1, "maxLength": 32 },
+        "zh": { "type": "string", "maxLength": 16 }
+      }
+    },
+    "trigger": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": ["cooldown", "on_hit", "on_hit_by", "on_low_hp", "on_wall_bounce", "manual"]
+        },
+        "cooldown": { "type": "number", "minimum": 0.5, "maximum": 60 },
+        "hpBelow": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "modifiers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["op"],
+        "properties": {
+          "op": {
+            "enum": ["add_speed", "shield", "lifesteal", "slow_field",
+                     "teleport", "resize", "bounce_boost", "heal"]
+          },
+          "value": { "type": "number" },
+          "duration": { "type": "number", "minimum": 0, "maximum": 120 },
+          "radius": { "type": "number", "minimum": 0 },
+          "factor": { "type": "number", "minimum": 0, "maximum": 1 },
+          "curve": { "enum": ["linear", "ease_out", "ease_in_out"] }
+        }
+      }
+    },
+    "vfx": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["on", "type"],
+        "properties": {
+          "on": { "enum": ["cast", "hit", "expire"] },
+          "type": { "enum": ["trail", "burst", "ring", "flash", "screen_shake", "hit_stop"] },
+          "color": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0, "maximum": 255 },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "duration": { "type": "number", "minimum": 0 },
+          "value": { "type": "number" },
+          "count": { "type": "integer", "minimum": 1, "maximum": 512 }
+        }
+      }
+    },
+    "stack": { "enum": ["refresh", "stack"] },
+    "priority": { "type": "integer" }
+  }
+}

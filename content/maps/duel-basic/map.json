@@ -1,0 +1,37 @@
+{
+  "format": 1,
+  "id": "duel-basic",
+  "name": { "en": "Basic Duel", "zh": "基础场地" },
+  "size": [1280, 720],
+  "theme": {
+    "bgColor": [16, 17, 24, 255],
+    "wallColor": [90, 120, 255, 255],
+    "wallThickness": 6
+  },
+  "spawns": [
+    { "pos": [220, 360], "dir": [1, 0] },
+    { "pos": [1060, 360], "dir": [-1, 0] }
+  ],
+  "obstacles": [
+    { "shape": "rect", "pos": [640, 140], "size": [260, 24], "restitution": 0.9 },
+    { "shape": "circle", "pos": [640, 580], "radius": 40, "restitution": 1.0 }
+  ],
+  "physics": {
+    "wallRestitution": 0.98,
+    "bounceJitterDeg": 1.5,
+    "maxSpeed": 1800,
+    "damageScale": 1.0,
+    "refSpeed": 400
+  },
+  "shrink": {
+    "firstAt": 25.0,
+    "interval": 12.0,
+    "step": 0.08,
+    "minInset": 0.40,
+    "warnTime": 1.0,
+    "animTime": 1.5,
+    "damagePerSec": 4.0,
+    "lullTrigger": 8.0
+  },
+  "seed": 20261124
+}

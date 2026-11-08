@@ -1,0 +1,15 @@
+{
+  "format": 1,
+  "id": "dash",
+  "name": { "en": "Dash", "zh": "冲刺" },
+  "trigger": { "kind": "cooldown", "cooldown": 6.0 },
+  "modifiers": [
+    { "op": "add_speed", "value": 220.0, "duration": 1.2, "curve": "ease_out" }
+  ],
+  "vfx": [
+    { "on": "cast", "type": "trail", "color": [255, 180, 60, 255], "duration": 1.2 },
+    { "on": "cast", "type": "ring", "color": [255, 220, 120, 255], "value": 90.0 }
+  ],
+  "stack": "refresh",
+  "priority": 10
+}

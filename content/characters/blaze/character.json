@@ -1,0 +1,10 @@
+﻿{
+  "format": 1,
+  "id": "blaze",
+  "name": { "en": "Blaze", "zh": "烈焰" },
+  "skin": { "texture": "skin.png", "scale": 1.0, "tint": [255, 255, 255, 255] },
+  "hitbox": { "shape": "circle", "radius": 24.0, "offset": [0, 0] },
+  "stats": { "mass": 1.0, "restitution": 0.95, "maxHp": 100.0, "startSpeed": 420.0 },
+  "skills": ["dash", "lifesteal"]
+}
+

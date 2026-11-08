@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "id": "slow-field",
+  "name": { "en": "Slow Field", "zh": "减速力场" },
+  "trigger": { "kind": "cooldown", "cooldown": 9.0 },
+  "modifiers": [
+    { "op": "slow_field", "radius": 180.0, "factor": 0.6, "duration": 2.5 }
+  ],
+  "vfx": [
+    { "on": "cast", "type": "ring", "color": [120, 140, 255, 255], "value": 180.0, "duration": 0.6 }
+  ],
+  "stack": "refresh",
+  "priority": 30
+}

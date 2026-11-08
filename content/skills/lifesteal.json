@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "id": "lifesteal",
+  "name": { "en": "Lifesteal", "zh": "吸血" },
+  "trigger": { "kind": "on_hit", "cooldown": 2.0 },
+  "modifiers": [
+    { "op": "lifesteal", "value": 0.35, "duration": 3.0 }
+  ],
+  "vfx": [
+    { "on": "hit", "type": "burst", "color": [220, 60, 90, 255], "count": 14, "value": 90.0 }
+  ],
+  "stack": "refresh",
+  "priority": 20
+}

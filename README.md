@@ -1,0 +1,102 @@
+# OrbDuel
+
+Two orbs, one arena, zero gravity. Character / skill / map are **data folders** you can hot-reload.
+
+两个球、一块场地、没有重力。角色 / 技能 / 地图都是**外部文件夹**，改完不用重编译。
+
+---
+
+## 这是什么 / What this is
+
+一个 C++17 + SDL2 的 2D 双球物理对战游戏，重点不在玩法多复杂，而在**内容与引擎解耦**：
+引擎只提供「实体 + 修饰器 + 事件」，角色和技能全部由 `content/` 下的 JSON 描述。
+往 `content/characters/` 里丢一个文件夹，游戏里就多一个角色。
+
+A 2D two-orb physics duel in C++17 + SDL2. The point is not the gameplay depth — it is
+**content/engine separation**: the engine only knows bodies, modifiers and events; every
+character and skill is described by JSON under `content/`. Drop a folder into
+`content/characters/` and a new character appears.
+
+## 快速开始 / Quick start
+
+需要 / Requires: CMake ≥ 3.20，Ninja，MinGW-w64 g++ 13+（或 MSVC 2022）。
+SDL2 2.32.10 已放在 `third_party/`，**不需要联网、不需要 vcpkg**。
+
+```powershell
+.\build.ps1                     # 配置 + 构建 + 跑冒烟测试
+.\build\bin\orbduel.exe         # 启动游戏
+.\tools\validate_content.ps1    # 校验所有内容包
+```
+
+手动构建 / Manual build:
+
+```powershell
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+```
+
+## 一局是什么样 / A round
+
+两球自动对撞（当前没有玩家输入）：按相对撞击速度扣血，2 秒内连续命中吃连击倍率；
+25 秒后开始缩圈，场地缩小、压到边界的障碍碎裂；5 秒没有碰撞会触发极弱的「静默吸引」。
+HP 归零结束，`R` 重开，`ESC` 退出。
+
+![screenshot](docs/screenshot.png)
+
+| 参数                           | 作用                       |
+| ------------------------------ | -------------------------- |
+| `--char <id>` / `--enemy <id>` | 指定角色（默认前两个）     |
+| `--map <id>`                   | 指定地图                   |
+| `--seed <n>`                   | 固定随机种子，同一局可复现 |
+| `--seconds <n>`                | 跑 n 秒后自动退出          |
+| `--screenshot <file>`          | 第 2 秒存一张 PNG 后退出   |
+| `--headless`                   | 不开窗口，只跑逻辑         |
+
+## 内容长什么样 / What content looks like
+
+```
+content/characters/blaze/
+  character.json      # 皮肤、碰撞半径、质量、HP、技能列表
+  skin.png            # 贴图（建议 256×256，透明背景）
+```
+
+```json
+{
+  "format": 1,
+  "id": "blaze",
+  "name": { "en": "Blaze", "zh": "烈焰" },
+  "skin":   { "texture": "skin.png", "scale": 1.0 },
+  "hitbox": { "shape": "circle", "radius": 24.0 },
+  "stats":  { "mass": 1.0, "restitution": 0.95, "maxHp": 100.0, "startSpeed": 420.0 },
+  "skills": ["dash", "lifesteal"]
+}
+```
+
+完整字段见 [`docs/CONTENT_FORMAT.md`](docs/CONTENT_FORMAT.md)。
+
+## 文档 / Docs
+
+| 文档                                               | 内容                             |
+| -------------------------------------------------- | -------------------------------- |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)     | 分层、数据流、防僵局与缩圈设计   |
+| [`docs/CONTENT_FORMAT.md`](docs/CONTENT_FORMAT.md) | 角色 / 技能 / 地图 JSON 规范     |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md)           | 关键技术决策与理由（ADR）        |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md)               | 15 天计划、分工、DoD、砍功能清单 |
+| [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md)       | 1 分钟演示分镜                   |
+| [`docs/STATUS.md`](docs/STATUS.md)                 | 当前实现状态（AI 靠它找落点）    |
+| [`AGENTS.md`](AGENTS.md)                           | 给 AI 和队友的工程规则           |
+
+## 技术栈 / Stack
+
+- C++17，CMake + Ninja
+- SDL2 2.32.10 + SDL2_image + SDL2_ttf（动态链接，MinGW / MSVC 两套预编译包，DLL 自动拷贝）
+- 自研圆-圆物理（无重力、固定步长 120 Hz、seeded 随机）
+
+## 团队 / Team
+
+CS2310 group08 — 6 人。模块归属见 `docs/ROADMAP.md`。
+
+## 许可证 / License
+
+代码 MIT。第三方：SDL2 / SDL2_image / SDL2_ttf（zlib），见 `third_party/sdl2/*/LICENSE-*.txt`。
+游戏素材逐个登记在 `content/ASSETS.md`，**只收 CC0 或自制**。

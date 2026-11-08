@@ -1,0 +1,15 @@
+build*/
+out/
+.vs/
+.vscode/
+*.exe
+*.obj
+*.o
+*.pdb
+*.ilk
+*.exp
+*.lib
+!third_party/sdl2/msvc/lib/*.lib
+*.log
+.DS_Store
+Thumbs.db
