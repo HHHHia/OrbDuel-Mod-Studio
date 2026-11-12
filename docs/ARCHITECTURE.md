@@ -15,10 +15,10 @@
 
 | 约束 | 来源 | 后果 |
 |---|---|---|
-| 15 天、3 个写码的人 | 作业截止 2026-11-24 | 不做 ECS、不做插件 DLL、不做脚本引擎 |
+| 截止 2026-11-24、3 个写码的人 | 作业截止日期 | 不做 ECS、不做插件 DLL、不做脚本引擎 |
 | 队友环境未知 | 你上轮的判断 | 依赖全部离线预编译进仓库，一键脚本 |
 | 公开仓库、要被助教看 | 评分项 published / documented | 素材必须 CC0，文档中英双语 |
-| 1 分钟现场演示 | 评分项 functional | 必须热重载、必须能一键跑起来 |
+| 1 分钟现场演示 | 评分项 functional | 必须一键跑起来；热重载是演示动作，**还没接**（见 `STATUS.md`） |
 
 ## 2. 分层
 
@@ -84,7 +84,7 @@ content/
 3. 构建 `ContentPack`（角色表、技能表、地图表）
 4. **任何一条失败都不崩**：记 `LoadIssue{severity, packId, message}`，坏包不加载，旧包保留
 
-热重载（`ContentLoader::poll`，每 0.5 s）：
+热重载（`ContentLoader::poll`，设计为每 0.5 s 一轮，**目前 `poll()` 是空实现**）：
 
 - 比对文件 `last_write_time`；有变化 → 只重载变化的包
 - 贴图由 `AssetCache` 按路径重载（`UnloadTexture` + `LoadTexture`）
@@ -158,10 +158,11 @@ target  目标矩形（缩圈时被设置）
 
 | 事件 | 载荷 | 谁发 | 谁关心 |
 |---|---|---|---|
-| `hit` | 双方 id、接触点、相对速度、伤害 | physics | match（结算）、fx（火花/震屏）、hud |
+| `hit` | 双方 id、接触点、相对速度 | physics | match（结算）、fx（火花/震屏）、hud |
 | `wall_bounce` | 球 id、位置、速度 | physics | fx（拖尾/灰尘） |
 | `obstacle_crushed` | 障碍 id、位置 | zone | fx（碎裂） |
 | `skill_cast` | 施法者 id、技能 id | match | fx（光环/拖尾）、hud（冷却条） |
+| `skill_expire` | 施法者 id、中心点、半径 | match（大招炸完） | fx（爆炸环/粒子/震屏） |
 | `zone_shrink` | 新矩形、档位 | zone | fx（边界红光）、hud（警告） |
 | `death` | 球 id | match | game（结算） |
 
@@ -184,7 +185,9 @@ target  目标矩形（缩圈时被设置）
 ## 9. 对局
 
 - 单局：HP 归零结束（`HpRule`），平局仅在两球同一步死亡时成立。
-- 伤害：`dmg = baseDamage × (relSpeed / refSpeed) × comboMult`，参考速度 400 px/s，`baseDamage` 从 `map.physics.damageScale` 取。
+- 伤害：`dmg = baseDamage × (relSpeed / refSpeed) × comboMult`，参考速度 400 px/s；
+  `baseDamage` 的倍率按**挨撞的一方**取 `max(map.physics.damageScale, 该角色 hitbox.contact)`，
+  `duel-basic` 把地图倍率设成 0，所以碰撞本身不掉血，伤害全来自技能。
 - 连击：2 s 内再次命中，倍率 `1 + 0.15 × (combo-1)`，上限 2.5；3 s 无命中清零。
 - `IMatchRule` 是接口，`HpRule` 是默认实现；以后要「限时得分」「三局两胜」加一个实现即可，不改 `Match`。
 
@@ -192,7 +195,7 @@ target  目标矩形（缩圈时被设置）
 
 - **内容错误**（JSON 写错、贴图缺失）：非致命，屏幕控制台红字 + `LoadIssue` 列表，游戏继续。
 - **引擎错误**（窗口创建失败、SDL 初始化失败）：致命，`log::error` + 返回码 2。
-- 调试键：`F1` 碰撞箱与速度矢量，`F2` 场地边界与缩圈目标，`F3` 事件流，`F4` 帧时间/步数。
+- 调试键（`DebugDraw` **尚未实现**）：`F1` 碰撞箱与速度矢量，`F2` 场地边界与缩圈目标，`F3` 事件流，`F4` 帧时间/步数。
 - `--autotest <seconds>`：**尚未实现**（`Options::autotestSeconds` 有字段、没解析入口）。改物理后现在用 `--headless --seconds 60` 看日志里的 `hits` / `hp0` / `hp1` 做回归。
 
 ## 11. 预留的扩展点
@@ -220,8 +223,8 @@ orbduel/
 │   ├── render/     Renderer Fx DebugDraw AssetCache
 │   ├── content/    DataModel ContentLoader
 │   ├── match/      Match MatchRule StallGuard Zone Skill
-│   └── game/       Game
-├── src/                        实现（现阶段只有 version + main 冒烟）
+│   └── game/       Game Menu Input
+├── src/                        实现（各模块 .cpp，共 21 个）
 ├── content/                    数据包 + schema
 ├── docs/                       文档
 ├── tools/                      校验脚本

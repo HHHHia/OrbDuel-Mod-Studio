@@ -312,7 +312,7 @@ content/
 ```
 [error] characters/lancer: hitbox.radius=4 is below minimum 6
 [warn ] skills/dash: unknown field "coolDown" (did you mean "cooldown"?)
-[ok   ] 3 characters, 4 skills, 2 maps
+[ok   ] 3 characters, 7 skills, 1 maps
 ```
 
 ---

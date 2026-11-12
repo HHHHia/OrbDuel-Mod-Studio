@@ -42,9 +42,9 @@ cmake --build build
 对局内 `ESC` 回主菜单；结算后显示 `RETURNING IN 5...`，期间按 `R` 重开同阵容，5 秒后自动回菜单。
 
 两球自动对撞（当前没有玩家输入）：碰撞本身不掉血（`damageScale = 0`），伤害只来自技能与缩圈；
-Lancer（疾锋）是个橙色瘦长三角，尖角永远朝速度方向；它的 Dash 会原地蓄力 3 秒（越放越短）、沿一条会抖的虚线冲出去撞人，速度够快时撞上对手不弹开、直接穿过去（贯穿被动）；
+Lancer（疾锋，150 血）是个橙色瘦长三角，尖角永远朝速度方向；它的 Dash 会原地蓄力 3 秒（越放越短）、沿一条会抖的虚线冲出去撞人，速度够快时撞上对手不弹开、直接穿过去（贯穿被动）；
 Singularity（黑洞，250 血、`hitbox.ghost`）能让对手穿进身体：撞进来的人不掉血，只有它自己挨撞会掉血；被动「吸引」把范围内的对手拖成螺旋轨道、每秒在吸力场里掉血，进了核心再爆一次伤害并被随机传送走；大招「万向天引」范围吸人、吸完原地爆炸，期间自己无敌、被动失效、不吃撞击伤害；范围/伤害/吸的时长都随对局时间变大，冷却固定 8 s；
-Wooden Dummy（木人桩）是磐石留下的陪练，1000 血、没有技能；
+Wooden Dummy（木人桩）是 1000 血的陪练，没有技能；
 25 秒后开始缩圈，每 10 秒一档一路缩到 0，场地装不下两个球的那一步就按 HP 高者结算；5 秒没有碰撞会触发极弱的「静默吸引」。
 角色名与技能名默认显示英文；加 `--lang zh` 且系统有中文字体时显示中文。
 
@@ -77,7 +77,7 @@ content/characters/lancer/
   "name": { "en": "Lancer", "zh": "疾锋" },
   "skin":   { "texture": "skin.png", "scale": 1.0 },
   "hitbox": { "shape": "circle", "radius": 24.0 },
-  "stats":  { "mass": 1.0, "restitution": 0.95, "maxHp": 100.0, "startSpeed": 420.0 },
+  "stats":  { "mass": 1.0, "restitution": 0.95, "maxHp": 150.0, "startSpeed": 420.0 },
   "skills": ["dash", "pierce"]
 }
 ```
@@ -91,7 +91,7 @@ content/characters/lancer/
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)     | 分层、数据流、防僵局与缩圈设计   |
 | [`docs/CONTENT_FORMAT.md`](docs/CONTENT_FORMAT.md) | 角色 / 技能 / 地图 JSON 规范     |
 | [`docs/DECISIONS.md`](docs/DECISIONS.md)           | 关键技术决策与理由（ADR）        |
-| [`docs/ROADMAP.md`](docs/ROADMAP.md)               | 15 天计划、分工、DoD、砍功能清单 |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md)               | 阶段进度、分工、DoD、砍功能清单  |
 | [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md)       | 1 分钟演示分镜                   |
 | [`docs/STATUS.md`](docs/STATUS.md)                 | 当前实现状态（AI 靠它找落点）    |
 | [`AGENTS.md`](AGENTS.md)                           | 给 AI 和队友的工程规则           |

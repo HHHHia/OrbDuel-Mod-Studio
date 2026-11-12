@@ -26,7 +26,7 @@
 
 1. 加载失败**永远不抛异常给调用方**；失败信息进 `issues()`（`severity = error|warn`）。
 2. 坏包不进入 `ContentPack`；同一个 id 的旧版本继续可用。
-3. `poll()` 每 0.5 s 最多执行一次；只在文件时间戳变化时重载。
+3. `poll()` 设计为每 0.5 s 最多执行一次、只在文件时间戳变化时重载——**目前是空实现（热重载未接）**。
 4. 所有字符串 id 在加载时转小写并校验字符集。
 5. 贴图路径统一转成相对 `content/` 的 POSIX 风格（`characters/lancer/skin.png`）。
 6. `SkinDef.shape` 只存形状名（`sprite` 默认 / `triangle`），不认识几何细节；比例归 `game`。

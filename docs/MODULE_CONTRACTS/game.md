@@ -4,7 +4,7 @@
 
 ## 职责
 
-- 解析命令行（`--seed` / `--char` / `--enemy` / `--map` / `--no-menu` / `--headless` / `--seconds` / `--screenshot` / `--lang` / `--selftest`）
+- 解析命令行（`--seed` / `--char` / `--enemy` / `--map` / `--no-menu` / `--headless` / `--seconds` / `--screenshot` / `--shot-at` / `--lang` / `--selftest`）
 - 装配：`ContentLoader` → `World` → `Match` → `Renderer` → `Fx`
 - 主循环：帧计时 → `Clock` → 固定步推进 → 渲染
 - 场景切换：主菜单（`Menu`）/ 对局 / 结算；结算 5 秒后自动回主菜单
