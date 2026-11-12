@@ -64,6 +64,7 @@ add_library(orbduel_engine STATIC
     src/match/Skill.cpp
     src/match/StallGuard.cpp
     src/match/Zone.cpp
+    src/game/Menu.cpp
     src/game/Game.cpp
 )
 

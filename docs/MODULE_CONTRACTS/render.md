@@ -19,7 +19,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `render/Renderer.hpp` | `init/shutdown/beginFrame/endFrame`、`drawSprite`、`drawCircle`、`drawRing`、`drawLine`、`drawText`、`size()` |
+| `render/Renderer.hpp` | `init/shutdown/beginFrame/endFrame`、`pumpEvents`、`wasKeyPressed`、`mousePosition`、`wasMouseClicked`、`shouldClose`、`drawSprite`、`drawCircle`、`drawRing`、`drawLine`、`drawText`、`saveScreenshot`、`width/height` |
 | `render/AssetCache.hpp` | `texture(path)`、`reload(path)`、`reloadAll()`、`errors()` |
 | `render/Fx.hpp` | `bind(EventBus&)`、`update(dt)`、`draw(Renderer&)`、`shake()`、`requestHitStop()` |
 | `render/DebugDraw.hpp` | `toggle(layer)`、`draw(Renderer&, const World&, const Match&)` |
@@ -31,6 +31,8 @@
 3. `Fx` 的粒子数上限固定（默认 2048），满了覆盖最老的。
 4. `hit_stop` 只影响"本帧是否推进物理"，由 `Game` 读取，不由 `Fx` 直接改时钟。
 5. 所有绘制调用必须在 `beginFrame` / `endFrame` 之间。
+6. 输入状态（按下的键、鼠标位置、本帧是否点击）由 `pumpEvents()` 每帧刷新，**只反映当前帧**；不调用就等于没有输入。
+7. 鼠标坐标是窗口坐标（左上原点），不做 DPI / 缩放换算；命中检测由调用方（`game/Menu`）负责。
 
 ## 禁止
 

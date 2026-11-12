@@ -11,6 +11,7 @@
 #include "orbduel/core/Log.hpp"
 #include "orbduel/core/Rng.hpp"
 #include "orbduel/core/Time.hpp"
+#include "orbduel/game/Menu.hpp"
 #include "orbduel/match/Match.hpp"
 #include "orbduel/physics/Arena.hpp"
 #include "orbduel/physics/World.hpp"
@@ -29,6 +30,9 @@ constexpr Rgba kHudBack{18, 20, 30, 220};
 constexpr Rgba kHudBorder{90, 105, 150, 255};
 constexpr Rgba kHudText{235, 240, 255, 255};
 constexpr Rgba kHudDim{150, 160, 190, 255};
+
+// 结算后多久自动回主菜单（秒）
+constexpr float kReturnToMenuSeconds = 5.0f;
 
 void drawHpBar(Renderer& renderer, Rect area, float ratio, Rgba fillColor, bool mirror) {
     renderer.drawRect(area, kHudBack);
@@ -131,10 +135,32 @@ int Game::run(const Options& options) {
     };
     setupMatch();
 
-    const std::string leftTexture = loader.root() + "/" + left->sourceDir + "/" + left->skin.texture;
-    const std::string rightTexture = loader.root() + "/" + right->sourceDir + "/" + right->skin.texture;
+    std::string leftTexture = loader.root() + "/" + left->sourceDir + "/" + left->skin.texture;
+    std::string rightTexture = loader.root() + "/" + right->sourceDir + "/" + right->skin.texture;
     assets.get(leftTexture);
     assets.get(rightTexture);
+
+    Menu menu;
+    menu.open(pack, left->id, right->id);
+    // headless 没有任何输入来源，停在菜单等于什么都不做，所以直接开局。
+    bool inMenu = options.startInMenu && !options.headless;
+
+    // 菜单点了「开始游戏」：换角色 → 换贴图 → 重新开局。
+    auto startFromMenu = [&]() -> bool {
+        const CharacterDef* chosenLeft = pack.findCharacter(menu.leftId());
+        const CharacterDef* chosenRight = pack.findCharacter(menu.rightId());
+        if (chosenLeft == nullptr || chosenRight == nullptr) {
+            return false;
+        }
+        left = chosenLeft;
+        right = chosenRight;
+        leftTexture = loader.root() + "/" + left->sourceDir + "/" + left->skin.texture;
+        rightTexture = loader.root() + "/" + right->sourceDir + "/" + right->skin.texture;
+        assets.get(leftTexture);
+        assets.get(rightTexture);
+        setupMatch();
+        return true;
+    };
 
     Clock clock(1.0f / 120.0f, 8);
     std::uint32_t lastTicks = SDL_GetTicks();
@@ -142,6 +168,7 @@ int Game::run(const Options& options) {
     float fpsValue = 0.0f;
     int fpsFrames = 0;
     float totalSeconds = 0.0f;
+    float finishedSeconds = 0.0f;
 
     while (!renderer.shouldClose()) {
         const std::uint32_t now = SDL_GetTicks();
@@ -158,161 +185,201 @@ int Game::run(const Options& options) {
         }
 
         renderer.pumpEvents();
-        if (renderer.wasKeyPressed(SDL_SCANCODE_ESCAPE)) {
-            renderer.requestClose();
-            break;
-        }
-        if (renderer.wasKeyPressed(SDL_SCANCODE_R)) {
-            setupMatch();
-        }
 
-        clock.tick(frameSeconds);
-
-        if (fx.hitStopActive()) {
-            fx.consumeHitStop();
-            clock.tick(-frameSeconds * 0.85);
+        // ESC 不再退出进程：对局里 ESC 回菜单，菜单里 ESC 只关确认框。
+        if (!inMenu && renderer.wasKeyPressed(SDL_SCANCODE_ESCAPE)) {
+            inMenu = true;
+            menu.open(pack, left->id, right->id);
         }
 
-        const float stepDt = clock.fixedDt();
-        const int steps = clock.consumeSteps();
-        for (int step = 0; step < steps; ++step) {
-            match.update(stepDt);
-            world.step(stepDt);
-
-            const std::vector<int> crushed = arena.update(stepDt);
-            for (int obstacleId : crushed) {
-                Event event;
-                event.type = EventType::ObstacleCrushed;
-                event.a = obstacleId;
-                event.pos = arena.bounds().center();
-                events.publish(event);
+        if (inMenu) {
+            menu.update(renderer);
+            if (menu.wantsQuit()) {
+                renderer.requestClose();
+                break;
             }
-
-            events.dispatch();
-            fx.update(stepDt);
-
-            if (step % 6 == 0) {
-                for (int i = 0; i < 2; ++i) {
-                    const Body* body = world.body(match.fighter(i).bodyId);
-                    if (body == nullptr || !body->active) {
-                        continue;
-                    }
-                    if (lengthOf(body->vel) < 260.0f) {
-                        continue;
-                    }
-                    const Rgba trailColor = i == 0 ? Rgba{255, 150, 80, 70} : Rgba{110, 180, 255, 70};
-                    fx.spawnTrail(body->pos, body->radius * 0.55f, trailColor);
+            if (menu.wantsStart()) {
+                menu.clearRequests();
+                if (startFromMenu()) {
+                    finishedSeconds = 0.0f;
+                    inMenu = false;
                 }
             }
-        }
 
-        // ---- 绘制 ----
-        renderer.beginFrame(map->theme.bgColor);
+            renderer.beginFrame(menu.background());
+            menu.draw(renderer, assets, loader.root());
+            renderer.endFrame();
+        } else {
+            if (renderer.wasKeyPressed(SDL_SCANCODE_R)) {
+                setupMatch();
+                finishedSeconds = 0.0f;
+            }
 
-        const Rect bounds = arena.bounds();
-        renderer.drawRectLines(bounds, map->theme.wallThickness, map->theme.wallColor);
+            clock.tick(frameSeconds);
 
-        for (const Obstacle& obstacle : arena.obstacles()) {
-            const Rgba color{40, 44, 60, 255};
-            if (obstacle.shape == ObstacleShape::Rect) {
-                Rect rect;
-                rect.x = obstacle.pos.x - obstacle.size.x * 0.5f;
-                rect.y = obstacle.pos.y - obstacle.size.y * 0.5f;
-                rect.w = obstacle.size.x;
-                rect.h = obstacle.size.y;
-                renderer.drawRect(rect, color);
-                renderer.drawRectLines(rect, 1.0f, Rgba{80, 90, 130, 255});
+            if (fx.hitStopActive()) {
+                fx.consumeHitStop();
+                clock.tick(-frameSeconds * 0.85);
+            }
+
+            const float stepDt = clock.fixedDt();
+            const int steps = clock.consumeSteps();
+            for (int step = 0; step < steps; ++step) {
+                match.update(stepDt);
+                world.step(stepDt);
+
+                const std::vector<int> crushed = arena.update(stepDt);
+                for (int obstacleId : crushed) {
+                    Event event;
+                    event.type = EventType::ObstacleCrushed;
+                    event.a = obstacleId;
+                    event.pos = arena.bounds().center();
+                    events.publish(event);
+                }
+
+                events.dispatch();
+                fx.update(stepDt);
+
+                if (step % 6 == 0) {
+                    for (int i = 0; i < 2; ++i) {
+                        const Body* body = world.body(match.fighter(i).bodyId);
+                        if (body == nullptr || !body->active) {
+                            continue;
+                        }
+                        if (lengthOf(body->vel) < 260.0f) {
+                            continue;
+                        }
+                        const Rgba trailColor = i == 0 ? Rgba{255, 150, 80, 70} : Rgba{110, 180, 255, 70};
+                        fx.spawnTrail(body->pos, body->radius * 0.55f, trailColor);
+                    }
+                }
+            }
+
+            // ---- 绘制 ----
+            renderer.beginFrame(map->theme.bgColor);
+
+            const Rect bounds = arena.bounds();
+            renderer.drawRectLines(bounds, map->theme.wallThickness, map->theme.wallColor);
+
+            for (const Obstacle& obstacle : arena.obstacles()) {
+                const Rgba color{40, 44, 60, 255};
+                if (obstacle.shape == ObstacleShape::Rect) {
+                    Rect rect;
+                    rect.x = obstacle.pos.x - obstacle.size.x * 0.5f;
+                    rect.y = obstacle.pos.y - obstacle.size.y * 0.5f;
+                    rect.w = obstacle.size.x;
+                    rect.h = obstacle.size.y;
+                    renderer.drawRect(rect, color);
+                    renderer.drawRectLines(rect, 1.0f, Rgba{80, 90, 130, 255});
+                } else {
+                    renderer.drawCircle(obstacle.pos, obstacle.radius, color);
+                    renderer.drawCircleLines(obstacle.pos, obstacle.radius, Rgba{80, 90, 130, 255});
+                }
+            }
+
+            for (int i = 0; i < 2; ++i) {
+                const Fighter& fighter = match.fighter(i);
+                const Body* body = world.body(fighter.bodyId);
+                if (body == nullptr || !body->active || fighter.def == nullptr) {
+                    continue;
+                }
+
+                const std::string& path = i == 0 ? leftTexture : rightTexture;
+                SDL_Texture* texture = assets.get(path);
+                if (texture == nullptr) {
+                    const Rgba fallback = i == 0 ? Rgba{255, 140, 60, 255} : Rgba{90, 160, 255, 255};
+                    renderer.drawCircle(body->pos, body->radius, fallback);
+                    continue;
+                }
+
+                int texWidth = 1;
+                int texHeight = 1;
+                SDL_QueryTexture(texture, nullptr, nullptr, &texWidth, &texHeight);
+                const float scale = (body->radius * 2.0f * fighter.def->skin.scale) /
+                                    static_cast<float>(std::max(1, texWidth));
+
+                // 同角色互打时右侧整体偏蓝，否则两个一模一样的球分不清
+                Rgba tint = fighter.def->skin.tint;
+                if (i == 1 && left->id == right->id) {
+                    tint.r = static_cast<unsigned char>(tint.r * 140 / 255);
+                    tint.g = static_cast<unsigned char>(tint.g * 190 / 255);
+                }
+
+                const float angle = radToDeg(std::atan2(body->vel.y, body->vel.x));
+                renderer.drawSprite(texture, body->pos, angle, scale, tint);
+            }
+
+            fx.draw(renderer);
+
+            // ---- HUD ----
+            const float barWidth = 340.0f;
+            const float barHeight = 16.0f;
+            const float margin = 20.0f;
+
+            Rect leftBar{margin, margin, barWidth, barHeight};
+            Rect rightBar{map->size.x - margin - barWidth, margin, barWidth, barHeight};
+
+            drawHpBar(renderer, leftBar, match.fighter(0).hp / match.fighter(0).maxHp,
+                      Rgba{255, 130, 60, 255}, false);
+            drawHpBar(renderer, rightBar, match.fighter(1).hp / match.fighter(1).maxHp,
+                      Rgba{90, 160, 255, 255}, true);
+
+            renderer.drawText(left->name.en.empty() ? left->id : left->name.en,
+                              Vec2{leftBar.x, leftBar.y + barHeight + 6.0f}, 8, kHudText);
+            renderer.drawText(right->name.en.empty() ? right->id : right->name.en,
+                              Vec2{rightBar.x, rightBar.y + barHeight + 6.0f}, 8, kHudText);
+
+            renderer.drawText(hpText(match.fighter(0)), Vec2{leftBar.x + 6.0f, leftBar.y + 3.0f}, 8, kHudText);
+            renderer.drawText(hpText(match.fighter(1)),
+                              Vec2{rightBar.x + rightBar.w - 6.0f - 60.0f, rightBar.y + 3.0f}, 8, kHudText);
+
+            renderer.drawText("T " + std::to_string(static_cast<int>(match.elapsed())),
+                              Vec2{map->size.x * 0.5f - 18.0f, margin}, 8, kHudDim);
+
+            if (match.zone().warningActive()) {
+                const Rgba warn{255, 70, 70, 255};
+                renderer.drawRectLines(bounds, 3.0f, warn);
+                renderer.drawText("ZONE CLOSING",
+                                  Vec2{map->size.x * 0.5f - 110.0f, margin + 22.0f}, 8, warn);
+            }
+
+            if (match.phase() == MatchPhase::Finished) {
+                finishedSeconds += frameSeconds;
+                if (finishedSeconds >= kReturnToMenuSeconds) {
+                    inMenu = true;
+                    menu.open(pack, left->id, right->id);
+                } else {
+                    renderer.drawRect(Rect{0.0f, 0.0f, map->size.x, map->size.y}, Rgba{8, 9, 14, 190});
+
+                    const MatchResult& result = match.result();
+                    std::string headline = "DRAW";
+                    if (result.winnerId >= 0) {
+                        headline = (result.winnerId == match.fighter(0).bodyId)
+                                       ? (left->name.en.empty() ? left->id : left->name.en) + " WINS"
+                                       : (right->name.en.empty() ? right->id : right->name.en) + " WINS";
+                    }
+
+                    const int headlineWidth = renderer.measureText(headline, 16);
+                    renderer.drawText(headline,
+                                      Vec2{(map->size.x - static_cast<float>(headlineWidth)) * 0.5f,
+                                           map->size.y * 0.42f},
+                                      16, kHudText);
+
+                    const int remaining = static_cast<int>(kReturnToMenuSeconds - finishedSeconds);
+                    const std::string hint = "RETURNING IN " + std::to_string(remaining) +
+                                             "   R = REMATCH";
+                    const int hintWidth = renderer.measureText(hint, 8);
+                    renderer.drawText(hint,
+                                      Vec2{(map->size.x - static_cast<float>(hintWidth)) * 0.5f,
+                                           map->size.y * 0.42f + 40.0f},
+                                      8, kHudDim);
+                }
             } else {
-                renderer.drawCircle(obstacle.pos, obstacle.radius, color);
-                renderer.drawCircleLines(obstacle.pos, obstacle.radius, Rgba{80, 90, 130, 255});
-            }
-        }
-
-        for (int i = 0; i < 2; ++i) {
-            const Fighter& fighter = match.fighter(i);
-            const Body* body = world.body(fighter.bodyId);
-            if (body == nullptr || !body->active || fighter.def == nullptr) {
-                continue;
+                finishedSeconds = 0.0f;
             }
 
-            const std::string& path = i == 0 ? leftTexture : rightTexture;
-            SDL_Texture* texture = assets.get(path);
-            if (texture == nullptr) {
-                const Rgba fallback = i == 0 ? Rgba{255, 140, 60, 255} : Rgba{90, 160, 255, 255};
-                renderer.drawCircle(body->pos, body->radius, fallback);
-                continue;
-            }
-
-            int texWidth = 1;
-            int texHeight = 1;
-            SDL_QueryTexture(texture, nullptr, nullptr, &texWidth, &texHeight);
-            const float scale = (body->radius * 2.0f * fighter.def->skin.scale) /
-                                static_cast<float>(std::max(1, texWidth));
-
-            const float angle = radToDeg(std::atan2(body->vel.y, body->vel.x));
-            renderer.drawSprite(texture, body->pos, angle, scale, fighter.def->skin.tint);
+            renderer.endFrame();
         }
-
-        fx.draw(renderer);
-
-        // ---- HUD ----
-        const float barWidth = 340.0f;
-        const float barHeight = 16.0f;
-        const float margin = 20.0f;
-
-        Rect leftBar{margin, margin, barWidth, barHeight};
-        Rect rightBar{map->size.x - margin - barWidth, margin, barWidth, barHeight};
-
-        drawHpBar(renderer, leftBar, match.fighter(0).hp / match.fighter(0).maxHp,
-                  Rgba{255, 130, 60, 255}, false);
-        drawHpBar(renderer, rightBar, match.fighter(1).hp / match.fighter(1).maxHp,
-                  Rgba{90, 160, 255, 255}, true);
-
-        renderer.drawText(left->name.en.empty() ? left->id : left->name.en,
-                          Vec2{leftBar.x, leftBar.y + barHeight + 6.0f}, 8, kHudText);
-        renderer.drawText(right->name.en.empty() ? right->id : right->name.en,
-                          Vec2{rightBar.x, rightBar.y + barHeight + 6.0f}, 8, kHudText);
-
-        renderer.drawText(hpText(match.fighter(0)), Vec2{leftBar.x + 6.0f, leftBar.y + 3.0f}, 8, kHudText);
-        renderer.drawText(hpText(match.fighter(1)),
-                          Vec2{rightBar.x + rightBar.w - 6.0f - 60.0f, rightBar.y + 3.0f}, 8, kHudText);
-
-        renderer.drawText("T " + std::to_string(static_cast<int>(match.elapsed())),
-                          Vec2{map->size.x * 0.5f - 18.0f, margin}, 8, kHudDim);
-
-        if (match.zone().warningActive()) {
-            const Rgba warn{255, 70, 70, 255};
-            renderer.drawRectLines(bounds, 3.0f, warn);
-            renderer.drawText("ZONE CLOSING",
-                              Vec2{map->size.x * 0.5f - 110.0f, margin + 22.0f}, 8, warn);
-        }
-
-        if (match.phase() == MatchPhase::Finished) {
-            renderer.drawRect(Rect{0.0f, 0.0f, map->size.x, map->size.y}, Rgba{8, 9, 14, 190});
-
-            const MatchResult& result = match.result();
-            std::string headline = "DRAW";
-            if (result.winnerId >= 0) {
-                headline = (result.winnerId == match.fighter(0).bodyId)
-                               ? (left->name.en.empty() ? left->id : left->name.en) + " WINS"
-                               : (right->name.en.empty() ? right->id : right->name.en) + " WINS";
-            }
-
-            const int headlineWidth = renderer.measureText(headline, 16);
-            renderer.drawText(headline,
-                              Vec2{(map->size.x - static_cast<float>(headlineWidth)) * 0.5f,
-                                   map->size.y * 0.42f},
-                              16, kHudText);
-
-            const std::string hint = "PRESS R TO RESTART";
-            const int hintWidth = renderer.measureText(hint, 8);
-            renderer.drawText(hint,
-                              Vec2{(map->size.x - static_cast<float>(hintWidth)) * 0.5f,
-                                   map->size.y * 0.42f + 40.0f},
-                              8, kHudDim);
-        }
-
-        renderer.endFrame();
 
         if (!options.screenshotPath.empty() && totalSeconds >= 2.0f) {
             if (renderer.saveScreenshot(options.screenshotPath)) {

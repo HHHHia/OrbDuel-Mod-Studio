@@ -21,6 +21,7 @@ struct Options {
     bool selftest = false;      // 只验证环境，不玩游戏
     bool list = false;          // 只列内容包
     bool headless = false;      // 不创建窗口
+    bool startInMenu = true;    // false = 跳过主菜单直接开局（--no-menu）
     bool debug = false;         // 打开调试层
     float autotestSeconds = 0.0f; // >0 时无窗口跑物理回归
     float runSeconds = 0.0f;    // >0 时跑够这么多秒自动退出（自测用）

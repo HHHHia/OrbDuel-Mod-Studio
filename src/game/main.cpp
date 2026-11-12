@@ -133,6 +133,8 @@ int main(int argc, char** argv) {
             listOnly = true;
         } else if (arg == "--headless") {
             options.headless = true;
+        } else if (arg == "--no-menu") {
+            options.startInMenu = false;
         } else if (arg == "--content" && i + 1 < argc) {
             options.contentRoot = argv[++i];
         } else if (arg == "--map" && i + 1 < argc) {
@@ -156,6 +158,7 @@ int main(int argc, char** argv) {
             std::printf("  orbduel --selftest [--window]   环境自检\n");
             std::printf("  orbduel --list                  只列内容包\n");
             std::printf("  orbduel --headless              不开窗口（只做逻辑）\n");
+            std::printf("  orbduel --no-menu               跳过主菜单直接开局\n");
             std::printf("  orbduel --seconds 5             跑 5 秒后自动退出\n");
             return 0;
         }

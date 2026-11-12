@@ -83,12 +83,18 @@ bool Renderer::isInitialized() const { return initialized_; }
 
 bool Renderer::pumpEvents() {
     pressedKeys_.clear();
+    mouseClicked_ = false;
     SDL_Event event;
     while (SDL_PollEvent(&event) != 0) {
         if (event.type == SDL_QUIT) {
             closed_ = true;
         } else if (event.type == SDL_KEYDOWN) {
             pressedKeys_.push_back(event.key.keysym.scancode);
+        } else if (event.type == SDL_MOUSEMOTION) {
+            mousePosition_ = Vec2{static_cast<float>(event.motion.x), static_cast<float>(event.motion.y)};
+        } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+            mousePosition_ = Vec2{static_cast<float>(event.button.x), static_cast<float>(event.button.y)};
+            mouseClicked_ = true;
         }
     }
     return !closed_;
@@ -105,6 +111,9 @@ bool Renderer::wasKeyPressed(SDL_Scancode code) const {
 
 bool Renderer::shouldClose() const { return closed_; }
 void Renderer::requestClose() { closed_ = true; }
+
+Vec2 Renderer::mousePosition() const { return mousePosition_; }
+bool Renderer::wasMouseClicked() const { return mouseClicked_; }
 
 void Renderer::beginFrame(Rgba clearColor) {
     const SDL_Color color = toSdl(clearColor);

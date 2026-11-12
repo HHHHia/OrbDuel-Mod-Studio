@@ -40,6 +40,10 @@ public:
     bool shouldClose() const;
     void requestClose();
 
+    // 鼠标：窗口坐标（左上原点）。clicked = 本帧左键按下过一次。
+    Vec2 mousePosition() const;
+    bool wasMouseClicked() const;
+
     void beginFrame(Rgba clearColor);
     void endFrame();
 
@@ -79,6 +83,8 @@ private:
     mutable std::unordered_map<int, TTF_Font*> fonts_;
 
     std::vector<SDL_Scancode> pressedKeys_;
+    Vec2 mousePosition_{};
+    bool mouseClicked_ = false;
     bool closed_ = false;
     bool initialized_ = false;
     int width_ = 0;
