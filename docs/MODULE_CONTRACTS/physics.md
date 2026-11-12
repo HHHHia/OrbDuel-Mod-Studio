@@ -19,7 +19,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `physics/Body.hpp` | `Body{ id, pos, vel, radius, mass, invMass, restitution, speedMul }` |
+| `physics/Body.hpp` | `Body{ id, pos, vel, radius, mass, invMass, restitution, phasePush }` |
 | `physics/Collision.hpp` | `Contact`、`collideCircles`、`resolveCircleCircle`、`resolveCircleRect`、`resolveCircleCircleStatic` |
 | `physics/Arena.hpp` | `Arena::bounds()`、`setShrinkTarget()`、`update()`、`resolveOverlaps()`、`obstacles()` |
 | `physics/World.hpp` | `World(EventBus&, Arena&)`、`addBody`、`step(dt)`、`bodies()` |
@@ -33,6 +33,9 @@
 5. 球被推出场地时，**只推回 + 反射，不加能量**。
 6. `Body.mass > 0`；`invMass = 1/mass` 由 `addBody` 计算，外部不要手改。
 7. 内缩比例取值范围 `0`–`1`：`1` 表示场地尺寸归零。缩到 0 的胜负由 `match` 决定，`physics` 不参与。
+8. `Body.phasePush > 0` 的球**不做球-球分离**：穿过对方，只在刚接触那一步沿法线给对方加 `phasePush` 速度；
+   同一个配对的连续重叠只算一次（`World` 内部按 id 配对去重，分开一步即清除）。谁开这个开关由 `match` 每步决定。
+9. `phasePush` 不影响障碍与墙：贯穿只作用于球-球。
 
 ## 禁止
 

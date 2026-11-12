@@ -119,6 +119,21 @@ void Match::setup(const CharacterDef& left,
             }
         }
         skills_[i].attach(bodyId, skillDefs);
+
+        // 被动技能在开局读一次：贯穿就靠这三个数，之后每步只按速度决定开不开
+        for (const SkillDef* skill : skillDefs) {
+            if (skill == nullptr || skill->trigger.kind != TriggerKind::Passive) {
+                continue;
+            }
+            for (const ModifierDef& modifier : skill->modifiers) {
+                if (modifier.op != ModifierOp::Pierce) {
+                    continue;
+                }
+                fighter.pierce.damage = modifier.value;
+                fighter.pierce.minSpeed = modifier.minSpeed;
+                fighter.pierce.push = modifier.push;
+            }
+        }
     }
 
     elapsed_ = 0.0f;
@@ -187,8 +202,15 @@ void Match::update(float dt) {
         }
     }
 
-    zone_.update(dt, stall_.lullSeconds());
+    // 贯穿是「被动」：速度够快才生效。原地蓄力时速度是 0，照常被弹开、照常被打断。
+    for (int i = 0; i < 2; ++i) {
+        const Fighter& fighter = fighters_[i];
+        const bool phase = fighter.alive && fighter.pierce.push > 0.0f &&
+                           lengthOf(bodies[i]->vel) >= fighter.pierce.minSpeed;
+        bodies[i]->phasePush = phase ? fighter.pierce.push : 0.0f;
+    }
 
+    zone_.update(dt, stall_.lullSeconds());
     // 场地缩到装不下两个球：直接结算，HP 高者胜。到此为止不会再跑物理，
     // 所以不会出现「两个球被挤在同一条线上反复弹」的退化状态。
     const Rect field = arena_.bounds();
@@ -254,6 +276,15 @@ void Match::onEvent(const Event& event) {
         if (skills_[i].consumeRam(ramScale)) {
             applyDamage(fighters_[1 - i].bodyId, ramScale * event.value, true);
         }
+    }
+
+    // 贯穿伤害：物理层保证「刚撞上」那一步只发一次 Hit，所以一次穿过只刮一次
+    for (int i = 0; i < 2; ++i) {
+        const Body* body = world_.body(fighters_[i].bodyId);
+        if (body == nullptr || body->phasePush <= 0.0f || fighters_[i].pierce.damage <= 0.0f) {
+            continue;
+        }
+        applyDamage(fighters_[1 - i].bodyId, fighters_[i].pierce.damage, true);
     }
 
     // 撞上就算打断蓄力：不看这一下掉了多少血（碰撞伤害可能被数据关成 0）

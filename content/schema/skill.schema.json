@@ -21,7 +21,8 @@
       "required": ["kind"],
       "properties": {
         "kind": {
-          "enum": ["cooldown", "on_hit", "on_hit_by", "on_low_hp", "on_wall_bounce", "manual"]
+          "enum": ["cooldown", "on_hit", "on_hit_by", "on_low_hp", "on_wall_bounce", "manual",
+                   "passive"]
         },
         "cooldown": { "type": "number", "minimum": 0.5, "maximum": 60 },
         "hpBelow": { "type": "number", "minimum": 0, "maximum": 1 }
@@ -36,12 +37,14 @@
         "properties": {
           "op": {
             "enum": ["add_speed", "shield", "lifesteal", "slow_field",
-                     "teleport", "resize", "bounce_boost", "heal"]
+                     "teleport", "resize", "bounce_boost", "heal", "pierce"]
           },
           "value": { "type": "number" },
           "duration": { "type": "number", "minimum": 0, "maximum": 120 },
           "radius": { "type": "number", "minimum": 0 },
           "factor": { "type": "number", "minimum": 0, "maximum": 1 },
+          "minSpeed": { "type": "number", "minimum": 0, "maximum": 1800 },
+          "push": { "type": "number", "minimum": 0, "maximum": 600 },
           "curve": { "enum": ["linear", "ease_out", "ease_in_out"] }
         }
       }

@@ -1,0 +1,12 @@
+{
+  "format": 1,
+  "id": "pierce",
+  "name": { "en": "Pierce", "zh": "贯穿" },
+  "trigger": { "kind": "passive" },
+  "modifiers": [
+    { "op": "pierce", "value": 8.0, "minSpeed": 200.0, "push": 120.0 }
+  ],
+  "vfx": [],
+  "stack": "refresh",
+  "priority": 30
+}

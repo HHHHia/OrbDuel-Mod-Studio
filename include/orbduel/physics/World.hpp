@@ -3,6 +3,8 @@
 // 物理世界：只负责「推进一个固定步」。
 // 事件只入队不派发，派发由调用方在步末统一做（ADR-004）。
 
+#include <cstdint>
+#include <set>
 #include <vector>
 
 #include "orbduel/core/Types.hpp"
@@ -49,6 +51,8 @@ private:
     Rng* rng_ = nullptr;
     float wallRestitution_ = 0.98f;
     float jitterDeg_ = 1.5f;
+    // 上一步仍在重叠的贯穿配对：一次穿过只算一次（分开一步就清掉）
+    std::set<std::uint64_t> phaseContacts_;
 };
 
 } // namespace orbduel

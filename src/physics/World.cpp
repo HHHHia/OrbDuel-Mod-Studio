@@ -40,7 +40,10 @@ int World::addBody(const Body& body) {
     return copy.id;
 }
 
-void World::clear() { bodies_.clear(); }
+void World::clear() {
+    bodies_.clear();
+    phaseContacts_.clear();
+}
 
 Body* World::body(int id) {
     if (id < 0 || id >= static_cast<int>(bodies_.size())) {
@@ -78,6 +81,7 @@ void World::step(float dt) {
     }
 
     // 2) 球-球
+    std::set<std::uint64_t> phaseContacts;
     for (std::size_t i = 0; i < bodies_.size(); ++i) {
         for (std::size_t j = i + 1; j < bodies_.size(); ++j) {
             Body& a = bodies_[i];
@@ -90,7 +94,29 @@ void World::step(float dt) {
                 continue;
             }
             const float closing = contact.relSpeed;
-            resolveCircles(a, b, contact);
+
+            // 贯穿体：不分离、不换速度；对方只在「刚撞上」的那一步被推开一次。
+            // 重叠期间会连续命中同一个配对，所以用 phaseContacts_ 记住「这一趟已经算过」。
+            const bool aPhases = a.phasePush > 0.0f;
+            const bool bPhases = b.phasePush > 0.0f;
+            if (aPhases || bPhases) {
+                const int low = std::min(a.id, b.id);
+                const int high = std::max(a.id, b.id);
+                const std::uint64_t key =
+                    (static_cast<std::uint64_t>(low) << 32) | static_cast<std::uint32_t>(high);
+                const bool firstTouch = phaseContacts_.count(key) == 0;
+                phaseContacts.insert(key);
+                if (!firstTouch || closing <= 0.0f) {
+                    continue;
+                }
+                if (aPhases && !bPhases) {
+                    b.vel += contact.normal * a.phasePush;
+                } else if (bPhases && !aPhases) {
+                    a.vel -= contact.normal * b.phasePush;
+                }
+            } else {
+                resolveCircles(a, b, contact);
+            }
 
             Event event;
             event.type = EventType::Hit;
@@ -102,6 +128,7 @@ void World::step(float dt) {
             events_.publish(event);
         }
     }
+    phaseContacts_.swap(phaseContacts);
 
     // 3) 障碍
     for (Body& b : bodies_) {

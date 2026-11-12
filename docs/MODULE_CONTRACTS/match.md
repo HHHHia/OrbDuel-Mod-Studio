@@ -19,7 +19,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `match/Match.hpp` | `Match(spawn)`、`update(dt)`、`onEvent(e)`、`fighter(i)`、`skills(i)`、`phase()`、`reset()` |
+| `match/Match.hpp` | `Match(spawn)`、`update(dt)`、`onEvent(e)`、`fighter(i)`、`skills(i)`、`phase()`、`reset()`、`Fighter{ ..., pierce }`、`PierceMod{ damage, minSpeed, push }` |
 | `match/MatchRule.hpp` | `IMatchRule`、`HpRule`、`MatchResult{ winner, reason }` |
 | `match/StallGuard.hpp` | `StallParams`、`StallGuard::onHit/update/lullSeconds/attraction()` |
 | `match/Zone.hpp` | `ZoneController(Arena&, ShrinkDef)`、`update(dt, lull)`、`tier()` |
@@ -36,6 +36,8 @@
 7. 对局结束（`phase == Finished`）后 `update()` 不再结算伤害。
 8. 蓄力（`SkillState.charging`）只在开始时清零一次速度；之后 `StallGuard` 的吸力仍能推动它。
 9. 蓄力被任何撞击打断即作废并进 CD（不看这一下是否掉血）；冲刺重击一次只结算一次，且必须走 `applyDamage()`。
+10. 被动贯穿（`pierce`）在 `setup()` 读一次，存进 `Fighter.pierce`；`update()` 每步按 `自身速度 ≥ minSpeed` 决定要不要给 `Body.phasePush` 赋值，`physics` 只消费这个开关。
+11. 贯穿伤害同样只走 `applyDamage()`；一次穿过只结算一次（物理层保证该配对只发一次 `Hit`），与冲刺重击各算各的。
 10. 场地缩到装不下两个球（`bounds` 的宽或高 `< r1 + r2`）时立即结算：`reason = "zone_zero"`，HP 高者胜，同 HP 平局（`winnerId = -1`）。
 
 ## 禁止

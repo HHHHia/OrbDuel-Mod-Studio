@@ -87,8 +87,8 @@ function CheckColor($obj, [string]$name, [string]$src) {
 }
 
 # ---------------------------------------------------------------------------
-$SkillKinds = @('cooldown', 'on_hit', 'on_hit_by', 'on_low_hp', 'on_wall_bounce', 'manual')
-$SkillOps = @('add_speed', 'shield', 'lifesteal', 'slow_field', 'teleport', 'resize', 'bounce_boost', 'heal')
+$SkillKinds = @('cooldown', 'on_hit', 'on_hit_by', 'on_low_hp', 'on_wall_bounce', 'manual', 'passive')
+$SkillOps = @('add_speed', 'shield', 'lifesteal', 'slow_field', 'teleport', 'resize', 'bounce_boost', 'heal', 'pierce')
 $VfxTypes = @('trail', 'burst', 'ring', 'flash', 'screen_shake', 'hit_stop')
 $VfxOns = @('cast', 'hit', 'expire')
 
@@ -168,6 +168,11 @@ if (Test-Path $SkillDir) {
             InRange $m 'duration' 0.0 120 $src
             InRange $m 'factor' 0.0 1.0 $src
             InRange $m 'value' -100000 100000 $src
+            InRange $m 'minSpeed' 0 1800 $src
+            InRange $m 'push' 0 600 $src
+            if ($op -eq 'pierce' -and [double](Prop $m 'value') -le 0) {
+                Fail $src "pierce 的 value（每次穿过的伤害）必须大于 0"
+            }
         }
 
         $vfxs = ArrOf $d 'vfx'

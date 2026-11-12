@@ -24,6 +24,10 @@ struct Body {
     // 恢复系数 [0,1]。球球碰撞取两者较小值。
     float restitution = 0.95f;
 
+    // > 0 时不做球-球分离：直接穿过对方，并沿碰撞法线把对方推开这么多速度（px/s）。
+    // 谁生效由 match 每步决定（速度阈值是游戏规则，物理不认识技能）。
+    float phasePush = 0.0f;
+
     bool active = true;
 };
 

@@ -55,7 +55,8 @@ enum class TriggerKind {
     OnHitBy,
     OnLowHp,
     OnWallBounce,
-    Manual            // 预留给玩家输入
+    Manual,           // 预留给玩家输入
+    Passive           // 被动：开局就生效，不进冷却循环
 };
 
 enum class ModifierOp {
@@ -66,7 +67,8 @@ enum class ModifierOp {
     Teleport,
     Resize,
     BounceBoost,
-    Heal
+    Heal,
+    Pierce           // 贯穿：撞到对手不弹开、直接穿过，并按 value/minSpeed/push 结算
 };
 
 enum class Curve {
@@ -102,6 +104,8 @@ struct ModifierDef {
     float duration = 0.0f;
     float radius = 0.0f;
     float factor = 1.0f;
+    float minSpeed = 0.0f;   // pierce：自身速度 ≥ 它才贯穿
+    float push = 0.0f;       // pierce：穿过时给对手加的速度（沿碰撞法线）
     Curve curve = Curve::Linear;
 };
 

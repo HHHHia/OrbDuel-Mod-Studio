@@ -34,7 +34,7 @@ content/
   "skin": { "texture": "skin.png", "shape": "sprite", "scale": 1.0, "tint": [255, 255, 255, 255] },
   "hitbox": { "shape": "circle", "radius": 18.0, "offset": [0, 0] },
   "stats": { "mass": 1.0, "restitution": 0.95, "maxHp": 100.0, "startSpeed": 420.0 },
-  "skills": ["dash", "lifesteal"]
+  "skills": ["dash", "pierce"]
 }
 ```
 
@@ -107,6 +107,7 @@ content/
 | `on_hit_by` | `cooldown` 可选 | 自己被命中后 |
 | `on_low_hp` | `hpBelow` (0–1) | HP 低于比例时 |
 | `on_wall_bounce` | `cooldown` 可选 | 自己撞墙后 |
+| `passive` | — | **被动**：开局读一次就常驻，不进冷却、不会「施放」 |
 
 > 以后接玩家输入时，`trigger` 增加 `"kind": "manual"`，由 `Input` 决定何时放。
 
@@ -122,6 +123,7 @@ content/
 | `resize` | `value` 倍率 0.5–2.0, `duration` | 改半径与质量 | 体型变化 |
 | `bounce_boost` | `value` 0–1, `duration` | 撞墙额外恢复系数 | 反弹强化 |
 | `heal` | `value` HP | 直接回血 | 兜底原语 |
+| `pierce` | `value` HP, `minSpeed` px/s, `push` px/s | 撞到对手**不弹开、直接穿过**；速度 ≥ `minSpeed` 时每次穿过扣对手 `value` 血，并沿法线给对方加 `push` 速度 | 只有 `passive` 用；速度不够就退回普通碰撞 |
 
 `curve`：`linear`（默认）/ `ease_out` / `ease_in_out`。只影响数值随时间的变化曲线。
 
@@ -166,6 +168,19 @@ content/
 
 不变量：蓄力被任何撞击打断就作废并进 CD（放够 `interruptImmuneCasts` 次之后不再被打断）；一次冲刺只结算一次额外伤害。
 三个「越放越强」的量都按本局释放次数线性插值，各自独立：蓄力时长（`durationLearningCasts`）、锁定延迟与抖动（`aimLearningCasts`）、打断免疫（`interruptImmuneCasts`）。
+
+### 2.6 passive（被动 / 贯穿）
+
+`content/skills/pierce.json` 就是最小例子：
+
+```json
+"trigger": { "kind": "passive" },
+"modifiers": [{ "op": "pierce", "value": 8.0, "minSpeed": 200.0, "push": 120.0 }]
+```
+
+开局读一次，之后每一步看速度：自身速度 ≥ `minSpeed` 就贯穿——撞上对手不分离、不换速度，
+穿过时扣对手 `value` 血，并把对手沿法线推开 `push`。**一次穿过只扣一次血**（物理层按配对去重）。
+速度不够时（例如原地蓄力，速度是 0）退回普通碰撞：该弹还弹、蓄力该打断还打断。
 
 ---
 

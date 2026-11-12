@@ -79,6 +79,7 @@ TriggerKind parseTriggerKind(const std::string& text) {
     if (text == "on_low_hp") { return TriggerKind::OnLowHp; }
     if (text == "on_wall_bounce") { return TriggerKind::OnWallBounce; }
     if (text == "manual") { return TriggerKind::Manual; }
+    if (text == "passive") { return TriggerKind::Passive; }
     return TriggerKind::Cooldown;
 }
 
@@ -90,6 +91,7 @@ ModifierOp parseModifierOp(const std::string& text) {
     if (text == "resize") { return ModifierOp::Resize; }
     if (text == "bounce_boost") { return ModifierOp::BounceBoost; }
     if (text == "heal") { return ModifierOp::Heal; }
+    if (text == "pierce") { return ModifierOp::Pierce; }
     return ModifierOp::AddSpeed;
 }
 
@@ -193,6 +195,8 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
                 modifier.duration = readFloat(item, "duration", 0.0f);
                 modifier.radius = readFloat(item, "radius", 0.0f);
                 modifier.factor = readFloat(item, "factor", 1.0f);
+                modifier.minSpeed = readFloat(item, "minSpeed", 0.0f);
+                modifier.push = readFloat(item, "push", 0.0f);
                 modifier.curve = parseCurve(readString(item, "curve", "linear"));
                 def.modifiers.push_back(modifier);
             }

@@ -30,6 +30,7 @@
 4. 所有字符串 id 在加载时转小写并校验字符集。
 5. 贴图路径统一转成相对 `content/` 的 POSIX 风格（`characters/lancer/skin.png`）。
 6. `SkinDef.shape` 只存形状名（`sprite` 默认 / `triangle`），不认识几何细节；比例归 `game`。
+7. `TriggerKind::Passive` 的技能不进冷却循环，由 `match` 在开局读一次；`ModifierOp::Pierce` 的 `minSpeed` / `push` 只对它有意义。
 
 ## 禁止
 

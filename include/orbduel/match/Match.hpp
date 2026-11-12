@@ -34,6 +34,13 @@ enum class MatchPhase {
     Finished
 };
 
+// 贯穿（被动技能）：撞上不弹开、直接穿过并刮一次伤害；速度不够时退回普通碰撞。
+struct PierceMod {
+    float damage = 0.0f;    // 穿过一次掉多少血
+    float minSpeed = 0.0f;  // 自身速度 ≥ 它才贯穿
+    float push = 0.0f;      // 穿过时给对手加的速度（沿碰撞法线）
+};
+
 struct Fighter {
     int bodyId = -1;
     const CharacterDef* def = nullptr;
@@ -43,6 +50,7 @@ struct Fighter {
     int combo = 0;
     float comboTimer = 0.0f;
     bool alive = true;
+    PierceMod pierce{};
 };
 
 class Match {

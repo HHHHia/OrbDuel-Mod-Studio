@@ -42,7 +42,7 @@ cmake --build build
 对局内 `ESC` 回主菜单；结算后显示 `RETURNING IN 5...`，期间按 `R` 重开同阵容，5 秒后自动回菜单。
 
 两球自动对撞（当前没有玩家输入）：碰撞本身不掉血（`damageScale = 0`），伤害只来自技能与缩圈；
-Lancer（疾锋）是个橙色瘦长三角，尖角永远朝速度方向；它的 Dash 会原地蓄力 3 秒（越放越短）、沿一条会抖的虚线冲出去撞人；25 秒后开始缩圈，每 10 秒一档一路缩到 0，
+Lancer（疾锋）是个橙色瘦长三角，尖角永远朝速度方向；它的 Dash 会原地蓄力 3 秒（越放越短）、沿一条会抖的虚线冲出去撞人，速度够快时撞上对手不弹开、直接穿过去（贯穿被动）；25 秒后开始缩圈，每 10 秒一档一路缩到 0，
 场地装不下两个球的那一步就按 HP 高者结算；5 秒没有碰撞会触发极弱的「静默吸引」。
 角色名与技能名优先显示中文（读 Windows 系统字体，找不到就退回英文）。
 
@@ -74,7 +74,7 @@ content/characters/lancer/
   "skin":   { "texture": "skin.png", "scale": 1.0 },
   "hitbox": { "shape": "circle", "radius": 24.0 },
   "stats":  { "mass": 1.0, "restitution": 0.95, "maxHp": 100.0, "startSpeed": 420.0 },
-  "skills": ["dash", "lifesteal"]
+  "skills": ["dash", "pierce"]
 }
 ```
 
