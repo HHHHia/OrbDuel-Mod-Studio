@@ -176,6 +176,9 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
             def.charge.releaseSpeed = readFloat(charge, "releaseSpeed", 500.0f);
             def.charge.aimLag = readFloat(charge, "aimLag", 0.3f);
             def.charge.aimJitterDeg = readFloat(charge, "aimJitterDeg", 6.0f);
+            def.charge.aimLagMin = readFloat(charge, "aimLagMin", 0.05f);
+            def.charge.aimJitterMinDeg = readFloat(charge, "aimJitterMinDeg", 0.5f);
+            def.charge.aimLearningCasts = readInt(charge, "aimLearningCasts", 5);
             def.charge.ramDamageScale = readFloat(charge, "ramDamageScale", 0.12f);
         }
 

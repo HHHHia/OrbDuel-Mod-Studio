@@ -31,6 +31,10 @@ struct SkillState {
     float chargeLeft = 0.0f;
     Vec2 aimDir{1.0f, 0.0f};   // 当前锁定方向，已含抖动，虚线与冲出都用它
     float ramLeft = 0.0f;      // > 0 表示「冲出后还能造成一次重击」的窗口
+    float aimNoise = 0.0f;     // 当前抖动角（度）：插值出来的，不是每帧随机
+    float aimNoiseTarget = 0.0f;
+    float aimNoiseTimer = 0.0f;
+    int casts = 0;             // 本局已经放出去几次，索敌精度随它提升
 };
 
 class SkillSystem {
@@ -62,7 +66,8 @@ public:
 private:
     void cast(int slot, Body& self, EventBus& events);
     void release(int slot, Body& self, EventBus& events);
-    Vec2 aimAt(const Body& self, const Body& enemy, const ChargeDef& charge, Rng& rng) const;
+    Vec2 aimAt(const Body& self, const Body& enemy, float aimLag) const;
+    float accuracyOf(const SkillState& state) const;
 
     std::vector<SkillState> states_;
     int bodyId_ = -1;

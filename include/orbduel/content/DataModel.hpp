@@ -118,8 +118,11 @@ struct ChargeDef {
     bool enabled = false;
     float duration = 3.0f;         // 蓄力时长（秒）
     float releaseSpeed = 500.0f;   // 释放瞬间的速度
-    float aimLag = 0.3f;           // 锁定点落后敌人多少秒
-    float aimJitterDeg = 6.0f;     // 每帧锁定方向的随机抖动（度）
+    float aimLag = 0.3f;           // 锁定点落后敌人多少秒（第一次放的时候用）
+    float aimJitterDeg = 6.0f;     // 锁定方向的随机抖动（度，第一次放的时候用）
+    float aimLagMin = 0.05f;       // 放熟之后的下限
+    float aimJitterMinDeg = 0.5f;  // 放熟之后的下限
+    int aimLearningCasts = 5;      // 放几次达到最准
     float ramDamageScale = 0.12f;  // 撞击额外伤害 = scale × 接触瞬间相对速度
 };
 

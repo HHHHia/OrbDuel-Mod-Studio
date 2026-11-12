@@ -16,6 +16,11 @@ namespace {
 // 冲出后还能造成重击的窗口：够穿过一次场地，撞一次就结束
 constexpr float kRamWindow = 1.2f;
 
+// 虚线抖动是低频噪声：每 0.5 s 换一个目标角度，再用 0.35 s 插值过去，
+// 这样线是「慢慢飘」而不是每帧乱跳。
+constexpr float kAimNoiseSeconds = 0.5f;
+constexpr float kAimSmoothSeconds = 0.35f;
+
 } // namespace
 
 SkillSystem::SkillSystem() = default;
@@ -65,8 +70,22 @@ void SkillSystem::update(float dt,
         }
 
         if (state.charging) {
-            // 蓄力中：方向每帧重算（所以虚线一直在追），时间到就冲出去
-            state.aimDir = aimAt(self, enemy, state.def->charge, rng);
+            // 蓄力中：方向每帧重算，但抖动走低频噪声 + 插值，线是「飘」不是「抖」
+            const ChargeDef& charge = state.def->charge;
+            const float progress = accuracyOf(state);
+            const float lag = charge.aimLag + (charge.aimLagMin - charge.aimLag) * progress;
+            const float jitter = charge.aimJitterDeg +
+                                 (charge.aimJitterMinDeg - charge.aimJitterDeg) * progress;
+
+            state.aimNoiseTimer -= dt;
+            if (state.aimNoiseTimer <= 0.0f) {
+                state.aimNoiseTarget = jitter > 0.0f ? rng.range(-jitter, jitter) : 0.0f;
+                state.aimNoiseTimer = kAimNoiseSeconds;
+            }
+            const float blend = clampf(dt / kAimSmoothSeconds, 0.0f, 1.0f);
+            state.aimNoise += (state.aimNoiseTarget - state.aimNoise) * blend;
+
+            state.aimDir = rotated(aimAt(self, enemy, lag), degToRad(state.aimNoise));
             state.chargeLeft -= dt;
             if (state.chargeLeft <= 0.0f) {
                 release(static_cast<int>(i), self, events);
@@ -86,16 +105,25 @@ void SkillSystem::update(float dt,
         // 原地蓄力：只清一次速度，StallGuard 的吸力照样能把它推走（按设计保留）
         state.charging = true;
         state.chargeLeft = std::max(0.1f, state.def->charge.duration);
-        state.aimDir = aimAt(self, enemy, state.def->charge, rng);
+        state.aimNoise = 0.0f;
+        state.aimNoiseTarget = 0.0f;
+        state.aimNoiseTimer = 0.0f;
+        state.aimDir = aimAt(self, enemy, state.def->charge.aimLag);
         self.vel = Vec2{0.0f, 0.0f};
         log::info("charge start: " + state.def->id);
     }
 }
 
-Vec2 SkillSystem::aimAt(const Body& self, const Body& enemy, const ChargeDef& charge, Rng& rng) const {
+// 0 = 第一次放（最不准），1 = 已经放到 aimLearningCasts 次（最准）
+float SkillSystem::accuracyOf(const SkillState& state) const {
+    const int steps = state.def->charge.aimLearningCasts > 0 ? state.def->charge.aimLearningCasts : 1;
+    return clampf(static_cast<float>(state.casts) / static_cast<float>(steps), 0.0f, 1.0f);
+}
+
+Vec2 SkillSystem::aimAt(const Body& self, const Body& enemy, float aimLag) const {
     // shortcut: 用「敌人速度 × 延迟」回推锁定点，不存历史轨迹；敌人撞墙反弹那一下会偏，
     // 观感上正好是「不会百发百中」。要精确复刻轨迹再改成环形缓冲。
-    const Vec2 locked = enemy.pos - enemy.vel * charge.aimLag;
+    const Vec2 locked = enemy.pos - enemy.vel * aimLag;
 
     Vec2 dir = normalized(locked - self.pos);
     if (lengthSq(dir) < 0.5f) {
@@ -103,10 +131,6 @@ Vec2 SkillSystem::aimAt(const Body& self, const Body& enemy, const ChargeDef& ch
     }
     if (lengthSq(dir) < 0.5f) {
         dir = Vec2{1.0f, 0.0f};
-    }
-
-    if (charge.aimJitterDeg > 0.0f) {
-        dir = rotated(dir, degToRad(rng.range(-charge.aimJitterDeg, charge.aimJitterDeg)));
     }
     return dir;
 }
@@ -116,6 +140,7 @@ void SkillSystem::release(int slot, Body& self, EventBus& events) {
     state.charging = false;
     state.ramLeft = kRamWindow;
     self.vel = state.aimDir * state.def->charge.releaseSpeed;
+    state.casts += 1;   // 放出去一次，下一次锁得更准
     log::info("charge release: " + state.def->id);
     // 冲出也算一次施放：冷却、事件、vfx 都走同一条路
     cast(slot, self, events);

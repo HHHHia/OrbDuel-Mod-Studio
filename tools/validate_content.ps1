@@ -134,7 +134,20 @@ if (Test-Path $SkillDir) {
             InRange $charge 'releaseSpeed' 50 2000 $src
             InRange $charge 'aimLag' 0.0 2.0 $src
             InRange $charge 'aimJitterDeg' 0.0 45 $src
+            InRange $charge 'aimLagMin' 0.0 2.0 $src
+            InRange $charge 'aimJitterMinDeg' 0.0 45 $src
+            InRange $charge 'aimLearningCasts' 1 50 $src
             InRange $charge 'ramDamageScale' 0.0 5.0 $src
+            $lagMin = Prop $charge 'aimLagMin'
+            $lagMax = Prop $charge 'aimLag'
+            if ($null -ne $lagMin -and $null -ne $lagMax -and [double]$lagMin -gt [double]$lagMax) {
+                Fail $src "aimLagMin 不能大于 aimLag（否则越放越不准）"
+            }
+            $jitMin = Prop $charge 'aimJitterMinDeg'
+            $jitMax = Prop $charge 'aimJitterDeg'
+            if ($null -ne $jitMin -and $null -ne $jitMax -and [double]$jitMin -gt [double]$jitMax) {
+                Fail $src "aimJitterMinDeg 不能大于 aimJitterDeg（否则越放越不准）"
+            }
         }
 
         # 蓄力技能靠 charge 生效，可以没有 modifiers
