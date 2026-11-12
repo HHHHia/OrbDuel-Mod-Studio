@@ -55,6 +55,7 @@ std::string hpText(const Fighter& fighter) {
 
 // 技能名飘字：施放瞬间弹在球上方，上浮 + 淡出
 struct CastText {
+    int bodyId = -1;   // 跟着球走，否则冲刺一冲出去字就留在原地了
     Vec2 pos{};
     std::string text;
     float age = 0.0f;
@@ -149,7 +150,7 @@ int Game::run(const Options& options) {
             if (slot < 0 || slot >= static_cast<int>(states.size()) || states[static_cast<std::size_t>(slot)].def == nullptr) {
                 return;
             }
-            castTexts.push_back(CastText{event.pos, states[static_cast<std::size_t>(slot)].def->name.en, 0.0f});
+            castTexts.push_back(CastText{event.a, event.pos, states[static_cast<std::size_t>(slot)].def->name.en, 0.0f});
             return;
         }
     });
@@ -367,10 +368,12 @@ int Game::run(const Options& options) {
             for (const CastText& cast : castTexts) {
                 const float k = clampf(cast.age / kCastTextSeconds, 0.0f, 1.0f);
                 const Rgba color{255, 235, 150, static_cast<unsigned char>((1.0f - k) * 255.0f)};
+                const Body* body = world.body(cast.bodyId);
+                const Vec2 anchor = body != nullptr ? body->pos : cast.pos;
                 const int width = renderer.measureText(cast.text, 8);
                 renderer.drawText(cast.text,
-                                  Vec2{cast.pos.x - static_cast<float>(width) * 0.5f,
-                                       cast.pos.y - 56.0f - k * 20.0f},
+                                  Vec2{anchor.x - static_cast<float>(width) * 0.5f,
+                                       anchor.y - 56.0f - k * 20.0f},
                                   8, color);
             }
 
