@@ -59,6 +59,17 @@
 
 ![screenshot](screenshot.png)
 
+## 验证记录（2026-11-13，改名 Lancer + 三角形 + 贯穿 + 中英切换）
+
+| 项 | 结果 | 备注 |
+|---|---|---|
+| 全量源码编译（21 个 `.cpp`） | ✅ | `-Wall -Wextra` 零警告 |
+| `tools/validate_content.ps1` | ✅ | `2 characters, 5 skills, 1 maps` |
+| 贯穿自检 `build-verify/pierce_probe.exe` | ✅ | 8 项全过：500 速穿过不反弹 / 一次穿过只发一次 `Hit` / 对手被推 120 / 只掉 8 血 / 自己不掉血；120 速退回普通碰撞（弹回、不掉血） |
+| `--headless --seconds 130` | ✅ | 64 s 结算（改前 107 s，贯穿伤害生效），无崩溃 |
+| 三角形外观 + 尖角对齐虚线 | ✅ | 截图验收：橙色瘦长三角，蓄力时尖角与虚线同向，虚线从尖角出发 |
+| 中英切换 | ✅ | 默认英文（Bulwark/Lancer、Shield/Slow Field/Dash/Pierce）；`--lang zh` 显示磐石/疾锋、护盾/减速力场/冲刺/贯穿 |
+
 ## 验证记录（2026-11-13，蓄力冲刺 + 缩圈到 0）
 
 | 项 | 结果 | 备注 |
