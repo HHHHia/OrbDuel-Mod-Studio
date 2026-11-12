@@ -12,7 +12,7 @@
     "damageMax": 24.0,
     "growthSeconds": 90.0,
     "dpsEdge": 1.0,
-    "dpsCenter": 3.0,
+    "dpsCenter": 8.0,
     "tickInterval": 0.5,
     "teleportGuard": 1.5,
     "teleportMinDist": 240.0
