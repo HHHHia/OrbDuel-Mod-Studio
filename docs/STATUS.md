@@ -39,9 +39,10 @@
 .\build\bin\orbduel.exe                 # 开主菜单（点开始游戏 / 按 Enter 进对局）
 .\build\bin\orbduel.exe --no-menu       # 跳过菜单直接开局
 .\build\bin\orbduel.exe --seed 42       # 固定随机种子，可复现
-.\build\bin\orbduel.exe --char lancer --enemy bulwark --map duel-basic   # 参数只做菜单预选
+.\build\bin\orbduel.exe --char lancer --enemy singularity --map duel-basic   # 参数只做菜单预选
 .\build\bin\orbduel.exe --seconds 10    # 跑 10 秒自动退出
 .\build\bin\orbduel.exe --screenshot out.png   # 第 2 秒截图后退出（在菜单里就截菜单）
+.\build\bin\orbduel.exe --screenshot late.png --shot-at 12   # 第 12 秒截图（看得到大招爆炸）
 .\build\bin\orbduel.exe --lang zh       # 角色/技能名显示中文（默认英文）
 ```
 
@@ -51,6 +52,12 @@
 - Lancer 是橙色瘦长三角（`skin.shape: "triangle"`，**碰撞仍是半径 24 的圆**）：尖角朝速度方向、转向限速 20 rad/s，蓄力时精确对齐虚线，虚线从尖角出发；主菜单头像用的是同一套画法；
 - Lancer 的第二个技能是被动「贯穿」（`content/skills/pierce.json`，`trigger.kind = "passive"`）：自身速度 ≥ 200 时撞到对手**不弹开**，直接穿过、扣 8 血，并把对手沿法线推开 120；一次穿过只结算一次；速度不够时（比如原地蓄力）退回普通碰撞，该弹还弹、该打断还打断；
 - Dash 会**越放越强**（本局累计，重开一局重学）：虚线是「慢慢飘」的（每步约 0.08°），索敌第 5 次最准（延迟 0.3 s → 0.05 s、抖动 6° → 0.5°），蓄力时间第 10 次归零（3 s → 0 s，瞬发），第 15 次起**打不断**；
+- **黑洞（Singularity）**取代原磐石（`content/characters/singularity/`，`hitbox.ghost = true`）：对手能直接穿进它身体，撞击伤害照算；
+- 黑洞被动「吸引」（`content/skills/gravity-well.json`）：280 范围内给对手 460 的向心加速度（保留切向速度，所以会绕着转），
+  对手中心进到 0.72 × 30 = 21.6 以内就判中心伤害（6 → 20 血，随对局时间 60 s 长满），然后把它**随机传送**到场地内任意站得住的位置（离黑洞 ≥ 240，1.5 s 内不重复）；
+- 黑洞大招「万向天引」（`content/skills/omnipull.json`）：冷却到点自动放，范围吸力 2 s（半径 220，加速度 1100），吸完原地爆炸 22 血；
+  期间自己无敌、被动失效；炸完才进冷却。半径/时长/伤害/冷却按施放次数线性成长，第 5 次长满（半径 380、吸 5 s、伤害 55、冷却 5 s）；
+- 新增 **木人桩（Wooden Dummy）**：磐石留下的陪练，1000 血、没有任何技能；
 - 任何技能施放时球上方弹出技能英文名，0.9 s 上浮淡出；
 - 25 秒后开始缩圈（每 10 s 一档，每档 10%，带 1 秒预警），场地一路缩到 0；装不下两个球的那一步立即结算，**HP 高者胜**，同 HP 平局；
 - 5 秒没碰撞会触发「静默吸引」，球会缓慢靠近（肉眼几乎看不出）；
@@ -58,6 +65,17 @@
 - 对局中 `ESC` 回主菜单（**ESC 不再退出进程**）；退出只能在菜单里点 `QUIT GAME` → `YES`。
 
 ![screenshot](screenshot.png)
+
+## 验证记录（2026-11-13，黑洞 + 木人桩）
+
+| 项 | 结果 | 备注 |
+|---|---|---|
+| 全量源码编译（21 个 `.cpp`） | ✅ | `-Wall -Wextra` 零警告 |
+| `tools/validate_content.ps1` | ✅ | `3 characters, 7 skills, 1 maps` |
+| 黑洞自检 `build-verify/gravity_probe.exe` | ✅ | 18 项全过：引力拖进核心 / 掉 6 血 / 传送 ≥ 220 且落在场地内 / 1.5 s 保护期 / 穿透不弹开但 `Hit` 照发（双方都吃撞击伤害）/ 无敌期间扣血无效 / 吸的时候被动失效 / 炸完冷却 10 s / 第 5 次半径 300、伤害 50、冷却 0.5（探针压缩过时长） |
+| `--headless --seconds 130` | ✅ | 48 s 结算：Lancer 死亡，黑洞 128/160；无崩溃（改前 64 s 结算） |
+| 主菜单三人可选 | ✅ | 截图：Lancer / Singularity / Wooden Dummy 三张卡都能切 |
+| 万向天引吸力圈 + 爆炸 | ✅ | 截图：`T 10` 吸力圈半径 220；`T 12` 爆炸环 + 粒子 |
 
 ## 验证记录（2026-11-13，改名 Lancer + 三角形 + 贯穿 + 中英切换）
 
@@ -118,8 +136,9 @@
 
 ## 已知缺口
 
-- 技能里只有「蓄力冲刺」和 `add_speed` 真的生效，其余原语是空的（会在日志里提示一次）。
-- **Bulwark 目前没有任何伤害来源**：碰撞伤害已关，它的护盾 / 减速都还没实现，只能等缩圈把对手耗死。
+- 技能里只有「蓄力冲刺」「贯穿」「引力井」「万向天引」和 `add_speed` 真的生效，其余原语是空的（会在日志里提示一次）。
+- **木人桩没有任何伤害来源**（本来就是陪练）：没技能、不会主动打人，只有撞击伤害（而 `duel-basic` 的 `damageScale = 0`，实际为 0）。
+- 黑洞在 `duel-basic` 上几乎不掉血：碰撞伤害被关掉后，只有 Lancer 的冲刺重击能打到它（实测 12 s 内被打掉 134 血）。
 - 冲刺一次大约 60–100 伤害（0.12 × 相对速度），两下就能打死 140 HP 的对手——数值还没调。
 - 没有热重载；改 JSON 要重启。
 - 缩圈边界压到球的持续伤害（`damagePerSec`）仍未接。

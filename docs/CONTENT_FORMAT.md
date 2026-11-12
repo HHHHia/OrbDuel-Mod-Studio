@@ -51,6 +51,7 @@ content/
 | `hitbox.shape` | string | ✔ | `"circle"` | v1 只支持圆 |
 | `hitbox.radius` | float | ✔ | 6–120 | 运动碰撞半径 |
 | `hitbox.offset` | float[2] | ✘ | ±40 | 相对贴图中心的偏移 |
+| `hitbox.ghost` | bool | ✘ | 默认 `false` | `true` = 对手可以直接穿进身体（黑洞）；不做分离也不推人，但撞击伤害照算 |
 | `stats.mass` | float | ✔ | 0.2–20 | 质量，影响碰撞后的速度分配 |
 | `stats.restitution` | float | ✔ | 0–1 | 恢复系数（弹性） |
 | `stats.maxHp` | float | ✔ | 10–10000 | 最大生命 |
@@ -181,6 +182,63 @@ content/
 开局读一次，之后每一步看速度：自身速度 ≥ `minSpeed` 就贯穿——撞上对手不分离、不换速度，
 穿过时扣对手 `value` 血，并把对手沿法线推开 `push`。**一次穿过只扣一次血**（物理层按配对去重）。
 速度不够时（例如原地蓄力，速度是 0）退回普通碰撞：该弹还弹、蓄力该打断还打断。
+
+### 2.7 gravity（被动 / 引力井）
+
+`content/skills/gravity-well.json` 是唯一例子。有 `gravity` 块时 `modifiers` 可以为空。
+它不靠撞击生效，而是**每步**给范围内的对手加一个向心加速度：
+
+```json
+"trigger": { "kind": "passive" },
+"gravity": {
+  "range": 280.0, "accel": 460.0, "coreFactor": 0.72,
+  "damage": 6.0, "damageMax": 20.0, "damageRamp": 60.0,
+  "tickInterval": 0.5, "teleportGuard": 1.5, "teleportMinDist": 240.0
+}
+```
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `range` | float 1–2000 | 吸力生效半径；出去就不拉 |
+| `accel` | float 0–6000 | 向心加速度（px/s²）。保留对方切向速度 → 会绕着你转，而不是直线撞上来 |
+| `coreFactor` | float (0,1] | 核心半径 = 本值 × 自己 `hitbox.radius`；进核心才算「中心伤害」 |
+| `damage` | float 0–500 | 第一次中心伤害 |
+| `damageMax` | float 0–500 | 伤害上限；按 `elapsed / damageRamp` 线性长到它（不能小于 `damage`） |
+| `damageRamp` | float 0.1–600 | 多少秒长到 `damageMax` |
+| `tickInterval` | float (0,10] | 核心内两次伤害的最小间隔 |
+| `teleportGuard` | float 0–30 | 被传送走之后的保护期，期间不再吃中心伤害 |
+| `teleportMinDist` | float 0–3000 | 落点离黑洞至少多远（防止刚传走就被吸回去） |
+
+中心伤害之后对手会被随机丢到一个「站得住」的位置：在场地内、不压任何障碍、离黑洞 ≥ `teleportMinDist`。
+采样 64 次都找不到就原地不动——宁可没传送，也不会把球塞进墙里。
+配合 `hitbox.ghost` 才有「吞进去」的观感：不 ghost 时对手根本进不到核心圈。
+
+### 2.8 omnipull（大招 / 万向天引）
+
+```json
+"trigger": { "kind": "cooldown", "cooldown": 10.0 },
+"omnipull": {
+  "rangeFrom": 220.0, "rangeTo": 380.0, "accel": 1100.0,
+  "durationFrom": 2.0, "durationTo": 5.0,
+  "damageFrom": 22.0, "damageTo": 55.0,
+  "cooldownFrom": 10.0, "cooldownTo": 5.0,
+  "castsToMax": 5, "invincible": true, "suppressPassive": true
+}
+```
+
+冷却到点后开始吸：范围内持续给对手加速度 → 吸 `duration` 秒 → **原地爆炸**（半径 = 本次吸力半径，命中范围内对手）
+→ 这时才进冷却。期间自己无敌、被动失效。四个量按「本局已经放过几次」线性成长，**第 `castsToMax` 次就长满**：
+
+| 字段 | 说明 |
+|---|---|
+| `rangeFrom` → `rangeTo` | 吸力/爆炸半径 |
+| `durationFrom` → `durationTo` | 吸多久才炸 |
+| `damageFrom` → `damageTo` | 爆炸伤害 |
+| `cooldownFrom` → `cooldownTo` | 炸完的冷却（不能大于 `cooldownFrom`，否则越放越慢） |
+| `accel` | 吸力加速度，不成长 |
+| `castsToMax` | 放几次长满（第 1 次 = `*From`，第 `castsToMax` 次 = `*To`） |
+| `invincible` | 吸的过程中免伤害（默认 `true`） |
+| `suppressPassive` | 吸的过程中自己的被动失效（默认 `true`） |
 
 ---
 
