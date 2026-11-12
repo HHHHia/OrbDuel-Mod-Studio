@@ -97,8 +97,8 @@ void World::step(float dt) {
 
             // 贯穿体：不分离、不换速度；对方只在「刚撞上」的那一步被推开一次。
             // 重叠期间会连续命中同一个配对，所以用 phaseContacts_ 记住「这一趟已经算过」。
-            const bool aPhases = a.phasePush > 0.0f;
-            const bool bPhases = b.phasePush > 0.0f;
+            const bool aPhases = a.ghost || a.phasePush > 0.0f;
+            const bool bPhases = b.ghost || b.phasePush > 0.0f;
             if (aPhases || bPhases) {
                 const int low = std::min(a.id, b.id);
                 const int high = std::max(a.id, b.id);
@@ -109,7 +109,10 @@ void World::step(float dt) {
                 if (!firstTouch || closing <= 0.0f) {
                     continue;
                 }
-                if (aPhases && !bPhases) {
+                // 黑洞（ghost）：谁都不弹、谁都不推，只是穿过去
+                if (a.ghost || b.ghost) {
+                    // 不推
+                } else if (aPhases && !bPhases) {
                     b.vel += contact.normal * a.phasePush;
                 } else if (bPhases && !aPhases) {
                     a.vel -= contact.normal * b.phasePush;

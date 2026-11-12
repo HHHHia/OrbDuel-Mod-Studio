@@ -19,7 +19,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `physics/Body.hpp` | `Body{ id, pos, vel, radius, mass, invMass, restitution, phasePush }` |
+| `physics/Body.hpp` | `Body{ id, pos, vel, radius, mass, invMass, restitution, phasePush, ghost }` |
 | `physics/Collision.hpp` | `Contact`、`collideCircles`、`resolveCircleCircle`、`resolveCircleRect`、`resolveCircleCircleStatic` |
 | `physics/Arena.hpp` | `Arena::bounds()`、`setShrinkTarget()`、`update()`、`resolveOverlaps()`、`obstacles()` |
 | `physics/World.hpp` | `World(EventBus&, Arena&)`、`addBody`、`step(dt)`、`bodies()` |
@@ -36,6 +36,8 @@
 8. `Body.phasePush > 0` 的球**不做球-球分离**：穿过对方，只在刚接触那一步沿法线给对方加 `phasePush` 速度；
    同一个配对的连续重叠只算一次（`World` 内部按 id 配对去重，分开一步即清除）。谁开这个开关由 `match` 每步决定。
 9. `phasePush` 不影响障碍与墙：贯穿只作用于球-球。
+10. `Body.ghost == true` 的球同样**不做球-球分离**，但也不推人（`phasePush` 的「推开」那一步跳过）；
+    `Hit` 事件照发（只算刚接触那一步），所以穿透不是「隐身」，撞击伤害对双方都成立。
 
 ## 禁止
 
