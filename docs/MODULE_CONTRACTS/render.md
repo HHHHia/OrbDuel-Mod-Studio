@@ -19,7 +19,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `render/Renderer.hpp` | `init/shutdown/beginFrame/endFrame`、`pumpEvents`、`wasKeyPressed`、`mousePosition`、`wasMouseClicked`、`shouldClose`、`drawSprite`、`drawCircle`、`drawRing`、`drawLine`、`drawText`、`saveScreenshot`、`width/height` |
+| `render/Renderer.hpp` | `init/shutdown/beginFrame/endFrame`、`pumpEvents`、`wasKeyPressed`、`mousePosition`、`wasMouseClicked`、`shouldClose`、`drawSprite`、`drawCircle`、`drawRing`、`drawLine`、`drawConvexPoly`、`drawText`、`saveScreenshot`、`width/height` |
 | `render/AssetCache.hpp` | `texture(path)`、`reload(path)`、`reloadAll()`、`errors()` |
 | `render/Fx.hpp` | `bind(EventBus&)`、`update(dt)`、`draw(Renderer&)`、`shake()`、`requestHitStop()` |
 | `render/DebugDraw.hpp` | `toggle(layer)`、`draw(Renderer&, const World&, const Match&)` |
@@ -33,6 +33,7 @@
 5. 所有绘制调用必须在 `beginFrame` / `endFrame` 之间。
 6. 输入状态（按下的键、鼠标位置、本帧是否点击）由 `pumpEvents()` 每帧刷新，**只反映当前帧**；不调用就等于没有输入。
 7. 鼠标坐标是窗口坐标（左上原点），不做 DPI / 缩放换算；命中检测由调用方（`game/Menu`）负责。
+8. `drawConvexPoly` 的顶点是**世界坐标**，必须凸、不自交；渲染器不做三角化检查，顶点由调用方（`game/BodyShape.hpp`）算好。
 
 ## 禁止
 

@@ -58,6 +58,10 @@ public:
     void drawRect(Rect rect, Rgba color);
     void drawRectLines(Rect rect, float thickness, Rgba color);
 
+    // 填充凸多边形，points 是世界坐标顶点（不自交），count >= 3。
+    // 给程序化皮肤用：形状由数据决定，坐标由 game 算好。
+    void drawConvexPoly(const Vec2* points, int count, Rgba color);
+
     // rotationDeg 顺时针为正；scale 只影响绘制尺寸，不影响碰撞。
     void drawSprite(SDL_Texture* texture, Vec2 center, float rotationDeg, float scale, Rgba tint);
 

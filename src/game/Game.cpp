@@ -3,9 +3,11 @@
 #include <SDL.h>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <string>
 
+#include "BodyShape.hpp"
 #include "orbduel/content/ContentLoader.hpp"
 #include "orbduel/core/Event.hpp"
 #include "orbduel/core/Log.hpp"
@@ -33,6 +35,11 @@ constexpr Rgba kHudDim{150, 160, 190, 255};
 
 // 结算后多久自动回主菜单（秒）
 constexpr float kReturnToMenuSeconds = 5.0f;
+
+// 朝向平滑：每秒最多转这么多弧度，撞墙反弹时才不会 180° 瞬闪
+constexpr float kFacingTurnRate = 20.0f;
+// 低于这个速度就不改朝向（atan2(0,0) 会把角度拽向 0）
+constexpr float kFacingSpeedThreshold = 40.0f;
 
 void drawHpBar(Renderer& renderer, Rect area, float ratio, Rgba fillColor, bool mirror) {
     renderer.drawRect(area, kHudBack);
@@ -140,6 +147,8 @@ int Game::run(const Options& options) {
 
     // 技能名飘字：Match 只发事件，文字内容在这里查（技能名在 SkillDef 里）
     std::vector<CastText> castTexts;
+    // 每个球的绘制朝向（弧度），只影响渲染，不参与物理
+    std::array<float, 2> bodyAngle{0.0f, 0.0f};
     events.subscribe(EventType::SkillCast, [&match, &castTexts](const Event& event) {
         const int slot = static_cast<int>(event.value);
         for (int i = 0; i < 2; ++i) {
@@ -159,6 +168,10 @@ int Game::run(const Options& options) {
         match.setup(*left, *right, *map, pack, rng);
         match.start();
         fx.clear();
+        for (int i = 0; i < 2; ++i) {
+            const Body* body = world.body(match.fighter(i).bodyId);
+            bodyAngle[static_cast<std::size_t>(i)] = body != nullptr ? angleOf(body->vel) : 0.0f;
+        }
     };
     setupMatch();
 
@@ -313,19 +326,51 @@ int Game::run(const Options& options) {
                 }
             }
 
-            // 蓄力虚线：指向延迟后的锁定点，抖动让落点没法完全预判
+            // 朝向：蓄力时尖角精确对着虚线（不平滑，否则和线错开）；其余时间朝速度方向。
             for (int i = 0; i < 2; ++i) {
                 const Body* body = world.body(match.fighter(i).bodyId);
                 if (body == nullptr) {
                     continue;
                 }
+                const std::size_t slot = static_cast<std::size_t>(i);
+                bool charging = false;
+                for (const SkillState& state : match.skills(i).states()) {
+                    if (!state.charging) {
+                        continue;
+                    }
+                    bodyAngle[slot] = angleOf(state.aimDir);
+                    charging = true;
+                    break;
+                }
+                if (charging || lengthOf(body->vel) < kFacingSpeedThreshold) {
+                    continue;
+                }
+                float delta = angleOf(body->vel) - bodyAngle[slot];
+                while (delta > kPi) {
+                    delta -= 2.0f * kPi;
+                }
+                while (delta < -kPi) {
+                    delta += 2.0f * kPi;
+                }
+                bodyAngle[slot] += clampf(delta, -kFacingTurnRate * frameSeconds,
+                                          kFacingTurnRate * frameSeconds);
+            }
+
+            // 蓄力虚线：从尖角出发，指向延迟后的锁定点，抖动让落点没法完全预判
+            for (int i = 0; i < 2; ++i) {
+                const Body* body = world.body(match.fighter(i).bodyId);
+                const CharacterDef* self = match.fighter(i).def;
+                if (body == nullptr || self == nullptr) {
+                    continue;
+                }
+                const float tip = skinTipDistance(self->skin, body->radius);
                 for (const SkillState& state : match.skills(i).states()) {
                     if (!state.charging) {
                         continue;
                     }
                     for (float d = 0.0f; d < 460.0f; d += 22.0f) {
-                        renderer.drawLine(body->pos + state.aimDir * d,
-                                          body->pos + state.aimDir * (d + 12.0f), 2.0f,
+                        renderer.drawLine(body->pos + state.aimDir * (tip + d),
+                                          body->pos + state.aimDir * (tip + d + 12.0f), 2.0f,
                                           Rgba{255, 215, 120, 170});
                     }
                 }
@@ -335,6 +380,21 @@ int Game::run(const Options& options) {
                 const Fighter& fighter = match.fighter(i);
                 const Body* body = world.body(fighter.bodyId);
                 if (body == nullptr || !body->active || fighter.def == nullptr) {
+                    continue;
+                }
+
+                // 同角色互打时右侧整体偏蓝，否则两个一模一样的球分不清
+                Rgba tint = fighter.def->skin.tint;
+                if (i == 1 && left->id == right->id) {
+                    tint.r = static_cast<unsigned char>(tint.r * 140 / 255);
+                    tint.g = static_cast<unsigned char>(tint.g * 190 / 255);
+                }
+
+                const std::size_t slot = static_cast<std::size_t>(i);
+
+                // 程序化皮肤（三角形等）不读贴图
+                if (drawShapeSkin(renderer, fighter.def->skin, body->pos, body->radius,
+                                  bodyAngle[slot], tint)) {
                     continue;
                 }
 
@@ -352,15 +412,7 @@ int Game::run(const Options& options) {
                 const float scale = (body->radius * 2.0f * fighter.def->skin.scale) /
                                     static_cast<float>(std::max(1, texWidth));
 
-                // 同角色互打时右侧整体偏蓝，否则两个一模一样的球分不清
-                Rgba tint = fighter.def->skin.tint;
-                if (i == 1 && left->id == right->id) {
-                    tint.r = static_cast<unsigned char>(tint.r * 140 / 255);
-                    tint.g = static_cast<unsigned char>(tint.g * 190 / 255);
-                }
-
-                const float angle = radToDeg(std::atan2(body->vel.y, body->vel.x));
-                renderer.drawSprite(texture, body->pos, angle, scale, tint);
+                renderer.drawSprite(texture, body->pos, radToDeg(bodyAngle[slot]), scale, tint);
             }
 
             fx.draw(renderer);

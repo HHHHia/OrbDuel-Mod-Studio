@@ -268,6 +268,7 @@ void loadCharacters(const fs::path& dir, ContentPack& pack, std::vector<LoadIssu
         if (root.contains("skin") && root["skin"].is_object()) {
             const json& skin = root["skin"];
             def.skin.texture = readString(skin, "texture", "skin.png");
+            def.skin.shape = readString(skin, "shape", "sprite");
             def.skin.scale = readFloat(skin, "scale", 1.0f);
             def.skin.anchor = readVec2(skin, "anchor", Vec2{0.5f, 0.5f});
             def.skin.tint = readRgba(skin, "tint", Rgba{255, 255, 255, 255});
@@ -297,6 +298,11 @@ void loadCharacters(const fs::path& dir, ContentPack& pack, std::vector<LoadIssu
 
         if (def.hitbox.radius < 6.0f) {
             addIssue(issues, IssueSeverity::Error, source, "hitbox.radius 太小");
+            continue;
+        }
+        if (def.skin.shape != "sprite" && def.skin.shape != "triangle") {
+            addIssue(issues, IssueSeverity::Error, source,
+                     "skin.shape 只能是 sprite 或 triangle");
             continue;
         }
         if (!fs::is_regular_file(folder / def.skin.texture, ec)) {

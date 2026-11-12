@@ -23,6 +23,7 @@
       "required": ["texture"],
       "properties": {
         "texture": { "type": "string", "minLength": 1 },
+        "shape": { "type": "string", "enum": ["sprite", "triangle"] },
         "scale": { "type": "number", "minimum": 0.1, "maximum": 8 },
         "anchor": {
           "type": "array",

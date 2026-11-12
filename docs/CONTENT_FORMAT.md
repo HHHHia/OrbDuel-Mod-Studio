@@ -31,7 +31,7 @@ content/
   "format": 1,
   "id": "lancer",
   "name": { "en": "Lancer", "zh": "疾锋" },
-  "skin": { "texture": "skin.png", "scale": 1.0, "tint": [255, 255, 255, 255] },
+  "skin": { "texture": "skin.png", "shape": "sprite", "scale": 1.0, "tint": [255, 255, 255, 255] },
   "hitbox": { "shape": "circle", "radius": 18.0, "offset": [0, 0] },
   "stats": { "mass": 1.0, "restitution": 0.95, "maxHp": 100.0, "startSpeed": 420.0 },
   "skills": ["dash", "lifesteal"]
@@ -45,6 +45,7 @@ content/
 | `name.en` | string | ✔ | 1–32 字符 | 显示名 |
 | `name.zh` | string | ✘ | 1–16 字符 | 缺省回退 `name.en` |
 | `skin.texture` | string | ✔ | 相对本目录的文件名 | PNG，建议 256×256 |
+| `skin.shape` | string | ✘ | `"sprite"`（默认）\| `"triangle"` | `sprite` 画贴图；`triangle` 不读贴图，直接画瘦长三角 |
 | `skin.scale` | float | ✘ | 0.1–8 | 默认 1.0；**只影响绘制，不影响碰撞** |
 | `skin.tint` | int[4] | ✘ | 0–255 | 乘算染色，默认白色 |
 | `hitbox.shape` | string | ✔ | `"circle"` | v1 只支持圆 |
@@ -59,6 +60,11 @@ content/
 **皮肤与碰撞箱的关系**（你最初问的那个点）：
 贴图只是外观；`hitbox.radius` 是运动碰撞；以后加"像素伤害掩码"时，
 `hitbox` 仍是运动圆，掩码只管"打没打中"，两者互不影响。
+
+`skin.shape = "triangle"` 同理：**碰撞仍是那个圆**，三角形只决定画出来的轮廓。
+尖角朝向 = 速度方向（蓄力时精确指向蓄力虚线，虚线从尖角出发）；
+比例写死在 `src/game/BodyShape.hpp`（尖端 1.35×半径、尾部半宽 0.72×半径），
+`skin.tint` 是填充色，描边自动亮一档。想加新形状就在这里加一个分支 + 一个 `shape` 值。
 
 ---
 

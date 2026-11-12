@@ -209,6 +209,10 @@ if (Test-Path $CharDir) {
             elseif (-not (Test-Path (Join-Path $_.FullName $tex))) { Fail $src ("贴图不存在: " + $tex) }
             InRange $skin 'scale' 0.1 8 $src
             CheckColor $skin 'tint' $src
+            $shape = Prop $skin 'shape'
+            if ($null -ne $shape -and $shape -notin @('sprite', 'triangle')) {
+                Fail $src ("skin.shape 只能是 sprite 或 triangle: " + $shape)
+            }
         }
 
         $hitbox = Prop $d 'hitbox'

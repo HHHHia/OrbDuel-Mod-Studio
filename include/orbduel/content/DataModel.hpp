@@ -20,6 +20,7 @@ struct LocalizedText {
 
 struct SkinDef {
     std::string texture;          // 相对角色目录
+    std::string shape = "sprite"; // "sprite" 画贴图 | "triangle" 程序化皮肤
     float scale = 1.0f;           // 只影响绘制
     Vec2 anchor{0.5f, 0.5f};      // 归一化锚点
     Rgba tint{255, 255, 255, 255};

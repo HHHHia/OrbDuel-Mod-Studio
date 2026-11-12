@@ -232,6 +232,26 @@ void Renderer::drawRectLines(Rect rect, float thickness, Rgba color) {
     drawLine(bottomLeft, topLeft, thickness, color);
 }
 
+void Renderer::drawConvexPoly(const Vec2* points, int count, Rgba color) {
+    if (renderer_ == nullptr || points == nullptr || count < 3) {
+        return;
+    }
+    // 凸多边形从 0 号顶点扇形三角化，正好 count-2 个三角形
+    const SDL_Color c = toSdl(color);
+    std::vector<SDL_Vertex> vertices;
+    vertices.reserve(static_cast<std::size_t>(count - 2) * 3);
+    for (int i = 1; i + 1 < count; ++i) {
+        for (const Vec2& p : {points[0], points[i], points[i + 1]}) {
+            SDL_Vertex vertex{};
+            vertex.position = SDL_FPoint{p.x, p.y};
+            vertex.color = c;
+            vertices.push_back(vertex);
+        }
+    }
+    SDL_RenderGeometry(renderer_, nullptr, vertices.data(), static_cast<int>(vertices.size()),
+                       nullptr, 0);
+}
+
 void Renderer::drawSprite(SDL_Texture* texture, Vec2 center, float rotationDeg, float scale, Rgba tint) {
     if (texture == nullptr || scale <= 0.0f) {
         return;

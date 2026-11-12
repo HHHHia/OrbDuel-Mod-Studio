@@ -8,6 +8,8 @@
 #include <cstdio>
 #include <string>
 
+#include "BodyShape.hpp"
+
 namespace orbduel {
 namespace {
 
@@ -133,16 +135,19 @@ void drawCharacterCard(Renderer& renderer, AssetCache& assets, const ContentPack
 
     drawCentered(renderer, slot, card.center().x, card.y + 16.0f, 8, accent);
 
-    const std::string path = contentRoot + "/" + def.sourceDir + "/" + def.skin.texture;
-    SDL_Texture* texture = assets.get(path);
-    if (texture != nullptr) {
-        int textureWidth = 1;
-        int textureHeight = 1;
-        SDL_QueryTexture(texture, nullptr, nullptr, &textureWidth, &textureHeight);
-        const float scale = (avatarRadius * 2.0f) / static_cast<float>(std::max(1, textureWidth));
-        renderer.drawSprite(texture, avatar, 0.0f, scale, def.skin.tint);
-    } else {
-        renderer.drawCircle(avatar, avatarRadius, accent);
+    // 程序化皮肤（三角形等）不读贴图；菜单里朝向固定朝右
+    if (!drawShapeSkin(renderer, def.skin, avatar, avatarRadius, 0.0f, def.skin.tint)) {
+        const std::string path = contentRoot + "/" + def.sourceDir + "/" + def.skin.texture;
+        SDL_Texture* texture = assets.get(path);
+        if (texture != nullptr) {
+            int textureWidth = 1;
+            int textureHeight = 1;
+            SDL_QueryTexture(texture, nullptr, nullptr, &textureWidth, &textureHeight);
+            const float scale = (avatarRadius * 2.0f) / static_cast<float>(std::max(1, textureWidth));
+            renderer.drawSprite(texture, avatar, 0.0f, scale, def.skin.tint);
+        } else {
+            renderer.drawCircle(avatar, avatarRadius, accent);
+        }
     }
 
     const std::string name = def.name.en.empty() ? def.id : def.name.en;
