@@ -115,7 +115,6 @@ content ──→ core
 
 - **同向同速 = 永不碰撞**。两球无重力、同速平行时能一直不接触。任何改物理的改动都要跑长跑回归（`--headless --seconds 60`；`--autotest` 尚未实现）。
 - **改 `Arena` 尺寸必须走 `setShrinkTarget()`**，不要直接改 `bounds`；否则球会卡在墙外。
-- **热重载失败不能崩**：`ContentLoader` 加载失败时保留旧包，错误写进屏幕控制台。
 - **不要给 `Body` 加游戏字段**（HP 放 `Match` 的 `Fighter` 里）。`physics` 要能被单独复用。
 - SDL2 是**动态链接**：`SDL2.dll` / `SDL2_image.dll` / `SDL2_ttf.dll` 必须和 exe 同目录（CMake 会自动拷）。删了 DLL 会直接起不来。
 - 提交前确认没有把 `build/`、`.vs/`、`*.pdb` 带进 git。

@@ -82,7 +82,8 @@ content/
 1. 扫描三个目录 → 读 JSON → 结构校验（字段、类型、范围）
 2. 交叉校验（角色引用的技能 id 必须存在；贴图文件必须存在）
 3. 构建 `ContentPack`（角色表、技能表、地图表）
-4. **任何一条失败都不崩**：记 `LoadIssue{severity, packId, message}`，坏包不加载，旧包保留
+4. **任何一条失败都不崩**：记 `LoadIssue{severity, packId, message}`，坏包不加载；
+   `loadAll()` 会先清空旧包，所以失败就是失败——「保留旧版本」要等热重载接上再定
 
 热重载（`ContentLoader::poll`，设计为每 0.5 s 一轮，**目前 `poll()` 是空实现**）：
 
