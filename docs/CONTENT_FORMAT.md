@@ -29,8 +29,8 @@ content/
 ```json
 {
   "format": 1,
-  "id": "blaze",
-  "name": { "en": "Blaze", "zh": "烈焰" },
+  "id": "lancer",
+  "name": { "en": "Lancer", "zh": "疾锋" },
   "skin": { "texture": "skin.png", "scale": 1.0, "tint": [255, 255, 255, 255] },
   "hitbox": { "shape": "circle", "radius": 18.0, "offset": [0, 0] },
   "stats": { "mass": 1.0, "restitution": 0.95, "maxHp": 100.0, "startSpeed": 420.0 },
@@ -222,7 +222,7 @@ content/
 校验输出示例：
 
 ```
-[error] characters/blaze: hitbox.radius=4 is below minimum 6
+[error] characters/lancer: hitbox.radius=4 is below minimum 6
 [warn ] skills/dash: unknown field "coolDown" (did you mean "cooldown"?)
 [ok   ] 3 characters, 4 skills, 2 maps
 ```

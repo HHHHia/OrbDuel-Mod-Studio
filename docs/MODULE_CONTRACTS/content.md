@@ -28,7 +28,7 @@
 2. 坏包不进入 `ContentPack`；同一个 id 的旧版本继续可用。
 3. `poll()` 每 0.5 s 最多执行一次；只在文件时间戳变化时重载。
 4. 所有字符串 id 在加载时转小写并校验字符集。
-5. 贴图路径统一转成相对 `content/` 的 POSIX 风格（`characters/blaze/skin.png`）。
+5. 贴图路径统一转成相对 `content/` 的 POSIX 风格（`characters/lancer/skin.png`）。
 
 ## 禁止
 

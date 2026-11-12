@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
             std::printf("OrbDuel %s\n", orbduel::versionString());
             std::printf("用法:\n");
             std::printf("  orbduel                         直接开一局\n");
-            std::printf("  orbduel --char blaze --enemy bulwark --map duel-basic\n");
+            std::printf("  orbduel --char lancer --enemy bulwark --map duel-basic\n");
             std::printf("  orbduel --seed 1234             固定随机种子（可复现）\n");
             std::printf("  orbduel --selftest [--window]   环境自检\n");
             std::printf("  orbduel --list                  只列内容包\n");

@@ -19,7 +19,7 @@ public:
     AssetCache(const AssetCache&) = delete;
     AssetCache& operator=(const AssetCache&) = delete;
 
-    // path 是相对项目根的路径，例如 "content/characters/blaze/skin.png"。
+    // path 是相对项目根的路径，例如 "content/characters/lancer/skin.png"。
     // 第一次访问时懒加载（IMG_LoadTexture）；失败返回 nullptr 并记 error。
     SDL_Texture* get(const std::string& path);
 

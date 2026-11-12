@@ -56,7 +56,7 @@ OrbDuel 是一个 **C++17 + SDL2 2.32** 的 2D 双球物理对战游戏。
 
 1. `include/orbduel/` 是公共契约。改任何**公开函数签名**，必须同步 `docs/MODULE_CONTRACTS/*.md`，并在 commit message 里写 `contract:` 前缀。
 2. `core/`、`physics/`、`content/`、`match/` **禁止** `#include <SDL.h>`。只有 `render/` 与 `game/` 可以碰 SDL2。
-3. 角色、技能、数值一律走 `content/`，**不许**硬编码进 C++。代码里出现 `"blaze"` 这种角色名就是 bug。
+3. 角色、技能、数值一律走 `content/`，**不许**硬编码进 C++。代码里出现 `"lancer"` 这种角色名就是 bug。
 4. 交 commit 前必须两条都绿：构建通过 + `validate_content.ps1` 通过。
 5. 不新增第三方依赖（SDL2、单头库除外）。要加先在 `docs/DECISIONS.md` 写一条 ADR。
 6. 随机数只能用 `core/Rng.hpp`，禁止 `rand()`、`std::random_device`、`<random>` 的默认种子。
@@ -91,7 +91,7 @@ content ──→ core
 
 ### 5.1 加一个角色（不改 C++）
 
-1. 复制 `content/characters/blaze/` 为 `content/characters/<new-id>/`
+1. 复制 `content/characters/lancer/` 为 `content/characters/<new-id>/`
 2. 改 `character.json` 的 `id`、`name`、`stats`，`skills` 填 `content/skills/` 里已有的 id
 3. 放一张 `skin.png`（建议 256×256，背景透明）
 4. 跑 `.\tools\validate_content.ps1`

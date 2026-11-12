@@ -23,7 +23,7 @@ enum class IssueSeverity {
 
 struct LoadIssue {
     IssueSeverity severity = IssueSeverity::Error;
-    std::string source;     // 例如 "characters/blaze"
+    std::string source;     // 例如 "characters/lancer"
     std::string message;    // 英文为主，屏幕控制台直接显示
 };
 

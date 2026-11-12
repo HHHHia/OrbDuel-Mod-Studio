@@ -39,14 +39,14 @@
 .\build\bin\orbduel.exe                 # 开主菜单（点开始游戏 / 按 Enter 进对局）
 .\build\bin\orbduel.exe --no-menu       # 跳过菜单直接开局
 .\build\bin\orbduel.exe --seed 42       # 固定随机种子，可复现
-.\build\bin\orbduel.exe --char blaze --enemy bulwark --map duel-basic   # 参数只做菜单预选
+.\build\bin\orbduel.exe --char lancer --enemy bulwark --map duel-basic   # 参数只做菜单预选
 .\build\bin\orbduel.exe --seconds 10    # 跑 10 秒自动退出
 .\build\bin\orbduel.exe --screenshot out.png   # 第 2 秒截图后退出（在菜单里就截菜单）
 ```
 
 - 启动先进主菜单：左右两张卡各自用 `<` `>` 切换角色（可以选同一个角色互打），`START GAME` 或 Enter 开局，`QUIT GAME` 弹确认框（点 No / 点框外 / ESC 取消）；
 - **碰撞已经不掉血**（`damageScale = 0`），伤害只来自技能与缩圈；
-- 默认角色 Blaze 的 Dash：冷却好（6 s）自动原地蓄力 3 s，地上画一条虚线指向「0.3 s 前的你」，蓄满后沿虚线以 500 冲出去，撞到对手造成一次额外伤害（≈ 0.12 × 相对速度）；
+- 默认角色 Lancer（疾锋）的 Dash：冷却好（6 s）自动原地蓄力 3 s，地上画一条虚线指向「0.3 s 前的你」，蓄满后沿虚线以 500 冲出去，撞到对手造成一次额外伤害（≈ 0.12 × 相对速度）；
 - Dash 会**越放越强**（本局累计，重开一局重学）：虚线是「慢慢飘」的（每步约 0.08°），索敌第 5 次最准（延迟 0.3 s → 0.05 s、抖动 6° → 0.5°），蓄力时间第 10 次归零（3 s → 0 s，瞬发），第 15 次起**打不断**；
 - 任何技能施放时球上方弹出技能英文名，0.9 s 上浮淡出；
 - 25 秒后开始缩圈（每 10 s 一档，每档 10%，带 1 秒预警），场地一路缩到 0；装不下两个球的那一步立即结算，**HP 高者胜**，同 HP 平局；

@@ -45,7 +45,7 @@ struct CharacterDef {
     HitboxDef hitbox;
     StatsDef stats;
     std::vector<std::string> skills;   // 0~2 个技能 id
-    std::string sourceDir;             // 例如 "characters/blaze"
+    std::string sourceDir;             // 例如 "characters/lancer"
 };
 
 enum class TriggerKind {

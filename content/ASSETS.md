@@ -7,7 +7,7 @@
 
 | 文件 | 类型 | 来源 | 许可证 | 备注 |
 |---|---|---|---|---|
-| `characters/blaze/skin.png` | 球体贴图 | 本项目生成 | CC0（自制） | **占位图**，正式美术替换后删除本行 |
+| `characters/lancer/skin.png` | 球体贴图 | 本项目生成 | CC0（自制） | **占位图**，正式美术替换后删除本行 |
 | `characters/bulwark/skin.png` | 球体贴图 | 本项目生成 | CC0（自制） | **占位图**，同上 |
 | `fonts/PressStart2P-Regular.ttf` | 字体 | https://github.com/google/fonts/tree/main/ofl/pressstart2p | SIL OFL 1.1 | HUD 文字；许可证全文见 `fonts/OFL.txt` |
 

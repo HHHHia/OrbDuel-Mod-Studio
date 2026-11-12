@@ -42,7 +42,7 @@ cmake --build build
 对局内 `ESC` 回主菜单；结算后显示 `RETURNING IN 5...`，期间按 `R` 重开同阵容，5 秒后自动回菜单。
 
 两球自动对撞（当前没有玩家输入）：碰撞本身不掉血（`damageScale = 0`），伤害只来自技能与缩圈；
-Blaze 的 Dash 会原地蓄力 3 秒、沿一条会抖的虚线冲出去撞人；25 秒后开始缩圈，每 10 秒一档一路缩到 0，
+Lancer（疾锋）的 Dash 会原地蓄力 3 秒（越放越短）、沿一条会抖的虚线冲出去撞人；25 秒后开始缩圈，每 10 秒一档一路缩到 0，
 场地装不下两个球的那一步就按 HP 高者结算；5 秒没有碰撞会触发极弱的「静默吸引」。
 
 ![screenshot](docs/screenshot.png)
@@ -60,7 +60,7 @@ Blaze 的 Dash 会原地蓄力 3 秒、沿一条会抖的虚线冲出去撞人�
 ## 内容长什么样 / What content looks like
 
 ```
-content/characters/blaze/
+content/characters/lancer/
   character.json      # 皮肤、碰撞半径、质量、HP、技能列表
   skin.png            # 贴图（建议 256×256，透明背景）
 ```
@@ -68,8 +68,8 @@ content/characters/blaze/
 ```json
 {
   "format": 1,
-  "id": "blaze",
-  "name": { "en": "Blaze", "zh": "烈焰" },
+  "id": "lancer",
+  "name": { "en": "Lancer", "zh": "疾锋" },
   "skin":   { "texture": "skin.png", "scale": 1.0 },
   "hitbox": { "shape": "circle", "radius": 24.0 },
   "stats":  { "mass": 1.0, "restitution": 0.95, "maxHp": 100.0, "startSpeed": 420.0 },
