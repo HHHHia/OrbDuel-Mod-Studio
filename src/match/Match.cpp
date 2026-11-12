@@ -98,6 +98,7 @@ void Match::setup(const CharacterDef& left,
         body.radius = def.hitbox.radius;
         body.mass = def.stats.mass;
         body.restitution = def.stats.restitution;
+        body.ghost = def.hitbox.ghost;
 
         const int bodyId = world_.addBody(body);
 
@@ -120,7 +121,7 @@ void Match::setup(const CharacterDef& left,
         }
         skills_[i].attach(bodyId, skillDefs);
 
-        // 被动技能在开局读一次：贯穿就靠这三个数，之后每步只按速度决定开不开
+        // 被动技能在开局读一次：贯穿、引力井都靠这几个数，之后每步只看状态
         for (const SkillDef* skill : skillDefs) {
             if (skill == nullptr || skill->trigger.kind != TriggerKind::Passive) {
                 continue;
@@ -132,6 +133,17 @@ void Match::setup(const CharacterDef& left,
                 fighter.pierce.damage = modifier.value;
                 fighter.pierce.minSpeed = modifier.minSpeed;
                 fighter.pierce.push = modifier.push;
+            }
+            if (skill->gravity.enabled) {
+                fighter.gravity.range = skill->gravity.range;
+                fighter.gravity.accel = skill->gravity.accel;
+                fighter.gravity.coreFactor = skill->gravity.coreFactor;
+                fighter.gravity.damage = skill->gravity.damage;
+                fighter.gravity.damageMax = skill->gravity.damageMax;
+                fighter.gravity.rampTime = skill->gravity.damageRamp;
+                fighter.gravity.tickInterval = skill->gravity.tickInterval;
+                fighter.gravity.teleportGuard = skill->gravity.teleportGuard;
+                fighter.gravity.teleportMinDist = skill->gravity.teleportMinDist;
             }
         }
     }
@@ -199,6 +211,87 @@ void Match::update(float dt) {
                 fighter.comboTimer = 0.0f;
                 fighter.combo = 0;
             }
+        }
+        if (fighter.coreTick > 0.0f) {
+            fighter.coreTick = std::max(0.0f, fighter.coreTick - dt);
+        }
+        if (fighter.coreGuard > 0.0f) {
+            fighter.coreGuard = std::max(0.0f, fighter.coreGuard - dt);
+        }
+    }
+
+    // 万向天引：范围内的持续吸力 + 到点爆炸。爆炸之后才进冷却（冷却在 SkillSystem 里设）。
+    for (int i = 0; i < 2; ++i) {
+        Body& self = *bodies[i];
+        Body& enemy = *bodies[1 - i];
+
+        float pullRadius = 0.0f;
+        float pullAccel = 0.0f;
+        if (fighters_[i].alive && skills_[i].pullField(pullRadius, pullAccel)) {
+            const Vec2 delta = self.pos - enemy.pos;
+            const float dist = lengthOf(delta);
+            if (dist > 1e-3f && dist <= pullRadius) {
+                enemy.force += delta * (pullAccel / dist);
+            }
+        }
+
+        float blastRadius = 0.0f;
+        float blastDamage = 0.0f;
+        if (skills_[i].consumeBlast(blastRadius, blastDamage)) {
+            if (fighters_[1 - i].alive && lengthOf(enemy.pos - self.pos) <= blastRadius) {
+                applyDamage(fighters_[1 - i].bodyId, blastDamage, true);
+            }
+            Event event;
+            event.type = EventType::SkillExpire;
+            event.a = fighters_[i].bodyId;
+            event.pos = self.pos;
+            event.value = blastRadius;
+            events_.publish(event);
+        }
+    }
+
+    // 引力井（被动）：把范围内的敌人往中心拉（保留切向速度 → 会绕着转），
+    // 进到核心圈就掉血并把对方随机传走。大招期间被动失效。
+    for (int i = 0; i < 2; ++i) {
+        Fighter& me = fighters_[i];
+        Fighter& foe = fighters_[1 - i];
+        if (!me.alive || !foe.alive || me.gravity.range <= 0.0f || skills_[i].suppressesPassive()) {
+            continue;
+        }
+
+        Body& self = *bodies[i];
+        Body& enemy = *bodies[1 - i];
+        const Vec2 delta = self.pos - enemy.pos;
+        const float dist = lengthOf(delta);
+        if (dist <= 1e-3f) {
+            continue;
+        }
+        if (dist <= me.gravity.range) {
+            enemy.force += delta * (me.gravity.accel / dist);
+        }
+
+        const float core = me.gravity.coreFactor * self.radius;
+        if (dist > core || me.coreTick > 0.0f || foe.coreGuard > 0.0f) {
+            continue;
+        }
+
+        const float ramp = me.gravity.rampTime > 0.01f
+                               ? clampf(elapsed_ / me.gravity.rampTime, 0.0f, 1.0f)
+                               : 1.0f;
+        const float damage = me.gravity.damage + (me.gravity.damageMax - me.gravity.damage) * ramp;
+        me.coreTick = me.gravity.tickInterval;
+        foe.coreGuard = me.gravity.teleportGuard;
+
+        const Vec2 victimPos = enemy.pos;
+        applyDamage(foe.bodyId, damage, true);
+        if (foe.alive) {
+            teleportRandom(1 - i, self.pos, me.gravity.teleportMinDist);
+            Event event;
+            event.type = EventType::SkillExpire;
+            event.a = me.bodyId;
+            event.pos = victimPos;
+            event.value = 44.0f;
+            events_.publish(event);
         }
     }
 
@@ -330,6 +423,10 @@ void Match::applyDamage(int victimBodyId, float amount, bool countsForCombo) {
         if (fighter.bodyId != victimBodyId || !fighter.alive) {
             continue;
         }
+        // 万向天引期间自己无敌：连缩圈伤害也不吃
+        if (skills_[i].invulnerable()) {
+            return;
+        }
 
         float remaining = amount;
         if (fighter.shield > 0.0f) {
@@ -361,6 +458,58 @@ void Match::applyDamage(int victimBodyId, float amount, bool countsForCombo) {
             log::info("fighter " + std::to_string(i) + " died at " +
                       std::to_string(static_cast<int>(elapsed_)) + "s");
         }
+        return;
+    }
+}
+
+void Match::teleportRandom(int victimIndex, Vec2 awayFrom, float minDist) {
+    if (victimIndex < 0 || victimIndex > 1) {
+        return;
+    }
+    Fighter& victim = fighters_[victimIndex];
+    Body* body = world_.body(victim.bodyId);
+    if (body == nullptr || !body->active) {
+        return;
+    }
+
+    const Rect field = arena_.bounds();
+    const std::vector<Obstacle>& obstacles = arena_.obstacles();
+    Rng& rng = rngRef();
+
+    // 拒绝采样：随机撒点，撞墙/压障碍/离黑洞太近就重撒。64 次都不行就原地不动。
+    for (int attempt = 0; attempt < 64; ++attempt) {
+        const Vec2 point{rng.range(field.left(), field.right()),
+                         rng.range(field.top(), field.bottom())};
+        if (!arena_.contains(point, body->radius)) {
+            continue;
+        }
+        if (lengthOf(point - awayFrom) < minDist) {
+            continue;
+        }
+
+        bool blocked = false;
+        for (const Obstacle& obstacle : obstacles) {
+            if (obstacle.shape == ObstacleShape::Circle) {
+                blocked = lengthOf(point - obstacle.pos) < body->radius + obstacle.radius;
+            } else {
+                const Rect rect{obstacle.pos.x - obstacle.size.x * 0.5f,
+                                obstacle.pos.y - obstacle.size.y * 0.5f,
+                                obstacle.size.x,
+                                obstacle.size.y};
+                const Vec2 closest{clampf(point.x, rect.left(), rect.right()),
+                                   clampf(point.y, rect.top(), rect.bottom())};
+                blocked = lengthOf(point - closest) < body->radius;
+            }
+            if (blocked) {
+                break;
+            }
+        }
+        if (blocked) {
+            continue;
+        }
+
+        body->pos = point;
+        body->force = Vec2{0.0f, 0.0f};
         return;
     }
 }

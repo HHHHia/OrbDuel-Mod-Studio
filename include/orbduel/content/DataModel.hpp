@@ -29,6 +29,7 @@ struct SkinDef {
 struct HitboxDef {
     float radius = 18.0f;
     Vec2 offset{};                // 贴图中心 → 碰撞中心的偏移
+    bool ghost = false;           // true：对方可以穿进身体（黑洞），不做分离也不推人
 };
 
 struct StatsDef {
@@ -134,12 +135,46 @@ struct ChargeDef {
     float ramDamageScale = 0.12f;  // 撞击额外伤害 = scale × 接触瞬间相对速度
 };
 
+// 引力井（被动）：把范围内的敌人往自己中心拉；敌人进到核心圈就掉血、并被随机传送走。
+struct GravityDef {
+    bool enabled = false;
+    float range = 260.0f;         // 吸力生效半径
+    float accel = 420.0f;         // 向心加速度（px/s²），保留切向速度 → 会绕圈
+    float coreFactor = 0.7f;      // 核心半径 = 本值 × 自身碰撞半径
+    float damage = 6.0f;          // 核心伤害起始值
+    float damageMax = 18.0f;      // 核心伤害上限（随对局时间涨到它）
+    float damageRamp = 60.0f;     // 多少秒长到上限
+    float tickInterval = 0.5f;    // 核心内两次伤害的最小间隔
+    float teleportGuard = 1.5f;   // 同一个人两次传送的最小间隔
+    float teleportMinDist = 240.0f; // 落点离黑洞至少多远
+};
+
+// 万向天引（大招）：范围内持续吸力 → N 秒后原地爆炸；期间自己无敌、被动失效。
+// 半径/时长/伤害/冷却都按「已经放过几次」线性成长到 To 值。
+struct OmnipullDef {
+    bool enabled = false;
+    float rangeFrom = 200.0f;
+    float rangeTo = 340.0f;
+    float accel = 1200.0f;
+    float durationFrom = 2.0f;
+    float durationTo = 5.0f;
+    float damageFrom = 20.0f;
+    float damageTo = 48.0f;
+    float cooldownFrom = 10.0f;
+    float cooldownTo = 5.0f;
+    int castsToMax = 5;
+    bool invincible = true;
+    bool suppressPassive = true;
+};
+
 struct SkillDef {
     int format = 1;
     std::string id;
     LocalizedText name;
     TriggerDef trigger;
     ChargeDef charge;
+    GravityDef gravity;
+    OmnipullDef omnipull;
     std::vector<ModifierDef> modifiers;
     std::vector<VfxDef> vfx;
     bool stackRefresh = true;

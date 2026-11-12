@@ -41,6 +41,19 @@ struct PierceMod {
     float push = 0.0f;      // 穿过时给对手加的速度（沿碰撞法线）
 };
 
+// 引力井（被动技能）的生效参数：数据在 SkillDef::gravity，这里只放运行时要用的副本。
+struct GravityMod {
+    float range = 0.0f;         // 0 = 没有引力井
+    float accel = 0.0f;
+    float coreFactor = 0.0f;
+    float damage = 0.0f;
+    float damageMax = 0.0f;
+    float rampTime = 0.0f;
+    float tickInterval = 0.0f;
+    float teleportGuard = 0.0f;
+    float teleportMinDist = 0.0f;
+};
+
 struct Fighter {
     int bodyId = -1;
     const CharacterDef* def = nullptr;
@@ -51,6 +64,9 @@ struct Fighter {
     float comboTimer = 0.0f;
     bool alive = true;
     PierceMod pierce{};
+    GravityMod gravity{};
+    float coreTick = 0.0f;    // 自己作为黑洞，距离下次核心伤害还要多久
+    float coreGuard = 0.0f;   // 自己作为受害者，距离下次能被核心伤害/传送还要多久
 };
 
 class Match {
@@ -99,6 +115,10 @@ private:
 
     // 场地缩到装不下两个球时的结算：HP 高者胜，同 HP 平局。
     void finishByHp();
+
+    // 把某个 fighter 随机丢到一个「站得住」的位置：在场地内、不压障碍、离 awayFrom 至少
+    // minDist。找不到就原地不动（宁可没传送，也不能塞进墙里）。
+    void teleportRandom(int victimIndex, Vec2 awayFrom, float minDist);
 
     EventBus& events_;
     World& world_;

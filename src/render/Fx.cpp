@@ -46,6 +46,12 @@ void Fx::bind(EventBus& events) {
         spawnRing(event.pos, 34.0f, Rgba{120, 220, 255, 220});
     });
 
+    events.subscribe(EventType::SkillExpire, [this](const Event& event) {
+        spawnBurst(event.pos, 28, 240.0f, Rgba{190, 140, 255, 255});
+        spawnRing(event.pos, event.value > 8.0f ? event.value : 40.0f, Rgba{200, 160, 255, 220});
+        addShake(4.5f);
+    });
+
     events.subscribe(EventType::Death, [this](const Event&) {
         addShake(6.0f);
         addHitStop(0.08f);

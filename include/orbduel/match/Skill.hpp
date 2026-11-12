@@ -35,6 +35,14 @@ struct SkillState {
     float aimNoiseTarget = 0.0f;
     float aimNoiseTimer = 0.0f;
     int casts = 0;             // 本局已经放出去几次，索敌精度随它提升
+
+    // 万向天引（def->omnipull.enabled 时才使用）
+    float pullLeft = 0.0f;     // > 0 = 正在吸；倒数到 0 就炸
+    float pullRadius = 0.0f;   // 本次吸力半径（施放瞬间按次数锁定）
+    float pullAccel = 0.0f;
+    float blastRadius = 0.0f;
+    float blastDamage = 0.0f;
+    bool blastPending = false;
 };
 
 class SkillSystem {
@@ -59,6 +67,16 @@ public:
 
     // 冲刺窗口内的第一次撞击：消费掉，并通过 outScale 返回额外伤害系数。
     bool consumeRam(float& outScale);
+
+    // 万向天引正在吸时返回本次的半径与加速度（Match 用它给敌人施力）。
+    bool pullField(float& radius, float& accel) const;
+
+    // 万向天引进行中：自己无敌 / 被动失效。
+    bool invulnerable() const;
+    bool suppressesPassive() const;
+
+    // 吸力结束的那一步取走爆炸参数；只返回一次。
+    bool consumeBlast(float& radius, float& damage);
 
     const std::vector<SkillState>& states() const;
     int bodyId() const;

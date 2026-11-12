@@ -20,7 +20,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `game/Game.hpp` | `Game::run(const Options&)`、`Options`（含 `startInMenu` / `headless` / `language`） |
+| `game/Game.hpp` | `Game::run(const Options&)`、`Options`（含 `startInMenu` / `headless` / `language` / `screenshotPath` + `shotAtSeconds`） |
 | `game/Menu.hpp` | `Menu::open/update/draw/...`；`draw(..., bool chineseLabels)` 决定名字用中文还是英文 |
 | `game/Input.hpp` | `Input::sample()`；现阶段返回全零，留接口 |
 
@@ -36,6 +36,7 @@
 8. `--headless` 一律不进菜单（没有输入来源，停在菜单等于空转）；`--no-menu` 直接开局；`--char/--enemy` 只作为菜单的预选项。
 9. 左右两侧各自选角，允许同一个角色互打；同角色时右侧整体偏蓝以便区分。
 10. `Options::language` 默认 `"en"`：角色名/技能名画英文；`"zh"`（`--lang zh`）且系统有中文字体时才画中文。字体始终加载，缺字体只降级文字，不报错。
+11. `--screenshot` 在 `shotAtSeconds`（默认 2 s，`--shot-at` 可改）存一张 PNG 后退出；这个开关只影响截图，不改任何游戏逻辑。
 
 ## 禁止
 

@@ -55,8 +55,8 @@ function ArrOf($obj, [string]$name) {
 }
 
 function Need($obj, [string]$name, [string]$src) {
-    $v = Prop $obj $name
-    if ($null -eq $v) {
+    # 只看字段在不在：空数组（"skills": []）经管道回来会变成 $null，按值判断会误报
+    if ($null -eq $obj -or $null -eq $obj.PSObject.Properties[$name]) {
         Fail $src ("缺少必填字段 '{0}'" -f $name)
         return $false
     }
@@ -158,9 +158,13 @@ if (Test-Path $SkillDir) {
             }
         }
 
-        # 蓄力技能靠 charge 生效，可以没有 modifiers
+        # 蓄力技能靠 charge 生效，引力/大招技能靠 gravity / omnipull 生效，都可以没有 modifiers
         $mods = ArrOf $d 'modifiers'
-        if ($mods.Count -eq 0 -and $null -eq $charge) { Fail $src "modifiers 不能为空（没有 charge 时）" }
+        $gravity = Prop $d 'gravity'
+        $omnipull = Prop $d 'omnipull'
+        if ($mods.Count -eq 0 -and $null -eq $charge -and $null -eq $gravity -and $null -eq $omnipull) {
+            Fail $src "modifiers 不能为空（没有 charge/gravity/omnipull 时）"
+        }
         foreach ($m in $mods) {
             if ($null -eq $m) { continue }
             $op = Prop $m 'op'
@@ -172,6 +176,45 @@ if (Test-Path $SkillDir) {
             InRange $m 'push' 0 600 $src
             if ($op -eq 'pierce' -and [double](Prop $m 'value') -le 0) {
                 Fail $src "pierce 的 value（每次穿过的伤害）必须大于 0"
+            }
+        }
+
+        if ($null -ne $gravity) {
+            InRange $gravity 'range' 1 2000 $src
+            InRange $gravity 'accel' 0 6000 $src
+            InRange $gravity 'coreFactor' 0.01 1.0 $src
+            InRange $gravity 'damage' 0 500 $src
+            InRange $gravity 'damageMax' 0 500 $src
+            InRange $gravity 'damageRamp' 0.1 600 $src
+            InRange $gravity 'tickInterval' 0.01 10 $src
+            InRange $gravity 'teleportGuard' 0 30 $src
+            InRange $gravity 'teleportMinDist' 0 3000 $src
+            $dmg = Prop $gravity 'damage'
+            $dmgMax = Prop $gravity 'damageMax'
+            if ($null -ne $dmg -and $null -ne $dmgMax -and [double]$dmgMax -lt [double]$dmg) {
+                Fail $src "gravity.damageMax 不能小于 damage（否则伤害不成长）"
+            }
+        }
+
+        if ($null -ne $omnipull) {
+            InRange $omnipull 'rangeFrom' 1 2000 $src
+            InRange $omnipull 'rangeTo' 1 2000 $src
+            InRange $omnipull 'accel' 0 6000 $src
+            InRange $omnipull 'durationFrom' 0.2 20 $src
+            InRange $omnipull 'durationTo' 0.2 20 $src
+            InRange $omnipull 'damageFrom' 0 500 $src
+            InRange $omnipull 'damageTo' 0 500 $src
+            InRange $omnipull 'cooldownFrom' 0.5 60 $src
+            InRange $omnipull 'cooldownTo' 0.5 60 $src
+            InRange $omnipull 'castsToMax' 1 50 $src
+            if ([double](Prop $omnipull 'rangeTo') -lt [double](Prop $omnipull 'rangeFrom')) {
+                Fail $src "omnipull.rangeTo 不能小于 rangeFrom（越放越弱）"
+            }
+            if ([double](Prop $omnipull 'durationTo') -lt [double](Prop $omnipull 'durationFrom')) {
+                Fail $src "omnipull.durationTo 不能小于 durationFrom（越放越短）"
+            }
+            if ([double](Prop $omnipull 'cooldownTo') -gt [double](Prop $omnipull 'cooldownFrom')) {
+                Fail $src "omnipull.cooldownTo 不能大于 cooldownFrom（越放越慢）"
             }
         }
 

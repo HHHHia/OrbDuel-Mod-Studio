@@ -149,19 +149,22 @@ int main(int argc, char** argv) {
             options.runSeconds = static_cast<float>(std::atof(argv[++i]));
         } else if (arg == "--screenshot" && i + 1 < argc) {
             options.screenshotPath = argv[++i];
+        } else if (arg == "--shot-at" && i + 1 < argc) {
+            options.shotAtSeconds = static_cast<float>(std::atof(argv[++i]));
         } else if (arg == "--lang" && i + 1 < argc) {
             options.language = argv[++i];
         } else if (arg == "--help" || arg == "-h") {
             std::printf("OrbDuel %s\n", orbduel::versionString());
             std::printf("用法:\n");
             std::printf("  orbduel                         直接开一局\n");
-            std::printf("  orbduel --char lancer --enemy bulwark --map duel-basic\n");
+            std::printf("  orbduel --char lancer --enemy singularity --map duel-basic\n");
             std::printf("  orbduel --seed 1234             固定随机种子（可复现）\n");
             std::printf("  orbduel --selftest [--window]   环境自检\n");
             std::printf("  orbduel --list                  只列内容包\n");
             std::printf("  orbduel --headless              不开窗口（只做逻辑）\n");
             std::printf("  orbduel --no-menu               跳过主菜单直接开局\n");
             std::printf("  orbduel --seconds 5             跑 5 秒后自动退出\n");
+            std::printf("  orbduel --screenshot a.png --shot-at 11   第 11 秒存图后退出\n");
             std::printf("  orbduel --lang zh               角色/技能名显示中文（默认英文）\n");
             return 0;
         }

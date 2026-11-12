@@ -46,6 +46,7 @@
       "properties": {
         "shape": { "const": "circle" },
         "radius": { "type": "number", "minimum": 6, "maximum": 120 },
+        "ghost": { "type": "boolean" },
         "offset": {
           "type": "array",
           "items": { "type": "number" },

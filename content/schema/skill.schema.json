@@ -4,7 +4,7 @@
   "title": "OrbDuel skill",
   "type": "object",
   "additionalProperties": false,
-  "required": ["format", "id", "name", "trigger", "modifiers"],
+  "required": ["format", "id", "name", "trigger"],
   "properties": {
     "format": { "const": 1 },
     "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,31}$" },
@@ -30,7 +30,7 @@
     },
     "modifiers": {
       "type": "array",
-      "minItems": 1,
+      "minItems": 0,
       "items": {
         "type": "object",
         "required": ["op"],
@@ -47,6 +47,39 @@
           "push": { "type": "number", "minimum": 0, "maximum": 600 },
           "curve": { "enum": ["linear", "ease_out", "ease_in_out"] }
         }
+      }
+    },
+    "gravity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "range": { "type": "number", "minimum": 1, "maximum": 2000 },
+        "accel": { "type": "number", "minimum": 0, "maximum": 6000 },
+        "coreFactor": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+        "damage": { "type": "number", "minimum": 0, "maximum": 500 },
+        "damageMax": { "type": "number", "minimum": 0, "maximum": 500 },
+        "damageRamp": { "type": "number", "minimum": 0.1, "maximum": 600 },
+        "tickInterval": { "type": "number", "exclusiveMinimum": 0, "maximum": 10 },
+        "teleportGuard": { "type": "number", "minimum": 0, "maximum": 30 },
+        "teleportMinDist": { "type": "number", "minimum": 0, "maximum": 3000 }
+      }
+    },
+    "omnipull": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rangeFrom": { "type": "number", "minimum": 1, "maximum": 2000 },
+        "rangeTo": { "type": "number", "minimum": 1, "maximum": 2000 },
+        "accel": { "type": "number", "minimum": 0, "maximum": 6000 },
+        "durationFrom": { "type": "number", "minimum": 0.2, "maximum": 20 },
+        "durationTo": { "type": "number", "minimum": 0.2, "maximum": 20 },
+        "damageFrom": { "type": "number", "minimum": 0, "maximum": 500 },
+        "damageTo": { "type": "number", "minimum": 0, "maximum": 500 },
+        "cooldownFrom": { "type": "number", "minimum": 0.5, "maximum": 60 },
+        "cooldownTo": { "type": "number", "minimum": 0.5, "maximum": 60 },
+        "castsToMax": { "type": "integer", "minimum": 1, "maximum": 50 },
+        "invincible": { "type": "boolean" },
+        "suppressPassive": { "type": "boolean" }
       }
     },
     "vfx": {

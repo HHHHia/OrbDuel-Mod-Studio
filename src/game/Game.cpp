@@ -394,6 +394,19 @@ int Game::run(const Options& options) {
                 }
             }
 
+            // 万向天引：把吸力范围画成圈，否则看不出自己被吸在哪
+            for (int i = 0; i < 2; ++i) {
+                float pullRadius = 0.0f;
+                float pullAccel = 0.0f;
+                if (!match.skills(i).pullField(pullRadius, pullAccel)) {
+                    continue;
+                }
+                const Body* body = world.body(match.fighter(i).bodyId);
+                if (body != nullptr) {
+                    renderer.drawRing(body->pos, pullRadius, 2.0f, Rgba{190, 140, 255, 150});
+                }
+            }
+
             for (int i = 0; i < 2; ++i) {
                 const Fighter& fighter = match.fighter(i);
                 const Body* body = world.body(fighter.bodyId);
@@ -519,7 +532,7 @@ int Game::run(const Options& options) {
             renderer.endFrame();
         }
 
-        if (!options.screenshotPath.empty() && totalSeconds >= 2.0f) {
+        if (!options.screenshotPath.empty() && totalSeconds >= options.shotAtSeconds) {
             if (renderer.saveScreenshot(options.screenshotPath)) {
                 log::info("screenshot saved: " + options.screenshotPath);
             } else {

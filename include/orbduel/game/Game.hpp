@@ -25,7 +25,8 @@ struct Options {
     bool debug = false;         // 打开调试层
     float autotestSeconds = 0.0f; // >0 时无窗口跑物理回归
     float runSeconds = 0.0f;    // >0 时跑够这么多秒自动退出（自测用）
-    std::string screenshotPath; // 非空时在第 2 秒存一张 PNG 然后退出
+    std::string screenshotPath; // 非空时在 shotAtSeconds 存一张 PNG 然后退出
+    float shotAtSeconds = 2.0f; // 截图时刻（秒）；调试/文档用，不影响游戏逻辑
     std::string language = "en"; // 界面语言：en = 英文名（默认）/ zh = 中文名（需要系统中文字体）
 };
 

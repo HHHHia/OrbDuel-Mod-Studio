@@ -21,6 +21,12 @@ constexpr float kRamWindow = 1.2f;
 constexpr float kAimNoiseSeconds = 0.5f;
 constexpr float kAimSmoothSeconds = 0.35f;
 
+// 成长曲线：第 1 次放是 From，第 castsToMax 次放就是 To（不是第 castsToMax+1 次）
+float growth(int casts, int castsToMax) {
+    const int steps = castsToMax > 1 ? castsToMax - 1 : 1;
+    return clampf(static_cast<float>(casts) / static_cast<float>(steps), 0.0f, 1.0f);
+}
+
 } // namespace
 
 SkillSystem::SkillSystem() = default;
@@ -69,6 +75,22 @@ void SkillSystem::update(float dt,
             state.ramLeft = std::max(0.0f, state.ramLeft - dt);
         }
 
+        // 万向天引：正在吸就只推进倒计时；吸完的那一步挂上爆炸，再从那一刻开始算冷却
+        if (state.pullLeft > 0.0f) {
+            state.pullLeft -= dt;
+            if (state.pullLeft <= 0.0f) {
+                state.pullLeft = 0.0f;
+                state.blastPending = true;
+                const OmnipullDef& pull = state.def->omnipull;
+                state.cooldownLeft = pull.cooldownFrom +
+                                     (pull.cooldownTo - pull.cooldownFrom) *
+                                         growth(state.casts, pull.castsToMax);
+                state.casts += 1;
+                log::info("omnipull blast: " + state.def->id);
+            }
+            continue;
+        }
+
         if (state.charging) {
             // 蓄力中：方向每帧重算，但抖动走低频噪声 + 插值，线是「飘」不是「抖」
             const ChargeDef& charge = state.def->charge;
@@ -94,6 +116,28 @@ void SkillSystem::update(float dt,
         }
 
         if (state.cooldownLeft > 0.0f || state.def->trigger.kind != TriggerKind::Cooldown) {
+            continue;
+        }
+
+        if (state.def->omnipull.enabled) {
+            // 万向天引：按「已经放过几次」锁定本次的半径/时长/伤害，冷却等炸完再进
+            const OmnipullDef& pull = state.def->omnipull;
+            const float progress = growth(state.casts, pull.castsToMax);
+            state.pullRadius = pull.rangeFrom + (pull.rangeTo - pull.rangeFrom) * progress;
+            state.pullAccel = pull.accel;
+            state.pullLeft = pull.durationFrom + (pull.durationTo - pull.durationFrom) * progress;
+            state.blastRadius = state.pullRadius;
+            state.blastDamage = pull.damageFrom + (pull.damageTo - pull.damageFrom) * progress;
+            state.active = true;
+            state.activeLeft = state.pullLeft;
+
+            Event event;
+            event.type = EventType::SkillCast;
+            event.a = bodyId_;
+            event.pos = self.pos;
+            event.value = static_cast<float>(i);
+            events.publish(event);
+            log::info("omnipull start: " + state.def->id);
             continue;
         }
 
@@ -176,6 +220,51 @@ bool SkillSystem::consumeRam(float& outScale) {
         }
         state.ramLeft = 0.0f;
         outScale = state.def->charge.ramDamageScale;
+        return true;
+    }
+    return false;
+}
+
+bool SkillSystem::pullField(float& radius, float& accel) const {
+    for (const SkillState& state : states_) {
+        if (state.pullLeft <= 0.0f || state.def == nullptr) {
+            continue;
+        }
+        radius = state.pullRadius;
+        accel = state.pullAccel;
+        return true;
+    }
+    return false;
+}
+
+bool SkillSystem::invulnerable() const {
+    for (const SkillState& state : states_) {
+        if (state.pullLeft > 0.0f && state.def != nullptr && state.def->omnipull.enabled &&
+            state.def->omnipull.invincible) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool SkillSystem::suppressesPassive() const {
+    for (const SkillState& state : states_) {
+        if (state.pullLeft > 0.0f && state.def != nullptr && state.def->omnipull.enabled &&
+            state.def->omnipull.suppressPassive) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool SkillSystem::consumeBlast(float& radius, float& damage) {
+    for (SkillState& state : states_) {
+        if (!state.blastPending) {
+            continue;
+        }
+        state.blastPending = false;
+        radius = state.blastRadius;
+        damage = state.blastDamage;
         return true;
     }
     return false;

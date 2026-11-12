@@ -21,6 +21,7 @@ enum class EventType {
     ObstacleCrushed,  // a 障碍 id；pos 位置
     SkillCast,        // a 施法者；value 技能在角色 skills[] 里的槽位
     ZoneShrink,       // value 新档位；pos 新边界中心
+    SkillExpire,      // a 施法者；pos 效果中心，value 半径（爆炸/传送这类「到点」效果）
     Death,            // a 死亡者 id
     RoundEnd,         // a 胜者 id（-1 平局）
     Count

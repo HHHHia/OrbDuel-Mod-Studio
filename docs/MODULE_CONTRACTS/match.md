@@ -19,11 +19,11 @@
 
 | 文件 | 内容 |
 |---|---|
-| `match/Match.hpp` | `Match(spawn)`、`update(dt)`、`onEvent(e)`、`fighter(i)`、`skills(i)`、`phase()`、`reset()`、`Fighter{ ..., pierce }`、`PierceMod{ damage, minSpeed, push }` |
+| `match/Match.hpp` | `Match(spawn)`、`update(dt)`、`onEvent(e)`、`fighter(i)`、`skills(i)`、`phase()`、`reset()`、`Fighter{ ..., pierce, gravity, coreTick, coreGuard }`、`PierceMod{ damage, minSpeed, push }`、`GravityMod{ range, accel, coreFactor, ... }` |
 | `match/MatchRule.hpp` | `IMatchRule`、`HpRule`、`MatchResult{ winner, reason }` |
 | `match/StallGuard.hpp` | `StallParams`、`StallGuard::onHit/update/lullSeconds/attraction()` |
 | `match/Zone.hpp` | `ZoneController(Arena&, ShrinkDef)`、`update(dt, lull)`、`tier()` |
-| `match/Skill.hpp` | `SkillSystem::update(dt, hpRatio, body, enemy, rng, events)`、`interruptCharge()`、`consumeRam()`、`SkillState` |
+| `match/Skill.hpp` | `SkillSystem::update(dt, hpRatio, body, enemy, rng, events)`、`interruptCharge()`、`consumeRam()`、`pullField()`、`invulnerable()`、`suppressesPassive()`、`consumeBlast()`、`SkillState` |
 
 ## 不变量
 
@@ -38,7 +38,15 @@
 9. 蓄力被任何撞击打断即作废并进 CD（不看这一下是否掉血）；冲刺重击一次只结算一次，且必须走 `applyDamage()`。
 10. 被动贯穿（`pierce`）在 `setup()` 读一次，存进 `Fighter.pierce`；`update()` 每步按 `自身速度 ≥ minSpeed` 决定要不要给 `Body.phasePush` 赋值，`physics` 只消费这个开关。
 11. 贯穿伤害同样只走 `applyDamage()`；一次穿过只结算一次（物理层保证该配对只发一次 `Hit`），与冲刺重击各算各的。
-10. 场地缩到装不下两个球（`bounds` 的宽或高 `< r1 + r2`）时立即结算：`reason = "zone_zero"`，HP 高者胜，同 HP 平局（`winnerId = -1`）。
+12. 场地缩到装不下两个球（`bounds` 的宽或高 `< r1 + r2`）时立即结算：`reason = "zone_zero"`，HP 高者胜，同 HP 平局（`winnerId = -1`）。
+13. 引力井（`gravity`）在 `setup()` 读一次，存进 `Fighter.gravity`。`update()` 每步给范围内的对手 `body.force` 加一个**向心加速度**
+    （`accel`，方向 = 自己 − 对方），保留对方的切向速度，所以轨迹是螺旋而不是直线吸尘器；超出 `range` 不加力。
+14. 对手中心进到 `coreFactor × 自己半径` 以内即判「中心伤害」：伤害 = `damage` 按 `elapsed / damageRamp` 线性长到 `damageMax`，
+    走 `applyDamage()`，然后**随机传送**对手（场地内、不压障碍、离自己 ≥ `teleportMinDist`；64 次采样都不行就原地不动）。
+    同一个人两次中心伤害至少隔 `tickInterval`，并且传送后有 `teleportGuard` 保护期。
+15. 万向天引进行中：被动失效（`suppressesPassive()`）、自己免伤害（`invulnerable()`，连缩圈伤害也不吃）；
+    吸力半径/加速度由 `pullField()` 提供，`Match` 负责施加。爆炸伤害与冷却都只在**吸完那一步**结算一次，冷却从爆炸那一刻开始算。
+16. 传送、爆炸都必须走 `applyDamage()`；传送只改 `Body.pos`（并清 `force`），不改速度。
 
 ## 禁止
 

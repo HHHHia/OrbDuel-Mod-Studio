@@ -19,7 +19,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `content/DataModel.hpp` | `SkinDef` `HitboxDef` `StatsDef` `TriggerDef` `ModifierDef` `VfxDef` `SkillDef` `CharacterDef` `ObstacleDef` `SpawnDef` `ChargeDef` `ShrinkDef` `MapDef` `ContentPack` |
+| `content/DataModel.hpp` | `SkinDef` `HitboxDef` `StatsDef` `TriggerDef` `ModifierDef` `VfxDef` `SkillDef` `CharacterDef` `ObstacleDef` `SpawnDef` `ChargeDef` `GravityDef` `OmnipullDef` `ShrinkDef` `MapDef` `ContentPack` |
 | `content/ContentLoader.hpp` | `loadAll(root)`、`poll()`、`pack()`、`issues()`、`hasFatal()` |
 
 ## 不变量
@@ -31,6 +31,9 @@
 5. 贴图路径统一转成相对 `content/` 的 POSIX 风格（`characters/lancer/skin.png`）。
 6. `SkinDef.shape` 只存形状名（`sprite` 默认 / `triangle`），不认识几何细节；比例归 `game`。
 7. `TriggerKind::Passive` 的技能不进冷却循环，由 `match` 在开局读一次；`ModifierOp::Pierce` 的 `minSpeed` / `push` 只对它有意义。
+8. `gravity` / `omnipull` 是独立的参数块（不是 `modifiers` 里的 op）：`SkillDef.gravity/omnipull.enabled` 只有 JSON 里出现该块时才为真；
+   `*From` → `*To` 的成长曲线归 `match`，`content` 只负责把数读对。有 `gravity` / `omnipull` 的技能允许 `modifiers` 为空。
+9. `hitbox.ghost` 是纯载体属性（这具身体能不能被穿过去），不绑定任何技能。
 
 ## 禁止
 
