@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "id": "singularity",
+  "name": { "en": "Singularity", "zh": "黑洞" },
+  "skin": { "texture": "skin.png", "scale": 1.0, "tint": [255, 255, 255, 255] },
+  "hitbox": { "shape": "circle", "radius": 30.0, "offset": [0, 0], "ghost": true },
+  "stats": { "mass": 2.6, "restitution": 0.9, "maxHp": 160.0, "startSpeed": 300.0 },
+  "skills": ["gravity-well", "omnipull"]
+}

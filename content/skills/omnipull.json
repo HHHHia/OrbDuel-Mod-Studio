@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "omnipull",
+  "name": { "en": "Omnipull", "zh": "万向天引" },
+  "trigger": { "kind": "cooldown", "cooldown": 10.0 },
+  "omnipull": {
+    "rangeFrom": 220.0,
+    "rangeTo": 380.0,
+    "accel": 1100.0,
+    "durationFrom": 2.0,
+    "durationTo": 5.0,
+    "damageFrom": 22.0,
+    "damageTo": 55.0,
+    "cooldownFrom": 10.0,
+    "cooldownTo": 5.0,
+    "castsToMax": 5,
+    "invincible": true,
+    "suppressPassive": true
+  },
+  "modifiers": [],
+  "vfx": [],
+  "priority": 50
+}
