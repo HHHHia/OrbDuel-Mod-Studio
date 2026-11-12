@@ -52,7 +52,10 @@ content/
 | `hitbox.radius` | float | ✔ | 6–120 | 运动碰撞半径 |
 | `hitbox.offset` | float[2] | ✘ | ±40 | 相对贴图中心的偏移 |
 | `hitbox.ghost` | bool | ✘ | 默认 `false` | `true` = 对手可以直接穿进身体（黑洞）；不做分离也不推人，但撞击伤害照算 |
+| `hitbox.contact` | float | ✘ | 0–10，默认 0 | 接触伤害系数：0 = 撞它不掉血；1 = 常规撞击伤害。与地图的 `damageScale` 取大 |
 | `stats.mass` | float | ✔ | 0.2–20 | 质量，影响碰撞后的速度分配 |
+| `stats.massMax` | float | ✘ | 0–20，默认 0 | > `mass` 时质量随对局时间从 `mass` 长到它（0 = 不成长）；吸力会按 `当前质量 / mass` 放大 |
+| `stats.massRamp` | float | ✘ | 0–600 | 多少秒长到 `massMax`（默认 90） |
 | `stats.restitution` | float | ✔ | 0–1 | 恢复系数（弹性） |
 | `stats.maxHp` | float | ✔ | 10–10000 | 最大生命 |
 | `stats.startSpeed` | float | ✔ | 0–1800 | 开局速度大小 |
@@ -186,26 +189,31 @@ content/
 ### 2.7 gravity（被动 / 引力井）
 
 `content/skills/gravity-well.json` 是唯一例子。有 `gravity` 块时 `modifiers` 可以为空。
-它不靠撞击生效，而是**每步**给范围内的对手加一个向心加速度：
+它不靠撞击生效，而是**每步**给范围内的对手加一个向心加速度，并每秒扣一点血：
 
 ```json
 "trigger": { "kind": "passive" },
 "gravity": {
-  "range": 280.0, "accel": 460.0, "coreFactor": 0.72,
-  "damage": 6.0, "damageMax": 20.0, "damageRamp": 60.0,
+  "range": 280.0, "rangeMax": 440.0, "growthSeconds": 90.0,
+  "accel": 460.0, "coreFactor": 0.72,
+  "damage": 6.0, "damageMax": 24.0,
+  "dpsEdge": 1.0, "dpsCenter": 3.0,
   "tickInterval": 0.5, "teleportGuard": 1.5, "teleportMinDist": 240.0
 }
 ```
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `range` | float 1–2000 | 吸力生效半径；出去就不拉 |
-| `accel` | float 0–6000 | 向心加速度（px/s²）。保留对方切向速度 → 会绕着你转，而不是直线撞上来 |
+| `range` | float 1–2000 | 起始吸力半径；出去就不拉，也不掉血 |
+| `rangeMax` | float 1–2000 | 长满时的半径（不能小于 `range`） |
+| `growthSeconds` | float (0,600] | 范围与核心伤害多少秒长满（按**对局时间**，不是放了几次） |
+| `accel` | float 0–6000 | 向心加速度（px/s²）。保留对方切向速度 → 会绕着你转；实际值还会乘 `当前质量 / stats.mass` |
 | `coreFactor` | float (0,1] | 核心半径 = 本值 × 自己 `hitbox.radius`；进核心才算「中心伤害」 |
-| `damage` | float 0–500 | 第一次中心伤害 |
-| `damageMax` | float 0–500 | 伤害上限；按 `elapsed / damageRamp` 线性长到它（不能小于 `damage`） |
-| `damageRamp` | float 0.1–600 | 多少秒长到 `damageMax` |
-| `tickInterval` | float (0,10] | 核心内两次伤害的最小间隔 |
+| `damage` | float 0–500 | 起始中心伤害 |
+| `damageMax` | float 0–500 | 中心伤害上限（按 `growthSeconds` 线性长到它） |
+| `dpsEdge` | float 0–100 | 站在吸力场边缘每秒掉多少血 |
+| `dpsCenter` | float 0–100 | 站在中心每秒掉多少血（按距离线性插值，0/0 = 场内不掉血） |
+| `tickInterval` | float (0,10] | 核心内两次核心伤害的最小间隔 |
 | `teleportGuard` | float 0–30 | 被传送走之后的保护期，期间不再吃中心伤害 |
 | `teleportMinDist` | float 0–3000 | 落点离黑洞至少多远（防止刚传走就被吸回去） |
 
@@ -216,27 +224,28 @@ content/
 ### 2.8 omnipull（大招 / 万向天引）
 
 ```json
-"trigger": { "kind": "cooldown", "cooldown": 10.0 },
+"trigger": { "kind": "cooldown", "cooldown": 8.0 },
 "omnipull": {
-  "rangeFrom": 220.0, "rangeTo": 380.0, "accel": 1100.0,
+  "rangeFrom": 220.0, "rangeTo": 420.0, "accel": 1100.0,
   "durationFrom": 2.0, "durationTo": 5.0,
-  "damageFrom": 22.0, "damageTo": 55.0,
-  "cooldownFrom": 10.0, "cooldownTo": 5.0,
-  "castsToMax": 5, "invincible": true, "suppressPassive": true
+  "damageFrom": 22.0, "damageTo": 60.0, "growthSeconds": 90.0,
+  "dpsEdge": 1.0, "dpsCenter": 3.0,
+  "invincible": true, "suppressPassive": true
 }
 ```
 
-冷却到点后开始吸：范围内持续给对手加速度 → 吸 `duration` 秒 → **原地爆炸**（半径 = 本次吸力半径，命中范围内对手）
-→ 这时才进冷却。期间自己无敌、被动失效。四个量按「本局已经放过几次」线性成长，**第 `castsToMax` 次就长满**：
+冷却到点后开始吸：范围内持续给对手加速度、每秒扣血 → 吸 `duration` 秒 → **原地爆炸**（半径 = 本次吸力半径，
+命中范围内对手）→ 这时才进冷却。期间自己无敌、被动失效、整对不吃撞击伤害。
+半径/时长/伤害按**对局时间**线性成长，`growthSeconds` 秒长满；**冷却固定 = `trigger.cooldown`**。
 
 | 字段 | 说明 |
 |---|---|
 | `rangeFrom` → `rangeTo` | 吸力/爆炸半径 |
 | `durationFrom` → `durationTo` | 吸多久才炸 |
 | `damageFrom` → `damageTo` | 爆炸伤害 |
-| `cooldownFrom` → `cooldownTo` | 炸完的冷却（不能大于 `cooldownFrom`，否则越放越慢） |
-| `accel` | 吸力加速度，不成长 |
-| `castsToMax` | 放几次长满（第 1 次 = `*From`，第 `castsToMax` 次 = `*To`） |
+| `growthSeconds` | 多少秒长满（三组 `*From/*To` 共用） |
+| `accel` | 吸力加速度，不成长（但会乘质量倍率） |
+| `dpsEdge` / `dpsCenter` | 场内每秒掉血，算法同 §2.7 |
 | `invincible` | 吸的过程中免伤害（默认 `true`） |
 | `suppressPassive` | 吸的过程中自己的被动失效（默认 `true`） |
 
