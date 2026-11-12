@@ -30,10 +30,13 @@ struct HitboxDef {
     float radius = 18.0f;
     Vec2 offset{};                // 贴图中心 → 碰撞中心的偏移
     bool ghost = false;           // true：对方可以穿进身体（黑洞），不做分离也不推人
+    float contact = 0.0f;         // 接触伤害系数：0 = 撞它不掉血；1 = 常规撞击伤害（和地图 damageScale 取大）
 };
 
 struct StatsDef {
     float mass = 1.0f;
+    float massMax = 0.0f;         // > mass 时质量随对局时间从 mass 长到 massMax
+    float massRamp = 90.0f;       // 多少秒长到 massMax
     float restitution = 0.95f;
     float maxHp = 100.0f;
     float startSpeed = 420.0f;
@@ -136,21 +139,25 @@ struct ChargeDef {
 };
 
 // 引力井（被动）：把范围内的敌人往自己中心拉；敌人进到核心圈就掉血、并被随机传送走。
+// 范围、核心伤害都按「本局已进行时间 / growthSeconds」线性长到上限。
 struct GravityDef {
     bool enabled = false;
-    float range = 260.0f;         // 吸力生效半径
+    float range = 260.0f;         // 起始吸力半径
+    float rangeMax = 260.0f;      // 长满时的吸力半径
     float accel = 420.0f;         // 向心加速度（px/s²），保留切向速度 → 会绕圈
     float coreFactor = 0.7f;      // 核心半径 = 本值 × 自身碰撞半径
     float damage = 6.0f;          // 核心伤害起始值
-    float damageMax = 18.0f;      // 核心伤害上限（随对局时间涨到它）
-    float damageRamp = 60.0f;     // 多少秒长到上限
-    float tickInterval = 0.5f;    // 核心内两次伤害的最小间隔
+    float damageMax = 18.0f;      // 核心伤害上限
+    float growthSeconds = 90.0f;  // 多少秒长满（范围与核心伤害共用）
+    float dpsEdge = 0.0f;         // 站在吸力场边缘每秒掉多少血
+    float dpsCenter = 0.0f;       // 站在中心每秒掉多少血（按距离线性插值）
+    float tickInterval = 0.5f;    // 核心内两次核心伤害的最小间隔
     float teleportGuard = 1.5f;   // 同一个人两次传送的最小间隔
     float teleportMinDist = 240.0f; // 落点离黑洞至少多远
 };
 
-// 万向天引（大招）：范围内持续吸力 → N 秒后原地爆炸；期间自己无敌、被动失效。
-// 半径/时长/伤害/冷却都按「已经放过几次」线性成长到 To 值。
+// 万向天引（大招）：范围内持续吸力 → N 秒后原地爆炸；期间自己无敌、被动失效、不吃撞击伤害。
+// 范围、时长、伤害按时间线性成长；冷却固定用 trigger.cooldown（爆炸之后才开始算）。
 struct OmnipullDef {
     bool enabled = false;
     float rangeFrom = 200.0f;
@@ -160,9 +167,9 @@ struct OmnipullDef {
     float durationTo = 5.0f;
     float damageFrom = 20.0f;
     float damageTo = 48.0f;
-    float cooldownFrom = 10.0f;
-    float cooldownTo = 5.0f;
-    int castsToMax = 5;
+    float growthSeconds = 90.0f;
+    float dpsEdge = 0.0f;
+    float dpsCenter = 0.0f;
     bool invincible = true;
     bool suppressPassive = true;
 };

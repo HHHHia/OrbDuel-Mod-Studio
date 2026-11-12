@@ -181,11 +181,14 @@ if (Test-Path $SkillDir) {
 
         if ($null -ne $gravity) {
             InRange $gravity 'range' 1 2000 $src
+            InRange $gravity 'rangeMax' 1 2000 $src
             InRange $gravity 'accel' 0 6000 $src
             InRange $gravity 'coreFactor' 0.01 1.0 $src
             InRange $gravity 'damage' 0 500 $src
             InRange $gravity 'damageMax' 0 500 $src
-            InRange $gravity 'damageRamp' 0.1 600 $src
+            InRange $gravity 'growthSeconds' 0.1 600 $src
+            InRange $gravity 'dpsEdge' 0 100 $src
+            InRange $gravity 'dpsCenter' 0 100 $src
             InRange $gravity 'tickInterval' 0.01 10 $src
             InRange $gravity 'teleportGuard' 0 30 $src
             InRange $gravity 'teleportMinDist' 0 3000 $src
@@ -193,6 +196,11 @@ if (Test-Path $SkillDir) {
             $dmgMax = Prop $gravity 'damageMax'
             if ($null -ne $dmg -and $null -ne $dmgMax -and [double]$dmgMax -lt [double]$dmg) {
                 Fail $src "gravity.damageMax 不能小于 damage（否则伤害不成长）"
+            }
+            $rangeMax = Prop $gravity 'rangeMax'
+            $rangeMin = Prop $gravity 'range'
+            if ($null -ne $rangeMax -and $null -ne $rangeMin -and [double]$rangeMax -lt [double]$rangeMin) {
+                Fail $src "gravity.rangeMax 不能小于 range（否则越打越小）"
             }
         }
 
@@ -204,17 +212,14 @@ if (Test-Path $SkillDir) {
             InRange $omnipull 'durationTo' 0.2 20 $src
             InRange $omnipull 'damageFrom' 0 500 $src
             InRange $omnipull 'damageTo' 0 500 $src
-            InRange $omnipull 'cooldownFrom' 0.5 60 $src
-            InRange $omnipull 'cooldownTo' 0.5 60 $src
-            InRange $omnipull 'castsToMax' 1 50 $src
+            InRange $omnipull 'growthSeconds' 0.1 600 $src
+            InRange $omnipull 'dpsEdge' 0 100 $src
+            InRange $omnipull 'dpsCenter' 0 100 $src
             if ([double](Prop $omnipull 'rangeTo') -lt [double](Prop $omnipull 'rangeFrom')) {
                 Fail $src "omnipull.rangeTo 不能小于 rangeFrom（越放越弱）"
             }
             if ([double](Prop $omnipull 'durationTo') -lt [double](Prop $omnipull 'durationFrom')) {
                 Fail $src "omnipull.durationTo 不能小于 durationFrom（越放越短）"
-            }
-            if ([double](Prop $omnipull 'cooldownTo') -gt [double](Prop $omnipull 'cooldownFrom')) {
-                Fail $src "omnipull.cooldownTo 不能大于 cooldownFrom（越放越慢）"
             }
         }
 
@@ -268,15 +273,23 @@ if (Test-Path $CharDir) {
         if ($null -ne $hitbox) {
             if ((Prop $hitbox 'shape') -ne 'circle') { Fail $src "hitbox.shape 目前只支持 'circle'" }
             InRange $hitbox 'radius' 6 120 $src
+            InRange $hitbox 'contact' 0 10 $src
         }
 
         $stats = Prop $d 'stats'
         if (-not (Need $d 'stats' $src)) { }
         if ($null -ne $stats) {
             InRange $stats 'mass' 0.2 20 $src
+            InRange $stats 'massMax' 0 20 $src
+            InRange $stats 'massRamp' 0 600 $src
             InRange $stats 'restitution' 0.0 1.0 $src
             InRange $stats 'maxHp' 10 10000 $src
             InRange $stats 'startSpeed' 0 1800 $src
+            $massMax = Prop $stats 'massMax'
+            $mass = Prop $stats 'mass'
+            if ($null -ne $massMax -and $null -ne $mass -and [double]$massMax -gt 0 -and [double]$massMax -lt [double]$mass) {
+                Fail $src "stats.massMax 不能小于 mass（否则越打越轻）"
+            }
         }
 
         if (-not (Need $d 'skills' $src)) { }

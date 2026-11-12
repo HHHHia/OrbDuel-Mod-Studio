@@ -54,11 +54,14 @@
       "additionalProperties": false,
       "properties": {
         "range": { "type": "number", "minimum": 1, "maximum": 2000 },
+        "rangeMax": { "type": "number", "minimum": 1, "maximum": 2000 },
         "accel": { "type": "number", "minimum": 0, "maximum": 6000 },
         "coreFactor": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
         "damage": { "type": "number", "minimum": 0, "maximum": 500 },
         "damageMax": { "type": "number", "minimum": 0, "maximum": 500 },
-        "damageRamp": { "type": "number", "minimum": 0.1, "maximum": 600 },
+        "growthSeconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 600 },
+        "dpsEdge": { "type": "number", "minimum": 0, "maximum": 100 },
+        "dpsCenter": { "type": "number", "minimum": 0, "maximum": 100 },
         "tickInterval": { "type": "number", "exclusiveMinimum": 0, "maximum": 10 },
         "teleportGuard": { "type": "number", "minimum": 0, "maximum": 30 },
         "teleportMinDist": { "type": "number", "minimum": 0, "maximum": 3000 }
@@ -75,9 +78,9 @@
         "durationTo": { "type": "number", "minimum": 0.2, "maximum": 20 },
         "damageFrom": { "type": "number", "minimum": 0, "maximum": 500 },
         "damageTo": { "type": "number", "minimum": 0, "maximum": 500 },
-        "cooldownFrom": { "type": "number", "minimum": 0.5, "maximum": 60 },
-        "cooldownTo": { "type": "number", "minimum": 0.5, "maximum": 60 },
-        "castsToMax": { "type": "integer", "minimum": 1, "maximum": 50 },
+        "growthSeconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 600 },
+        "dpsEdge": { "type": "number", "minimum": 0, "maximum": 100 },
+        "dpsCenter": { "type": "number", "minimum": 0, "maximum": 100 },
         "invincible": { "type": "boolean" },
         "suppressPassive": { "type": "boolean" }
       }

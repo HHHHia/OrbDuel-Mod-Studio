@@ -12,6 +12,18 @@
 
 namespace orbduel {
 
+namespace {
+
+// 成长曲线：对局时间 / 时长，线性 0 → 1（和 SkillSystem 里的成长用同一套口径）
+float growthOf(float elapsed, float seconds) {
+    if (seconds <= 0.01f) {
+        return 1.0f;
+    }
+    return clampf(elapsed / seconds, 0.0f, 1.0f);
+}
+
+} // namespace
+
 Match::Match(EventBus& events, World& world, Arena& arena)
     : events_(events),
       world_(world),
@@ -136,11 +148,14 @@ void Match::setup(const CharacterDef& left,
             }
             if (skill->gravity.enabled) {
                 fighter.gravity.range = skill->gravity.range;
+                fighter.gravity.rangeMax = skill->gravity.rangeMax;
+                fighter.gravity.growthSeconds = skill->gravity.growthSeconds;
                 fighter.gravity.accel = skill->gravity.accel;
                 fighter.gravity.coreFactor = skill->gravity.coreFactor;
                 fighter.gravity.damage = skill->gravity.damage;
                 fighter.gravity.damageMax = skill->gravity.damageMax;
-                fighter.gravity.rampTime = skill->gravity.damageRamp;
+                fighter.gravity.dpsEdge = skill->gravity.dpsEdge;
+                fighter.gravity.dpsCenter = skill->gravity.dpsCenter;
                 fighter.gravity.tickInterval = skill->gravity.tickInterval;
                 fighter.gravity.teleportGuard = skill->gravity.teleportGuard;
                 fighter.gravity.teleportMinDist = skill->gravity.teleportMinDist;
@@ -199,6 +214,22 @@ void Match::update(float dt) {
         bodies[1]->force += stall_.attraction(*bodies[1], *bodies[0]);
     }
 
+    // 质量随时间成长：黑洞会越吃越重，吸力也按 mass / 起始质量 放大
+    for (int i = 0; i < 2; ++i) {
+        Fighter& fighter = fighters_[i];
+        if (!fighter.alive || fighter.def == nullptr) {
+            continue;
+        }
+        const StatsDef& stats = fighter.def->stats;
+        if (stats.massMax <= stats.mass) {
+            continue;
+        }
+        const float t = stats.massRamp > 0.01f ? clampf(elapsed_ / stats.massRamp, 0.0f, 1.0f) : 1.0f;
+        Body& body = *bodies[i];
+        body.mass = stats.mass + (stats.massMax - stats.mass) * t;
+        body.invMass = body.mass > 0.0f ? 1.0f / body.mass : 0.0f;
+    }
+
     for (int i = 0; i < 2; ++i) {
         Fighter& fighter = fighters_[i];
         if (fighter.alive) {
@@ -220,18 +251,28 @@ void Match::update(float dt) {
         }
     }
 
-    // 万向天引：范围内的持续吸力 + 到点爆炸。爆炸之后才进冷却（冷却在 SkillSystem 里设）。
+    // 万向天引：范围内持续吸力 + 场内掉血 + 到点爆炸。爆炸之后才进冷却（冷却在 SkillSystem 里设）。
     for (int i = 0; i < 2; ++i) {
         Body& self = *bodies[i];
         Body& enemy = *bodies[1 - i];
 
-        float pullRadius = 0.0f;
-        float pullAccel = 0.0f;
-        if (fighters_[i].alive && skills_[i].pullField(pullRadius, pullAccel)) {
+        PullField field;
+        if (fighters_[i].alive && skills_[i].pullField(field)) {
             const Vec2 delta = self.pos - enemy.pos;
             const float dist = lengthOf(delta);
-            if (dist > 1e-3f && dist <= pullRadius) {
-                enemy.force += delta * (pullAccel / dist);
+            if (dist > 1e-3f && dist <= field.radius) {
+                // 质量越大吸得越狠
+                float massScale = 1.0f;
+                if (fighters_[i].def != nullptr && fighters_[i].def->stats.mass > 0.0f) {
+                    massScale = self.mass / fighters_[i].def->stats.mass;
+                }
+                enemy.force += delta * (field.accel * massScale / dist);
+
+                const float ratio = 1.0f - dist / field.radius;
+                const float dps = field.dpsEdge + (field.dpsCenter - field.dpsEdge) * ratio;
+                if (dps > 0.0f) {
+                    applyDamage(fighters_[1 - i].bodyId, dps * dt, true);
+                }
             }
         }
 
@@ -266,8 +307,26 @@ void Match::update(float dt) {
         if (dist <= 1e-3f) {
             continue;
         }
-        if (dist <= me.gravity.range) {
-            enemy.force += delta * (me.gravity.accel / dist);
+
+        // 范围和伤害都按对局时间成长（同一个 growthSeconds）
+        const float growth = growthOf(elapsed_, me.gravity.growthSeconds);
+        const float range = me.gravity.range + (me.gravity.rangeMax - me.gravity.range) * growth;
+        if (dist > range) {
+            continue;
+        }
+
+        // 质量越大吸得越狠（body.mass 每步已经按时间更新过）
+        float massScale = 1.0f;
+        if (me.def != nullptr && me.def->stats.mass > 0.0f) {
+            massScale = self.mass / me.def->stats.mass;
+        }
+        enemy.force += delta * (me.gravity.accel * massScale / dist);
+
+        // 吸力场持续伤害：边缘少、中心多，按距离线性插值
+        const float fieldDps =
+            me.gravity.dpsEdge + (me.gravity.dpsCenter - me.gravity.dpsEdge) * (1.0f - dist / range);
+        if (fieldDps > 0.0f) {
+            applyDamage(foe.bodyId, fieldDps * dt, true);
         }
 
         const float core = me.gravity.coreFactor * self.radius;
@@ -275,10 +334,7 @@ void Match::update(float dt) {
             continue;
         }
 
-        const float ramp = me.gravity.rampTime > 0.01f
-                               ? clampf(elapsed_ / me.gravity.rampTime, 0.0f, 1.0f)
-                               : 1.0f;
-        const float damage = me.gravity.damage + (me.gravity.damageMax - me.gravity.damage) * ramp;
+        const float damage = me.gravity.damage + (me.gravity.damageMax - me.gravity.damage) * growth;
         me.coreTick = me.gravity.tickInterval;
         foe.coreGuard = me.gravity.teleportGuard;
 
@@ -385,7 +441,19 @@ void Match::onEvent(const Event& event) {
     skills_[1].interruptCharge();
 
     const float refSpeed = map_ != nullptr ? std::max(1.0f, map_->physics.refSpeed) : 400.0f;
-    const float damageScale = map_ != nullptr ? map_->physics.damageScale : 1.0f;
+
+    // 接触伤害系数：地图总开关和两个角色各自的 contact 取最大。
+    // 0 = 这张图撞人不掉血（duel-basic 的默认），黑洞靠 hitbox.contact 单独打开。
+    float contactScale = map_ != nullptr ? map_->physics.damageScale : 1.0f;
+    for (int i = 0; i < 2; ++i) {
+        if (fighters_[i].def != nullptr && fighters_[i].def->hitbox.contact > contactScale) {
+            contactScale = fighters_[i].def->hitbox.contact;
+        }
+    }
+    // 万向天引期间整对不吃撞击伤害（黑洞自己还有无敌兜底）
+    if (skills_[0].omnipullActive() || skills_[1].omnipullActive()) {
+        contactScale = 0.0f;
+    }
 
     // 撞一次两边都疼：伤害按相对撞击速度算，各自结算
     for (int i = 0; i < 2; ++i) {
@@ -404,7 +472,7 @@ void Match::onEvent(const Event& event) {
         if (multiplier > 2.5f) {
             multiplier = 2.5f;
         }
-        const float damage = 12.0f * damageScale * (event.value / refSpeed) * multiplier;
+        const float damage = 12.0f * contactScale * (event.value / refSpeed) * multiplier;
 
         if (rule_) {
             rule_->onHit(fighter.bodyId, fighters_[1 - i].bodyId, damage);

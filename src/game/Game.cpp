@@ -396,14 +396,13 @@ int Game::run(const Options& options) {
 
             // 万向天引：把吸力范围画成圈，否则看不出自己被吸在哪
             for (int i = 0; i < 2; ++i) {
-                float pullRadius = 0.0f;
-                float pullAccel = 0.0f;
-                if (!match.skills(i).pullField(pullRadius, pullAccel)) {
+                PullField field;
+                if (!match.skills(i).pullField(field)) {
                     continue;
                 }
                 const Body* body = world.body(match.fighter(i).bodyId);
                 if (body != nullptr) {
-                    renderer.drawRing(body->pos, pullRadius, 2.0f, Rgba{190, 140, 255, 150});
+                    renderer.drawRing(body->pos, field.radius, 2.0f, Rgba{190, 140, 255, 150});
                 }
             }
 

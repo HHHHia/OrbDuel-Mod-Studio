@@ -43,12 +43,15 @@ struct PierceMod {
 
 // 引力井（被动技能）的生效参数：数据在 SkillDef::gravity，这里只放运行时要用的副本。
 struct GravityMod {
-    float range = 0.0f;         // 0 = 没有引力井
+    float range = 0.0f;         // 0 = 没有引力井（起始半径）
+    float rangeMax = 0.0f;      // 长满时的半径
+    float growthSeconds = 0.0f; // 多少秒长满
     float accel = 0.0f;
     float coreFactor = 0.0f;
     float damage = 0.0f;
     float damageMax = 0.0f;
-    float rampTime = 0.0f;
+    float dpsEdge = 0.0f;       // 吸力场里每秒掉血（边缘 / 中心，按距离插值）
+    float dpsCenter = 0.0f;
     float tickInterval = 0.0f;
     float teleportGuard = 0.0f;
     float teleportMinDist = 0.0f;

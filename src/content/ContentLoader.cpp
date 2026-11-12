@@ -199,11 +199,14 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
             const json& gravity = root["gravity"];
             def.gravity.enabled = true;
             def.gravity.range = readFloat(gravity, "range", 260.0f);
+            def.gravity.rangeMax = readFloat(gravity, "rangeMax", def.gravity.range);
             def.gravity.accel = readFloat(gravity, "accel", 420.0f);
             def.gravity.coreFactor = readFloat(gravity, "coreFactor", 0.7f);
             def.gravity.damage = readFloat(gravity, "damage", 6.0f);
             def.gravity.damageMax = readFloat(gravity, "damageMax", 18.0f);
-            def.gravity.damageRamp = readFloat(gravity, "damageRamp", 60.0f);
+            def.gravity.growthSeconds = readFloat(gravity, "growthSeconds", 90.0f);
+            def.gravity.dpsEdge = readFloat(gravity, "dpsEdge", 0.0f);
+            def.gravity.dpsCenter = readFloat(gravity, "dpsCenter", 0.0f);
             def.gravity.tickInterval = readFloat(gravity, "tickInterval", 0.5f);
             def.gravity.teleportGuard = readFloat(gravity, "teleportGuard", 1.5f);
             def.gravity.teleportMinDist = readFloat(gravity, "teleportMinDist", 240.0f);
@@ -219,9 +222,9 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
             def.omnipull.durationTo = readFloat(pull, "durationTo", 5.0f);
             def.omnipull.damageFrom = readFloat(pull, "damageFrom", 20.0f);
             def.omnipull.damageTo = readFloat(pull, "damageTo", 48.0f);
-            def.omnipull.cooldownFrom = readFloat(pull, "cooldownFrom", 10.0f);
-            def.omnipull.cooldownTo = readFloat(pull, "cooldownTo", 5.0f);
-            def.omnipull.castsToMax = readInt(pull, "castsToMax", 5);
+            def.omnipull.growthSeconds = readFloat(pull, "growthSeconds", 90.0f);
+            def.omnipull.dpsEdge = readFloat(pull, "dpsEdge", 0.0f);
+            def.omnipull.dpsCenter = readFloat(pull, "dpsCenter", 0.0f);
             def.omnipull.invincible = readBool(pull, "invincible", true);
             def.omnipull.suppressPassive = readBool(pull, "suppressPassive", true);
         }
@@ -274,24 +277,25 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
                 addIssue(issues, IssueSeverity::Warning, def.sourceFile,
                          "gravity.damageMax 小于 damage，伤害不会成长");
             }
+            if (def.gravity.growthSeconds <= 0.0f) {
+                addIssue(issues, IssueSeverity::Error, def.sourceFile,
+                         "gravity.growthSeconds 必须大于 0");
+            }
             if (def.gravity.tickInterval <= 0.0f) {
                 addIssue(issues, IssueSeverity::Error, def.sourceFile, "gravity.tickInterval 必须大于 0");
             }
         }
 
         if (def.omnipull.enabled) {
-            if (def.omnipull.castsToMax < 1) {
-                addIssue(issues, IssueSeverity::Error, def.sourceFile, "omnipull.castsToMax 至少为 1");
+            if (def.omnipull.growthSeconds <= 0.0f) {
+                addIssue(issues, IssueSeverity::Error, def.sourceFile,
+                         "omnipull.growthSeconds 必须大于 0");
             }
             if (def.omnipull.rangeTo < def.omnipull.rangeFrom ||
                 def.omnipull.damageTo < def.omnipull.damageFrom ||
                 def.omnipull.durationTo < def.omnipull.durationFrom) {
                 addIssue(issues, IssueSeverity::Warning, def.sourceFile,
                          "omnipull 的 *To 小于 *From，越放越弱");
-            }
-            if (def.omnipull.cooldownTo > def.omnipull.cooldownFrom) {
-                addIssue(issues, IssueSeverity::Warning, def.sourceFile,
-                         "omnipull.cooldownTo 大于 cooldownFrom，越放越慢");
             }
         }
 
@@ -356,11 +360,14 @@ void loadCharacters(const fs::path& dir, ContentPack& pack, std::vector<LoadIssu
             def.hitbox.radius = readFloat(hitbox, "radius", 18.0f);
             def.hitbox.offset = readVec2(hitbox, "offset", Vec2{0.0f, 0.0f});
             def.hitbox.ghost = readBool(hitbox, "ghost", false);
+            def.hitbox.contact = readFloat(hitbox, "contact", 0.0f);
         }
 
         if (root.contains("stats") && root["stats"].is_object()) {
             const json& stats = root["stats"];
             def.stats.mass = readFloat(stats, "mass", 1.0f);
+            def.stats.massMax = readFloat(stats, "massMax", 0.0f);
+            def.stats.massRamp = readFloat(stats, "massRamp", 90.0f);
             def.stats.restitution = readFloat(stats, "restitution", 0.95f);
             def.stats.maxHp = readFloat(stats, "maxHp", 100.0f);
             def.stats.startSpeed = readFloat(stats, "startSpeed", 400.0f);

@@ -38,11 +38,21 @@ struct SkillState {
 
     // 万向天引（def->omnipull.enabled 时才使用）
     float pullLeft = 0.0f;     // > 0 = 正在吸；倒数到 0 就炸
-    float pullRadius = 0.0f;   // 本次吸力半径（施放瞬间按次数锁定）
+    float pullRadius = 0.0f;   // 本次吸力半径（施放瞬间按时间成长锁定）
     float pullAccel = 0.0f;
+    float pullDpsEdge = 0.0f;
+    float pullDpsCenter = 0.0f;
     float blastRadius = 0.0f;
     float blastDamage = 0.0f;
     bool blastPending = false;
+};
+
+// 吸力场的运行时参数：Match 拿它施加向心加速度 + 场内持续伤害。
+struct PullField {
+    float radius = 0.0f;
+    float accel = 0.0f;      // 已含「质量放大」的话由施加方决定，这里只是数据里的值
+    float dpsEdge = 0.0f;    // 边缘每秒伤害
+    float dpsCenter = 0.0f;  // 中心每秒伤害（按距离线性插值）
 };
 
 class SkillSystem {
@@ -68,12 +78,13 @@ public:
     // 冲刺窗口内的第一次撞击：消费掉，并通过 outScale 返回额外伤害系数。
     bool consumeRam(float& outScale);
 
-    // 万向天引正在吸时返回本次的半径与加速度（Match 用它给敌人施力）。
-    bool pullField(float& radius, float& accel) const;
+    // 万向天引正在吸时填充本次的半径/加速度/场内 DPS。
+    bool pullField(PullField& out) const;
 
-    // 万向天引进行中：自己无敌 / 被动失效。
+    // 万向天引进行中：自己无敌 / 被动失效 / 整对不吃撞击伤害。
     bool invulnerable() const;
     bool suppressesPassive() const;
+    bool omnipullActive() const;
 
     // 吸力结束的那一步取走爆炸参数；只返回一次。
     bool consumeBlast(float& radius, float& damage);
@@ -89,6 +100,7 @@ private:
 
     std::vector<SkillState> states_;
     int bodyId_ = -1;
+    float elapsed_ = 0.0f;   // 本局技能时钟，成长曲线按它算（和 Match 的 elapsed 同步）
 };
 
 } // namespace orbduel

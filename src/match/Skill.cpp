@@ -21,10 +21,12 @@ constexpr float kRamWindow = 1.2f;
 constexpr float kAimNoiseSeconds = 0.5f;
 constexpr float kAimSmoothSeconds = 0.35f;
 
-// 成长曲线：第 1 次放是 From，第 castsToMax 次放就是 To（不是第 castsToMax+1 次）
-float growth(int casts, int castsToMax) {
-    const int steps = castsToMax > 1 ? castsToMax - 1 : 1;
-    return clampf(static_cast<float>(casts) / static_cast<float>(steps), 0.0f, 1.0f);
+// 成长曲线：对局时间 / 时长，线性 0 → 1。黑洞的伤害/范围/时长都按它长。
+float growthByTime(float elapsed, float seconds) {
+    if (seconds <= 0.01f) {
+        return 1.0f;
+    }
+    return clampf(elapsed / seconds, 0.0f, 1.0f);
 }
 
 } // namespace
@@ -34,10 +36,12 @@ SkillSystem::SkillSystem() = default;
 void SkillSystem::reset() {
     states_.clear();
     bodyId_ = -1;
+    elapsed_ = 0.0f;
 }
 
 void SkillSystem::attach(int bodyId, const std::vector<const SkillDef*>& skills) {
     bodyId_ = bodyId;
+    elapsed_ = 0.0f;
     states_.clear();
     for (const SkillDef* def : skills) {
         if (def == nullptr) {
@@ -57,6 +61,8 @@ void SkillSystem::update(float dt,
                          Rng& rng,
                          EventBus& events) {
     (void)hpRatio;
+
+    elapsed_ += dt;
 
     for (std::size_t i = 0; i < states_.size(); ++i) {
         SkillState& state = states_[i];
@@ -81,11 +87,8 @@ void SkillSystem::update(float dt,
             if (state.pullLeft <= 0.0f) {
                 state.pullLeft = 0.0f;
                 state.blastPending = true;
-                const OmnipullDef& pull = state.def->omnipull;
-                state.cooldownLeft = pull.cooldownFrom +
-                                     (pull.cooldownTo - pull.cooldownFrom) *
-                                         growth(state.casts, pull.castsToMax);
-                state.casts += 1;
+                // 冷却固定用 trigger.cooldown，爆炸之后才开始算
+                state.cooldownLeft = state.def->trigger.cooldown;
                 log::info("omnipull blast: " + state.def->id);
             }
             continue;
@@ -120,11 +123,13 @@ void SkillSystem::update(float dt,
         }
 
         if (state.def->omnipull.enabled) {
-            // 万向天引：按「已经放过几次」锁定本次的半径/时长/伤害，冷却等炸完再进
+            // 万向天引：按对局时间锁定本次的半径/时长/伤害，冷却等炸完再进
             const OmnipullDef& pull = state.def->omnipull;
-            const float progress = growth(state.casts, pull.castsToMax);
+            const float progress = growthByTime(elapsed_, pull.growthSeconds);
             state.pullRadius = pull.rangeFrom + (pull.rangeTo - pull.rangeFrom) * progress;
             state.pullAccel = pull.accel;
+            state.pullDpsEdge = pull.dpsEdge;
+            state.pullDpsCenter = pull.dpsCenter;
             state.pullLeft = pull.durationFrom + (pull.durationTo - pull.durationFrom) * progress;
             state.blastRadius = state.pullRadius;
             state.blastDamage = pull.damageFrom + (pull.damageTo - pull.damageFrom) * progress;
@@ -225,13 +230,15 @@ bool SkillSystem::consumeRam(float& outScale) {
     return false;
 }
 
-bool SkillSystem::pullField(float& radius, float& accel) const {
+bool SkillSystem::pullField(PullField& out) const {
     for (const SkillState& state : states_) {
         if (state.pullLeft <= 0.0f || state.def == nullptr) {
             continue;
         }
-        radius = state.pullRadius;
-        accel = state.pullAccel;
+        out.radius = state.pullRadius;
+        out.accel = state.pullAccel;
+        out.dpsEdge = state.pullDpsEdge;
+        out.dpsCenter = state.pullDpsCenter;
         return true;
     }
     return false;
@@ -251,6 +258,15 @@ bool SkillSystem::suppressesPassive() const {
     for (const SkillState& state : states_) {
         if (state.pullLeft > 0.0f && state.def != nullptr && state.def->omnipull.enabled &&
             state.def->omnipull.suppressPassive) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool SkillSystem::omnipullActive() const {
+    for (const SkillState& state : states_) {
+        if (state.pullLeft > 0.0f && state.def != nullptr && state.def->omnipull.enabled) {
             return true;
         }
     }
