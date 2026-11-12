@@ -131,6 +131,9 @@ if (Test-Path $SkillDir) {
         $charge = Prop $d 'charge'
         if ($null -ne $charge) {
             InRange $charge 'duration' 0.2 10 $src
+            InRange $charge 'durationMin' 0.0 10 $src
+            InRange $charge 'durationLearningCasts' 1 50 $src
+            InRange $charge 'interruptImmuneCasts' 0 100 $src
             InRange $charge 'releaseSpeed' 50 2000 $src
             InRange $charge 'aimLag' 0.0 2.0 $src
             InRange $charge 'aimJitterDeg' 0.0 45 $src
@@ -138,6 +141,11 @@ if (Test-Path $SkillDir) {
             InRange $charge 'aimJitterMinDeg' 0.0 45 $src
             InRange $charge 'aimLearningCasts' 1 50 $src
             InRange $charge 'ramDamageScale' 0.0 5.0 $src
+            $durMin = Prop $charge 'durationMin'
+            $durMax = Prop $charge 'duration'
+            if ($null -ne $durMin -and $null -ne $durMax -and [double]$durMin -gt [double]$durMax) {
+                Fail $src "durationMin 不能大于 duration（否则越放越慢）"
+            }
             $lagMin = Prop $charge 'aimLagMin'
             $lagMax = Prop $charge 'aimLag'
             if ($null -ne $lagMin -and $null -ne $lagMax -and [double]$lagMin -gt [double]$lagMax) {

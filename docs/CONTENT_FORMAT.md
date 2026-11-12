@@ -72,12 +72,15 @@ content/
   "trigger": { "kind": "cooldown", "cooldown": 6.0 },
   "charge": {
     "duration": 3.0,
+    "durationMin": 0.0,
+    "durationLearningCasts": 10,
     "releaseSpeed": 500.0,
     "aimLag": 0.3,
     "aimJitterDeg": 6.0,
     "aimLagMin": 0.05,
     "aimJitterMinDeg": 0.5,
     "aimLearningCasts": 5,
+    "interruptImmuneCasts": 15,
     "ramDamageScale": 0.12
   },
   "modifiers": [],
@@ -143,17 +146,20 @@ content/
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `duration` | float 0.2–10 | 蓄力时长；这期间速度被清零，球定在原地 |
+| `duration` | float 0.2–10 | 蓄力时长（第一次放的时候用）；这期间速度被清零，球定在原地 |
+| `durationMin` | float 0–10 | 放熟之后的蓄力时长下限；`0` = 瞬发（不能大于 `duration`） |
+| `durationLearningCasts` | int 1–50 | 放几次把蓄力时间压到 `durationMin` |
 | `releaseSpeed` | float 50–2000 | 蓄满瞬间把速度设成这个值，方向 = 虚线方向 |
 | `aimLag` | float 0–2 | 锁定点落后敌人多少秒（越大越打不准） |
 | `aimJitterDeg` | float 0–45 | 锁定方向的随机抖动（度）；抖动是低频噪声，慢慢飘，不是每帧乱跳 |
 | `aimLagMin` | float 0–2 | 「放熟」之后的延迟下限（不能大于 `aimLag`） |
 | `aimJitterMinDeg` | float 0–45 | 「放熟」之后的抖动下限（不能大于 `aimJitterDeg`） |
 | `aimLearningCasts` | int 1–50 | 放出几次后达到最准；本局累计，重开一局归零 |
+| `interruptImmuneCasts` | int 0–100 | 本局放够几次之后蓄力不再被撞击打断 |
 | `ramDamageScale` | float 0–5 | 冲出后第一次撞到对手的额外伤害 = 该值 × 接触相对速度 |
 
-不变量：蓄力被任何撞击打断就作废并进 CD；一次冲刺只结算一次额外伤害。
-索敌精度随本局释放次数线性提升：第 1 次用 `aimLag` / `aimJitterDeg`，第 `aimLearningCasts` 次起用 `aimLagMin` / `aimJitterMinDeg`。
+不变量：蓄力被任何撞击打断就作废并进 CD（放够 `interruptImmuneCasts` 次之后不再被打断）；一次冲刺只结算一次额外伤害。
+三个「越放越强」的量都按本局释放次数线性插值，各自独立：蓄力时长（`durationLearningCasts`）、锁定延迟与抖动（`aimLearningCasts`）、打断免疫（`interruptImmuneCasts`）。
 
 ---
 

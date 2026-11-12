@@ -116,13 +116,16 @@ struct VfxDef {
 // 蓄力冲刺：冷却到点后先原地蓄力，再沿「延迟锁定的敌人位置」冲出，撞到对手算一次重击。
 struct ChargeDef {
     bool enabled = false;
-    float duration = 3.0f;         // 蓄力时长（秒）
+    float duration = 3.0f;         // 蓄力时长（秒，第一次放的时候用）
+    float durationMin = 0.0f;      // 放熟之后的蓄力时长下限（0 = 瞬发）
+    int durationLearningCasts = 10; // 放几次把蓄力时间压到 durationMin
     float releaseSpeed = 500.0f;   // 释放瞬间的速度
     float aimLag = 0.3f;           // 锁定点落后敌人多少秒（第一次放的时候用）
     float aimJitterDeg = 6.0f;     // 锁定方向的随机抖动（度，第一次放的时候用）
     float aimLagMin = 0.05f;       // 放熟之后的下限
     float aimJitterMinDeg = 0.5f;  // 放熟之后的下限
     int aimLearningCasts = 5;      // 放几次达到最准
+    int interruptImmuneCasts = 15; // 放够几次之后蓄力打不断
     float ramDamageScale = 0.12f;  // 撞击额外伤害 = scale × 接触瞬间相对速度
 };
 

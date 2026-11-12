@@ -5,12 +5,15 @@
   "trigger": { "kind": "cooldown", "cooldown": 6.0 },
   "charge": {
     "duration": 3.0,
+    "durationMin": 0.0,
+    "durationLearningCasts": 10,
     "releaseSpeed": 500.0,
     "aimLag": 0.3,
     "aimJitterDeg": 6.0,
     "aimLagMin": 0.05,
     "aimJitterMinDeg": 0.5,
     "aimLearningCasts": 5,
+    "interruptImmuneCasts": 15,
     "ramDamageScale": 0.12
   },
   "modifiers": [],

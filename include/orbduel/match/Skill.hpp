@@ -67,7 +67,7 @@ private:
     void cast(int slot, Body& self, EventBus& events);
     void release(int slot, Body& self, EventBus& events);
     Vec2 aimAt(const Body& self, const Body& enemy, float aimLag) const;
-    float accuracyOf(const SkillState& state) const;
+    static float learnProgress(int casts, int steps);
 
     std::vector<SkillState> states_;
     int bodyId_ = -1;

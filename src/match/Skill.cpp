@@ -72,7 +72,7 @@ void SkillSystem::update(float dt,
         if (state.charging) {
             // 蓄力中：方向每帧重算，但抖动走低频噪声 + 插值，线是「飘」不是「抖」
             const ChargeDef& charge = state.def->charge;
-            const float progress = accuracyOf(state);
+            const float progress = learnProgress(state.casts, charge.aimLearningCasts);
             const float lag = charge.aimLag + (charge.aimLagMin - charge.aimLag) * progress;
             const float jitter = charge.aimJitterDeg +
                                  (charge.aimJitterMinDeg - charge.aimJitterDeg) * progress;
@@ -103,21 +103,29 @@ void SkillSystem::update(float dt,
         }
 
         // 原地蓄力：只清一次速度，StallGuard 的吸力照样能把它推走（按设计保留）
+        const ChargeDef& charge = state.def->charge;
         state.charging = true;
-        state.chargeLeft = std::max(0.1f, state.def->charge.duration);
+        state.chargeLeft = charge.duration +
+                           (charge.durationMin - charge.duration) *
+                               learnProgress(state.casts, charge.durationLearningCasts);
         state.aimNoise = 0.0f;
         state.aimNoiseTarget = 0.0f;
         state.aimNoiseTimer = 0.0f;
-        state.aimDir = aimAt(self, enemy, state.def->charge.aimLag);
+        state.aimDir = aimAt(self, enemy, charge.aimLag);
         self.vel = Vec2{0.0f, 0.0f};
         log::info("charge start: " + state.def->id);
+
+        // 蓄力时间已经缩到 0：当帧就冲出去，不再等
+        if (state.chargeLeft <= 0.0f) {
+            release(static_cast<int>(i), self, events);
+        }
     }
 }
 
-// 0 = 第一次放（最不准），1 = 已经放到 aimLearningCasts 次（最准）
-float SkillSystem::accuracyOf(const SkillState& state) const {
-    const int steps = state.def->charge.aimLearningCasts > 0 ? state.def->charge.aimLearningCasts : 1;
-    return clampf(static_cast<float>(state.casts) / static_cast<float>(steps), 0.0f, 1.0f);
+// 0 = 第一次放，1 = 已经放够 steps 次
+float SkillSystem::learnProgress(int casts, int steps) {
+    const int need = steps > 0 ? steps : 1;
+    return clampf(static_cast<float>(casts) / static_cast<float>(need), 0.0f, 1.0f);
 }
 
 Vec2 SkillSystem::aimAt(const Body& self, const Body& enemy, float aimLag) const {
@@ -149,6 +157,10 @@ void SkillSystem::release(int slot, Body& self, EventBus& events) {
 void SkillSystem::interruptCharge() {
     for (SkillState& state : states_) {
         if (!state.charging || state.def == nullptr) {
+            continue;
+        }
+        // 放够次数之后就打不断了
+        if (state.casts >= state.def->charge.interruptImmuneCasts) {
             continue;
         }
         state.charging = false;
