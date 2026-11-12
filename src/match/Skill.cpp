@@ -88,6 +88,7 @@ void SkillSystem::update(float dt,
         state.chargeLeft = std::max(0.1f, state.def->charge.duration);
         state.aimDir = aimAt(self, enemy, state.def->charge, rng);
         self.vel = Vec2{0.0f, 0.0f};
+        log::info("charge start: " + state.def->id);
     }
 }
 
@@ -115,6 +116,7 @@ void SkillSystem::release(int slot, Body& self, EventBus& events) {
     state.charging = false;
     state.ramLeft = kRamWindow;
     self.vel = state.aimDir * state.def->charge.releaseSpeed;
+    log::info("charge release: " + state.def->id);
     // 冲出也算一次施放：冷却、事件、vfx 都走同一条路
     cast(slot, self, events);
 }
@@ -126,6 +128,7 @@ void SkillSystem::interruptCharge() {
         }
         state.charging = false;
         state.cooldownLeft = std::max(0.25f, state.def->trigger.cooldown);
+        log::info("charge interrupted: " + state.def->id);
     }
 }
 
