@@ -130,7 +130,8 @@ std::string skillLine(const ContentPack& pack, const CharacterDef& def, bool cjk
 
 void drawCharacterCard(Renderer& renderer, AssetCache& assets, const ContentPack& pack,
                        const CharacterDef& def, Rect card, Vec2 avatar, float avatarRadius,
-                       Rgba accent, const std::string& contentRoot, const std::string& slot) {
+                       Rgba accent, const std::string& contentRoot, const std::string& slot,
+                       bool chineseLabels) {
     renderer.drawRect(card, kPanel);
     renderer.drawRectLines(card, 2.0f, accent);
 
@@ -151,7 +152,7 @@ void drawCharacterCard(Renderer& renderer, AssetCache& assets, const ContentPack
         }
     }
 
-    const bool cjk = renderer.hasFallbackFont();
+    const bool cjk = chineseLabels && renderer.hasFallbackFont();
     drawCentered(renderer, characterLabel(def, cjk), card.center().x, avatar.y + avatarRadius + 16.0f,
                  16, kText);
 
@@ -255,7 +256,8 @@ void Menu::update(Renderer& renderer) {
     }
 }
 
-void Menu::draw(Renderer& renderer, AssetCache& assets, const std::string& contentRoot) const {
+void Menu::draw(Renderer& renderer, AssetCache& assets, const std::string& contentRoot,
+                bool chineseLabels) const {
     if (pack_ == nullptr || pack_->characters.empty()) {
         return;
     }
@@ -271,9 +273,9 @@ void Menu::draw(Renderer& renderer, AssetCache& assets, const std::string& conte
     const CharacterDef& left = pack_->characters[leftIndex_];
     const CharacterDef& right = pack_->characters[rightIndex_];
     drawCharacterCard(renderer, assets, *pack_, left, layout.leftCard, layout.leftAvatar,
-                      layout.avatarRadius, kAccentLeft, contentRoot, "PLAYER");
+                      layout.avatarRadius, kAccentLeft, contentRoot, "PLAYER", chineseLabels);
     drawCharacterCard(renderer, assets, *pack_, right, layout.rightCard, layout.rightAvatar,
-                      layout.avatarRadius, kAccentRight, contentRoot, "ENEMY");
+                      layout.avatarRadius, kAccentRight, contentRoot, "ENEMY", chineseLabels);
 
     drawButton(renderer, layout.leftPrev, "<", kText, inside(layout.leftPrev, mouse));
     drawButton(renderer, layout.leftNext, ">", kText, inside(layout.leftNext, mouse));

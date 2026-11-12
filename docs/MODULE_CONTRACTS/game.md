@@ -4,7 +4,7 @@
 
 ## 职责
 
-- 解析命令行（`--seed` / `--char` / `--enemy` / `--map` / `--no-menu` / `--headless` / `--seconds` / `--screenshot` / `--selftest`）
+- 解析命令行（`--seed` / `--char` / `--enemy` / `--map` / `--no-menu` / `--headless` / `--seconds` / `--screenshot` / `--lang` / `--selftest`）
 - 装配：`ContentLoader` → `World` → `Match` → `Renderer` → `Fx`
 - 主循环：帧计时 → `Clock` → 固定步推进 → 渲染
 - 场景切换：主菜单（`Menu`）/ 对局 / 结算；结算 5 秒后自动回主菜单
@@ -20,8 +20,8 @@
 
 | 文件 | 内容 |
 |---|---|
-| `game/Game.hpp` | `Game::run(const Options&)`、`Options`（含 `startInMenu` / `headless`） |
-| `game/Menu.hpp` | `Menu::open/update/draw/wantsStart/wantsQuit/clearRequests/leftId/rightId/background` |
+| `game/Game.hpp` | `Game::run(const Options&)`、`Options`（含 `startInMenu` / `headless` / `language`） |
+| `game/Menu.hpp` | `Menu::open/update/draw/...`；`draw(..., bool chineseLabels)` 决定名字用中文还是英文 |
 | `game/Input.hpp` | `Input::sample()`；现阶段返回全零，留接口 |
 
 ## 不变量
@@ -35,6 +35,7 @@
 7. `ESC` 不退出进程：对局内回主菜单，菜单内只关闭「退出确认框」。退出只有两条路——菜单里 `QUIT GAME` → `YES`，或关闭窗口。
 8. `--headless` 一律不进菜单（没有输入来源，停在菜单等于空转）；`--no-menu` 直接开局；`--char/--enemy` 只作为菜单的预选项。
 9. 左右两侧各自选角，允许同一个角色互打；同角色时右侧整体偏蓝以便区分。
+10. `Options::language` 默认 `"en"`：角色名/技能名画英文；`"zh"`（`--lang zh`）且系统有中文字体时才画中文。字体始终加载，缺字体只降级文字，不报错。
 
 ## 禁止
 

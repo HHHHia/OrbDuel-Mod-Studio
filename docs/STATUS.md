@@ -42,6 +42,7 @@
 .\build\bin\orbduel.exe --char lancer --enemy bulwark --map duel-basic   # 参数只做菜单预选
 .\build\bin\orbduel.exe --seconds 10    # 跑 10 秒自动退出
 .\build\bin\orbduel.exe --screenshot out.png   # 第 2 秒截图后退出（在菜单里就截菜单）
+.\build\bin\orbduel.exe --lang zh       # 角色/技能名显示中文（默认英文）
 ```
 
 - 启动先进主菜单：左右两张卡各自用 `<` `>` 切换角色（可以选同一个角色互打），`START GAME` 或 Enter 开局，`QUIT GAME` 弹确认框（点 No / 点框外 / ESC 取消）；
@@ -114,6 +115,6 @@
 - 没有单元测试；物理回归靠 `--headless --seconds N` + 日志，技能机制靠 `build-verify/skill_probe.exe`（不在仓库里）。
 - `hitbox.offset` 还没进物理（现在只按半径算）。
 - 没有音效。
-- 中文名走**系统字体**（`C:/Windows/Fonts/msyh.ttc`，找不到再试 `msyhbd.ttc` / `simhei.ttf`）：一个都打不开就自动退回英文名，不会崩；换平台要在 `content/fonts/` 打包一个 CJK 字体。
+- 中文名走**系统字体**（`C:/Windows/Fonts/msyh.ttc`，找不到再试 `msyhbd.ttc` / `simhei.ttf`）：默认仍显示英文，`--lang zh` 才切中文；一个字体都打不开就自动退回英文名，不会崩；换平台要在 `content/fonts/` 打包一个 CJK 字体。
 - 菜单只能用鼠标操作（键盘只有 Enter 开局、ESC 关确认框），没有方向键导航。
 - 菜单不做地图选择，地图仍由 `--map` 决定。

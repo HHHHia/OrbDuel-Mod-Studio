@@ -25,8 +25,9 @@ public:
     // 处理一帧输入。必须在 renderer.pumpEvents() 之后、draw() 之前调用。
     void update(Renderer& renderer);
 
-    // 画一帧。调用方负责 beginFrame() / endFrame()。
-    void draw(Renderer& renderer, AssetCache& assets, const std::string& contentRoot) const;
+    // 画一帧。调用方负责 beginFrame() / endFrame()；chineseLabels 决定名字用中文还是英文。
+    void draw(Renderer& renderer, AssetCache& assets, const std::string& contentRoot,
+              bool chineseLabels) const;
 
     // 清屏用的底色，和菜单面板配色配套。
     Rgba background() const;

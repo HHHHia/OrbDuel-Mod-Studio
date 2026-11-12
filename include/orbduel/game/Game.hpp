@@ -26,6 +26,7 @@ struct Options {
     float autotestSeconds = 0.0f; // >0 时无窗口跑物理回归
     float runSeconds = 0.0f;    // >0 时跑够这么多秒自动退出（自测用）
     std::string screenshotPath; // 非空时在第 2 秒存一张 PNG 然后退出
+    std::string language = "en"; // 界面语言：en = 英文名（默认）/ zh = 中文名（需要系统中文字体）
 };
 
 class Game {

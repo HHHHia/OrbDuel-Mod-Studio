@@ -143,9 +143,9 @@ int Game::run(const Options& options) {
             break;
         }
     }
-    const bool cjkNames = renderer.hasFallbackFont();
-    if (!cjkNames) {
-        log::warn("没找到中文字体，角色/技能名只用英文");
+    const bool chineseLabels = options.language.rfind("zh", 0) == 0 && renderer.hasFallbackFont();
+    if (options.language.rfind("zh", 0) == 0 && !chineseLabels) {
+        log::warn("--lang zh 但没找到中文字体，名字仍用英文");
     }
 
     AssetCache assets(renderer.backend());
@@ -164,7 +164,7 @@ int Game::run(const Options& options) {
     std::vector<CastText> castTexts;
     // 每个球的绘制朝向（弧度），只影响渲染，不参与物理
     std::array<float, 2> bodyAngle{0.0f, 0.0f};
-    events.subscribe(EventType::SkillCast, [&match, &castTexts, cjkNames](const Event& event) {
+    events.subscribe(EventType::SkillCast, [&match, &castTexts, chineseLabels](const Event& event) {
         const int slot = static_cast<int>(event.value);
         for (int i = 0; i < 2; ++i) {
             if (match.fighter(i).bodyId != event.a) {
@@ -176,7 +176,7 @@ int Game::run(const Options& options) {
             }
             castTexts.push_back(CastText{event.a, event.pos,
                                          skillLabel(*states[static_cast<std::size_t>(slot)].def,
-                                                    cjkNames),
+                                                    chineseLabels),
                                          0.0f});
             return;
         }
@@ -265,7 +265,7 @@ int Game::run(const Options& options) {
             }
 
             renderer.beginFrame(menu.background());
-            menu.draw(renderer, assets, loader.root());
+            menu.draw(renderer, assets, loader.root(), chineseLabels);
             renderer.endFrame();
         } else {
             if (renderer.wasKeyPressed(SDL_SCANCODE_R)) {
@@ -440,7 +440,7 @@ int Game::run(const Options& options) {
                 const Rgba color{255, 235, 150, static_cast<unsigned char>((1.0f - k) * 255.0f)};
                 const Body* body = world.body(cast.bodyId);
                 const Vec2 anchor = body != nullptr ? body->pos : cast.pos;
-                const int castSize = cjkNames ? 14 : 8;
+                const int castSize = chineseLabels ? 14 : 8;
                 const int width = renderer.measureText(cast.text, castSize);
                 renderer.drawText(cast.text,
                                   Vec2{anchor.x - static_cast<float>(width) * 0.5f,
@@ -461,10 +461,10 @@ int Game::run(const Options& options) {
             drawHpBar(renderer, rightBar, match.fighter(1).hp / match.fighter(1).maxHp,
                       Rgba{90, 160, 255, 255}, true);
 
-            const int nameSize = cjkNames ? 14 : 8;
-            renderer.drawText(characterLabel(*left, cjkNames),
+            const int nameSize = chineseLabels ? 14 : 8;
+            renderer.drawText(characterLabel(*left, chineseLabels),
                               Vec2{leftBar.x, leftBar.y + barHeight + 6.0f}, nameSize, kHudText);
-            renderer.drawText(characterLabel(*right, cjkNames),
+            renderer.drawText(characterLabel(*right, chineseLabels),
                               Vec2{rightBar.x, rightBar.y + barHeight + 6.0f}, nameSize, kHudText);
 
             renderer.drawText(hpText(match.fighter(0)), Vec2{leftBar.x + 6.0f, leftBar.y + 3.0f}, 8, kHudText);
@@ -493,8 +493,8 @@ int Game::run(const Options& options) {
                     std::string headline = "DRAW";
                     if (result.winnerId >= 0) {
                         headline = (result.winnerId == match.fighter(0).bodyId)
-                                       ? characterLabel(*left, cjkNames) + " WINS"
-                                       : characterLabel(*right, cjkNames) + " WINS";
+                                       ? characterLabel(*left, chineseLabels) + " WINS"
+                                       : characterLabel(*right, chineseLabels) + " WINS";
                     }
 
                     const int headlineWidth = renderer.measureText(headline, 16);

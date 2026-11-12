@@ -149,6 +149,8 @@ int main(int argc, char** argv) {
             options.runSeconds = static_cast<float>(std::atof(argv[++i]));
         } else if (arg == "--screenshot" && i + 1 < argc) {
             options.screenshotPath = argv[++i];
+        } else if (arg == "--lang" && i + 1 < argc) {
+            options.language = argv[++i];
         } else if (arg == "--help" || arg == "-h") {
             std::printf("OrbDuel %s\n", orbduel::versionString());
             std::printf("用法:\n");
@@ -160,6 +162,7 @@ int main(int argc, char** argv) {
             std::printf("  orbduel --headless              不开窗口（只做逻辑）\n");
             std::printf("  orbduel --no-menu               跳过主菜单直接开局\n");
             std::printf("  orbduel --seconds 5             跑 5 秒后自动退出\n");
+            std::printf("  orbduel --lang zh               角色/技能名显示中文（默认英文）\n");
             return 0;
         }
     }
