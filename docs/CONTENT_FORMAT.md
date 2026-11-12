@@ -43,7 +43,7 @@ content/
 | `format` | int | ✔ | 必须为 1 | 格式版本 |
 | `id` | string | ✔ | 与目录名一致 | 唯一 id |
 | `name.en` | string | ✔ | 1–32 字符 | 显示名 |
-| `name.zh` | string | ✘ | 1–16 字符 | 缺省回退 `name.en` |
+| `name.zh` | string | ✘ | 1–16 字符 | 缺省回退 `name.en`；需要系统有中文字体，找不到就显示英文 |
 | `skin.texture` | string | ✔ | 相对本目录的文件名 | PNG，建议 256×256 |
 | `skin.shape` | string | ✘ | `"sprite"`（默认）\| `"triangle"` | `sprite` 画贴图；`triangle` 不读贴图，直接画瘦长三角 |
 | `skin.scale` | float | ✘ | 0.1–8 | 默认 1.0；**只影响绘制，不影响碰撞** |

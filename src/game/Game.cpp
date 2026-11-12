@@ -8,6 +8,7 @@
 #include <string>
 
 #include "BodyShape.hpp"
+#include "Names.hpp"
 #include "orbduel/content/ContentLoader.hpp"
 #include "orbduel/core/Event.hpp"
 #include "orbduel/core/Log.hpp"
@@ -133,6 +134,20 @@ int Game::run(const Options& options) {
         log::warn("字体加载失败，HUD 文字不会显示: " + fontPath);
     }
 
+    // 中文名：借系统字体；一个都打不开就继续显示英文名。
+    // shortcut: 只认 Windows 系统字体路径，换平台得换成打包进 content/fonts 的字体
+    for (const char* cjkPath : {"C:/Windows/Fonts/msyh.ttc", "C:/Windows/Fonts/msyhbd.ttc",
+                                "C:/Windows/Fonts/simhei.ttf"}) {
+        if (renderer.loadFallbackFont(cjkPath, 10)) {
+            log::info(std::string("中文字体: ") + cjkPath);
+            break;
+        }
+    }
+    const bool cjkNames = renderer.hasFallbackFont();
+    if (!cjkNames) {
+        log::warn("没找到中文字体，角色/技能名只用英文");
+    }
+
     AssetCache assets(renderer.backend());
 
     EventBus events;
@@ -149,7 +164,7 @@ int Game::run(const Options& options) {
     std::vector<CastText> castTexts;
     // 每个球的绘制朝向（弧度），只影响渲染，不参与物理
     std::array<float, 2> bodyAngle{0.0f, 0.0f};
-    events.subscribe(EventType::SkillCast, [&match, &castTexts](const Event& event) {
+    events.subscribe(EventType::SkillCast, [&match, &castTexts, cjkNames](const Event& event) {
         const int slot = static_cast<int>(event.value);
         for (int i = 0; i < 2; ++i) {
             if (match.fighter(i).bodyId != event.a) {
@@ -159,7 +174,10 @@ int Game::run(const Options& options) {
             if (slot < 0 || slot >= static_cast<int>(states.size()) || states[static_cast<std::size_t>(slot)].def == nullptr) {
                 return;
             }
-            castTexts.push_back(CastText{event.a, event.pos, states[static_cast<std::size_t>(slot)].def->name.en, 0.0f});
+            castTexts.push_back(CastText{event.a, event.pos,
+                                         skillLabel(*states[static_cast<std::size_t>(slot)].def,
+                                                    cjkNames),
+                                         0.0f});
             return;
         }
     });
@@ -422,11 +440,12 @@ int Game::run(const Options& options) {
                 const Rgba color{255, 235, 150, static_cast<unsigned char>((1.0f - k) * 255.0f)};
                 const Body* body = world.body(cast.bodyId);
                 const Vec2 anchor = body != nullptr ? body->pos : cast.pos;
-                const int width = renderer.measureText(cast.text, 8);
+                const int castSize = cjkNames ? 14 : 8;
+                const int width = renderer.measureText(cast.text, castSize);
                 renderer.drawText(cast.text,
                                   Vec2{anchor.x - static_cast<float>(width) * 0.5f,
                                        anchor.y - 56.0f - k * 20.0f},
-                                  8, color);
+                                  castSize, color);
             }
 
             // ---- HUD ----
@@ -442,10 +461,11 @@ int Game::run(const Options& options) {
             drawHpBar(renderer, rightBar, match.fighter(1).hp / match.fighter(1).maxHp,
                       Rgba{90, 160, 255, 255}, true);
 
-            renderer.drawText(left->name.en.empty() ? left->id : left->name.en,
-                              Vec2{leftBar.x, leftBar.y + barHeight + 6.0f}, 8, kHudText);
-            renderer.drawText(right->name.en.empty() ? right->id : right->name.en,
-                              Vec2{rightBar.x, rightBar.y + barHeight + 6.0f}, 8, kHudText);
+            const int nameSize = cjkNames ? 14 : 8;
+            renderer.drawText(characterLabel(*left, cjkNames),
+                              Vec2{leftBar.x, leftBar.y + barHeight + 6.0f}, nameSize, kHudText);
+            renderer.drawText(characterLabel(*right, cjkNames),
+                              Vec2{rightBar.x, rightBar.y + barHeight + 6.0f}, nameSize, kHudText);
 
             renderer.drawText(hpText(match.fighter(0)), Vec2{leftBar.x + 6.0f, leftBar.y + 3.0f}, 8, kHudText);
             renderer.drawText(hpText(match.fighter(1)),
@@ -473,8 +493,8 @@ int Game::run(const Options& options) {
                     std::string headline = "DRAW";
                     if (result.winnerId >= 0) {
                         headline = (result.winnerId == match.fighter(0).bodyId)
-                                       ? (left->name.en.empty() ? left->id : left->name.en) + " WINS"
-                                       : (right->name.en.empty() ? right->id : right->name.en) + " WINS";
+                                       ? characterLabel(*left, cjkNames) + " WINS"
+                                       : characterLabel(*right, cjkNames) + " WINS";
                     }
 
                     const int headlineWidth = renderer.measureText(headline, 16);

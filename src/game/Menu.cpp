@@ -9,6 +9,7 @@
 #include <string>
 
 #include "BodyShape.hpp"
+#include "Names.hpp"
 
 namespace orbduel {
 namespace {
@@ -108,13 +109,13 @@ std::string numberText(float value, int decimals) {
     return std::string(buffer);
 }
 
-std::string skillLine(const ContentPack& pack, const CharacterDef& def) {
+std::string skillLine(const ContentPack& pack, const CharacterDef& def, bool cjk) {
     std::string line;
     for (std::size_t i = 0; i < def.skills.size(); ++i) {
         const SkillDef* skill = pack.findSkill(def.skills[i]);
         std::string label = def.skills[i];
-        if (skill != nullptr && !skill->name.en.empty()) {
-            label = skill->name.en;
+        if (skill != nullptr) {
+            label = skillLabel(*skill, cjk);
         }
         if (i != 0) {
             line += ", ";
@@ -150,11 +151,9 @@ void drawCharacterCard(Renderer& renderer, AssetCache& assets, const ContentPack
         }
     }
 
-    const std::string name = def.name.en.empty() ? def.id : def.name.en;
-    drawCentered(renderer, name, card.center().x, avatar.y + avatarRadius + 16.0f, 16, kText);
-
-    // shortcut: 只画英文名 —— 当前字体 PressStart2P 没有 CJK 字形，中文名会渲染成方框；
-    // 要显示 def.name.zh 得先换一个带中文的 TTF（见 docs/STATUS.md「已知缺口」）。
+    const bool cjk = renderer.hasFallbackFont();
+    drawCentered(renderer, characterLabel(def, cjk), card.center().x, avatar.y + avatarRadius + 16.0f,
+                 16, kText);
 
     const float statY = card.y + 226.0f;
     const float statX = card.x + 28.0f;
@@ -162,7 +161,9 @@ void drawCharacterCard(Renderer& renderer, AssetCache& assets, const ContentPack
     renderer.drawText("MASS  " + numberText(def.stats.mass, 2), Vec2{statX, statY + 20.0f}, 8, kDim);
     renderer.drawText("SPEED " + numberText(def.stats.startSpeed, 0), Vec2{statX, statY + 40.0f}, 8,
                       kDim);
-    renderer.drawText("SKILL " + skillLine(pack, def), Vec2{statX, statY + 62.0f}, 8, kDim);
+    // 中文技能名在 8 号像素字下看不清，单独放大一档
+    renderer.drawText("SKILL " + skillLine(pack, def, cjk), Vec2{statX, statY + 62.0f},
+                      cjk ? 12 : 8, kDim);
 }
 
 } // namespace

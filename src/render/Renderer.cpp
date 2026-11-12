@@ -61,6 +61,13 @@ void Renderer::shutdown() {
     }
     fonts_.clear();
     fontPath_.clear();
+    for (auto& entry : fallbackFonts_) {
+        if (entry.second != nullptr) {
+            TTF_CloseFont(entry.second);
+        }
+    }
+    fallbackFonts_.clear();
+    fallbackFontPath_.clear();
 
     if (renderer_ != nullptr) {
         SDL_DestroyRenderer(renderer_);
@@ -299,28 +306,75 @@ bool Renderer::loadFont(const std::string& ttfPath, int baseSize) {
     return true;
 }
 
-TTF_Font* Renderer::fontFor(int fontSize) const {
-    const int size = fontSize > 0 ? fontSize : baseFontSize_;
-    auto it = fonts_.find(size);
-    if (it != fonts_.end()) {
+bool Renderer::loadFallbackFont(const std::string& ttfPath, int baseSize) {
+    if (TTF_WasInit() == 0) {
+        if (TTF_Init() != 0) {
+            return false;
+        }
+    }
+    for (auto& entry : fallbackFonts_) {
+        if (entry.second != nullptr) {
+            TTF_CloseFont(entry.second);
+        }
+    }
+    fallbackFonts_.clear();
+    fallbackFontPath_.clear();
+
+    TTF_Font* font = TTF_OpenFont(ttfPath.c_str(), baseSize);
+    if (font == nullptr) {
+        return false;
+    }
+    fallbackFontPath_ = ttfPath;
+    fallbackBaseFontSize_ = baseSize;
+    fallbackFonts_[baseSize] = font;
+    return true;
+}
+
+bool Renderer::hasFallbackFont() const { return !fallbackFontPath_.empty(); }
+
+TTF_Font* Renderer::fontFor(int fontSize, bool fallback) const {
+    const int size = fontSize > 0 ? fontSize : (fallback ? fallbackBaseFontSize_ : baseFontSize_);
+    std::unordered_map<int, TTF_Font*>& cache = fallback ? fallbackFonts_ : fonts_;
+    const std::string& path = fallback ? fallbackFontPath_ : fontPath_;
+
+    auto it = cache.find(size);
+    if (it != cache.end()) {
         return it->second;
     }
-    if (fontPath_.empty()) {
+    if (path.empty()) {
         return nullptr;
     }
-    TTF_Font* font = TTF_OpenFont(fontPath_.c_str(), size);
+    TTF_Font* font = TTF_OpenFont(path.c_str(), size);
     if (font == nullptr) {
         return nullptr;
     }
-    fonts_[size] = font;
+    cache[size] = font;
     return font;
 }
+
+namespace {
+
+// 只要出现非 ASCII 字节就交给中文字体：这些字符像素字体一定没有
+bool needsFallbackFont(const std::string& text) {
+    for (char c : text) {
+        if (static_cast<unsigned char>(c) >= 0x80) {
+            return true;
+        }
+    }
+    return false;
+}
+
+} // namespace
 
 void Renderer::drawText(const std::string& text, Vec2 position, int fontSize, Rgba color) {
     if (text.empty()) {
         return;
     }
-    TTF_Font* font = fontFor(fontSize);
+    const bool fallback = hasFallbackFont() && needsFallbackFont(text);
+    TTF_Font* font = fontFor(fontSize, fallback);
+    if (font == nullptr && fallback) {
+        font = fontFor(fontSize, false);
+    }
     if (font == nullptr) {
         return;
     }
@@ -345,7 +399,11 @@ int Renderer::measureText(const std::string& text, int fontSize) const {
     if (text.empty()) {
         return 0;
     }
-    TTF_Font* font = fontFor(fontSize);
+    const bool fallback = hasFallbackFont() && needsFallbackFont(text);
+    TTF_Font* font = fontFor(fontSize, fallback);
+    if (font == nullptr && fallback) {
+        font = fontFor(fontSize, false);
+    }
     if (font == nullptr) {
         return 0;
     }

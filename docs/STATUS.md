@@ -113,6 +113,6 @@
 - 没有单元测试；物理回归靠 `--headless --seconds N` + 日志，技能机制靠 `build-verify/skill_probe.exe`（不在仓库里）。
 - `hitbox.offset` 还没进物理（现在只按半径算）。
 - 没有音效。
-- 主菜单不显示中文名：当前字体 PressStart2P 没有 CJK 字形，`name.zh` 会渲染成方框；要显示得换一个带中文的 TTF。
+- 中文名走**系统字体**（`C:/Windows/Fonts/msyh.ttc`，找不到再试 `msyhbd.ttc` / `simhei.ttf`）：一个都打不开就自动退回英文名，不会崩；换平台要在 `content/fonts/` 打包一个 CJK 字体。
 - 菜单只能用鼠标操作（键盘只有 Enter 开局、ESC 关确认框），没有方向键导航。
 - 菜单不做地图选择，地图仍由 `--map` 决定。

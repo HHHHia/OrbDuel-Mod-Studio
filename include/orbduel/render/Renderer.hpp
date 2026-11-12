@@ -67,6 +67,9 @@ public:
 
     // SDL2_ttf 需要外部字体文件；baseSize 是常用字号，其他字号按需缓存。
     bool loadFont(const std::string& ttfPath, int baseSize);
+    // 主字体没有的字（例如中文）用这个字体；没加载成功就继续用主字体（会显示成方框）。
+    bool loadFallbackFont(const std::string& ttfPath, int baseSize);
+    bool hasFallbackFont() const;
     void drawText(const std::string& text, Vec2 position, int fontSize, Rgba color);
     int measureText(const std::string& text, int fontSize) const;
 
@@ -77,7 +80,7 @@ public:
     bool saveScreenshot(const std::string& path);
 
 private:
-    TTF_Font* fontFor(int fontSize) const;
+    TTF_Font* fontFor(int fontSize, bool fallback) const;
 
     SDL_Window* window_ = nullptr;
     SDL_Renderer* renderer_ = nullptr;
@@ -85,6 +88,10 @@ private:
     std::string fontPath_;
     int baseFontSize_ = 16;
     mutable std::unordered_map<int, TTF_Font*> fonts_;
+
+    std::string fallbackFontPath_;
+    int fallbackBaseFontSize_ = 16;
+    mutable std::unordered_map<int, TTF_Font*> fallbackFonts_;
 
     std::vector<SDL_Scancode> pressedKeys_;
     Vec2 mousePosition_{};
