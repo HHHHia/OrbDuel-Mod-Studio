@@ -89,6 +89,9 @@ private:
     // setup() 一定先于 update() 调用；这里只兜住「没给 rng」的情况，避免解空指针。
     Rng& rngRef();
 
+    // 场地缩到装不下两个球时的结算：HP 高者胜，同 HP 平局。
+    void finishByHp();
+
     EventBus& events_;
     World& world_;
     Arena& arena_;

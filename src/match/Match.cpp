@@ -189,6 +189,15 @@ void Match::update(float dt) {
 
     zone_.update(dt, stall_.lullSeconds());
 
+    // 场地缩到装不下两个球：直接结算，HP 高者胜。到此为止不会再跑物理，
+    // 所以不会出现「两个球被挤在同一条线上反复弹」的退化状态。
+    const Rect field = arena_.bounds();
+    const float need = bodies[0]->radius + bodies[1]->radius;
+    if (field.w < need || field.h < need) {
+        finishByHp();
+        return;
+    }
+
     FightStatus status[2];
     for (int i = 0; i < 2; ++i) {
         status[i].id = fighters_[i].bodyId;
@@ -325,8 +334,31 @@ void Match::applyDamage(int victimBodyId, float amount, bool countsForCombo) {
     }
 }
 
-MatchPhase Match::phase() const { return phase_; }
+void Match::finishByHp() {
+    if (phase_ != MatchPhase::Fighting) {
+        return;
+    }
 
+    MatchResult result;
+    result.finished = true;
+    result.reason = "zone_zero";
+    if (fighters_[0].hp > fighters_[1].hp) {
+        result.winnerId = fighters_[0].bodyId;
+    } else if (fighters_[1].hp > fighters_[0].hp) {
+        result.winnerId = fighters_[1].bodyId;
+    }
+
+    result_ = result;
+    phase_ = MatchPhase::Finished;
+
+    Event event;
+    event.type = EventType::RoundEnd;
+    event.a = result.winnerId;
+    event.value = elapsed_;
+    events_.publish(event);
+}
+
+MatchPhase Match::phase() const { return phase_; }
 int Match::hitCount() const { return hitCount_; }
 
 const Fighter& Match::fighter(int index) const {

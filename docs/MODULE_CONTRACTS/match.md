@@ -36,6 +36,7 @@
 7. 对局结束（`phase == Finished`）后 `update()` 不再结算伤害。
 8. 蓄力（`SkillState.charging`）只在开始时清零一次速度；之后 `StallGuard` 的吸力仍能推动它。
 9. 蓄力被任何撞击打断即作废并进 CD（不看这一下是否掉血）；冲刺重击一次只结算一次，且必须走 `applyDamage()`。
+10. 场地缩到装不下两个球（`bounds` 的宽或高 `< r1 + r2`）时立即结算：`reason = "zone_zero"`，HP 高者胜，同 HP 平局（`winnerId = -1`）。
 
 ## 禁止
 

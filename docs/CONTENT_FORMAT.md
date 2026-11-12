@@ -167,8 +167,8 @@ content/
     { "shape": "rect", "pos": [640, 140], "size": [260, 24], "restitution": 0.9 },
     { "shape": "circle", "pos": [640, 580], "radius": 40, "restitution": 1.0 }
   ],
-  "physics": { "wallRestitution": 0.98, "bounceJitterDeg": 1.5, "maxSpeed": 1800, "damageScale": 1.0, "refSpeed": 400 },
-  "shrink": { "firstAt": 25.0, "interval": 12.0, "step": 0.08, "minInset": 0.40, "warnTime": 1.0, "animTime": 1.5, "damagePerSec": 4.0, "lullTrigger": 8.0 },
+  "physics": { "wallRestitution": 0.98, "bounceJitterDeg": 1.5, "maxSpeed": 1800, "damageScale": 0.0, "refSpeed": 400 },
+  "shrink": { "firstAt": 25.0, "interval": 10.0, "step": 0.10, "minInset": 1.0, "warnTime": 1.0, "animTime": 1.5, "damagePerSec": 4.0, "lullTrigger": 60.0 },
   "seed": 20261124
 }
 ```
@@ -183,11 +183,11 @@ content/
 | `obstacles[].shape` | string | ✔ | `rect` / `circle` | — |
 | `physics.wallRestitution` | float | ✘ | 0–1，默认 0.98 | 墙的弹性 |
 | `physics.bounceJitterDeg` | float | ✘ | 0–5，默认 1.5 | 防僵局 L1 |
-| `physics.damageScale` | float | ✘ | 0.1–10，默认 1.0 | 全局伤害倍率 |
+| `physics.damageScale` | float | ✘ | 0–10，默认 1.0 | 碰撞伤害倍率；**0 = 关掉碰撞伤害**（只靠技能） |
 | `shrink.firstAt` | float | ✘ | 5–300，默认 25 | 第一次缩圈的绝对时间 |
 | `shrink.interval` | float | ✘ | 3–120，默认 12 | 之后每隔多久一档 |
 | `shrink.step` | float | ✘ | 0.01–0.2，默认 0.08 | 每档内缩比例（相对原尺寸） |
-| `shrink.minInset` | float | ✘ | 0–0.9，默认 0.40 | 缩到多少停（L4 地板另算） |
+| `shrink.minInset` | float | ✘ | 0–1，默认 0.40 | 缩到多少停；`1` = 缩到 0，场地消失即结算 |
 | `shrink.damagePerSec` | float | ✘ | 0–50，默认 4 | 压到球的持续伤害 |
 | `shrink.lullTrigger` | float | ✘ | 0–60，默认 8 | 静默超过它就提前缩 |
 | `seed` | int | ✘ | 任意 | 不给则用时间戳（演示时建议给） |
@@ -203,7 +203,7 @@ content/
 5. `skills` 长度 ≤ 2；`spawns` 长度 == 2。
 6. `hitbox.radius` ≥ 6 且 < `min(size)/4`。
 7. 障碍必须完全落在 `size` 内。
-8. `shrink.minInset` 不能把场地缩到小于 `2.4 × (r1 + r2)`（加载时算，给出提示）。
+8. `minInset = 1` 允许把场地缩到 0；装不下两个球时 `match` 立即结算，HP 高者胜（不会出现球被挤在一条线上）。
 9. 颜色必须是 4 个 0–255 的整数。
 
 校验输出示例：

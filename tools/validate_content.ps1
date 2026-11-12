@@ -255,7 +255,7 @@ if (Test-Path $MapDir) {
             InRange $phys 'wallRestitution' 0.0 1.0 $src
             InRange $phys 'bounceJitterDeg' 0.0 5.0 $src
             InRange $phys 'maxSpeed' 100 5000 $src
-            InRange $phys 'damageScale' 0.1 10 $src
+            InRange $phys 'damageScale' 0.0 10 $src
         }
 
         $shrink = Prop $d 'shrink'
@@ -263,7 +263,7 @@ if (Test-Path $MapDir) {
             InRange $shrink 'firstAt' 5 300 $src
             InRange $shrink 'interval' 3 120 $src
             InRange $shrink 'step' 0.01 0.2 $src
-            InRange $shrink 'minInset' 0.0 0.9 $src
+            InRange $shrink 'minInset' 0.0 1.0 $src
             InRange $shrink 'damagePerSec' 0.0 50 $src
             InRange $shrink 'lullTrigger' 0.0 60 $src
         }

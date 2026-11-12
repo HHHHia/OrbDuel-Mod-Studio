@@ -8,7 +8,7 @@ namespace {
 
 Rect insetRect(const Rect& base, float inset01) {
     const float minSide = std::min(base.w, base.h);
-    const float px = clampf(inset01, 0.0f, 0.9f) * 0.5f * minSide;
+    const float px = clampf(inset01, 0.0f, 1.0f) * 0.5f * minSide;
     Rect out;
     out.x = base.x + px;
     out.y = base.y + px;
@@ -48,7 +48,7 @@ bool Arena::isShrinking() const { return shrinking_; }
 float Arena::inset01() const { return inset01_; }
 
 void Arena::setShrinkTarget(float inset01, float duration) {
-    const float clamped = clampf(inset01, 0.0f, 0.9f);
+    const float clamped = clampf(inset01, 0.0f, 1.0f);
     shrinkFrom_ = inset01_;
     shrinkTo_ = clamped;
     shrinkTime_ = 0.0f;
