@@ -19,11 +19,11 @@
 
 | 文件 | 内容 |
 |---|---|
-| `match/Match.hpp` | `Match(spawn)`、`update(dt)`、`onEvent(e)`、`fighters()`、`phase()`、`reset()` |
+| `match/Match.hpp` | `Match(spawn)`、`update(dt)`、`onEvent(e)`、`fighter(i)`、`skills(i)`、`phase()`、`reset()` |
 | `match/MatchRule.hpp` | `IMatchRule`、`HpRule`、`MatchResult{ winner, reason }` |
 | `match/StallGuard.hpp` | `StallParams`、`StallGuard::onHit/update/lullSeconds/attraction()` |
 | `match/Zone.hpp` | `ZoneController(Arena&, ShrinkDef)`、`update(dt, lull)`、`tier()` |
-| `match/Skill.hpp` | `SkillSystem`、`SkillState`、`Modifier`、`TriggerKind`、`ModifierOp` |
+| `match/Skill.hpp` | `SkillSystem::update(dt, hpRatio, body, enemy, rng, events)`、`interruptCharge()`、`consumeRam()`、`SkillState` |
 
 ## 不变量
 
@@ -34,6 +34,8 @@
 5. `Zone` 只能通过 `Arena::setShrinkTarget()` 改场地，不许直接写 `bounds`。
 6. `StallGuard` 的吸引只能在 `lullSeconds > params.lullStart` 时施加，命中即清零。
 7. 对局结束（`phase == Finished`）后 `update()` 不再结算伤害。
+8. 蓄力（`SkillState.charging`）只在开始时清零一次速度；之后 `StallGuard` 的吸力仍能推动它。
+9. 蓄力被任何撞击打断即作废并进 CD（不看这一下是否掉血）；冲刺重击一次只结算一次，且必须走 `applyDamage()`。
 
 ## 禁止
 

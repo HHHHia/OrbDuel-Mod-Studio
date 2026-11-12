@@ -83,8 +83,12 @@ public:
     StallGuard& stallGuard();
     ZoneController& zone();
     const StallGuard& stallGuard() const;
+    const SkillSystem& skills(int index) const;
 
 private:
+    // setup() 一定先于 update() 调用；这里只兜住「没给 rng」的情况，避免解空指针。
+    Rng& rngRef();
+
     EventBus& events_;
     World& world_;
     Arena& arena_;
@@ -94,6 +98,7 @@ private:
     SkillSystem skills_[2];
     StallGuard stall_;
     ZoneController zone_;
+    Rng* rng_ = nullptr;
 
     MatchPhase phase_ = MatchPhase::Idle;
     MatchResult result_{};

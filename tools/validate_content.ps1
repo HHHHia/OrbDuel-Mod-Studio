@@ -128,9 +128,18 @@ if (Test-Path $SkillDir) {
             InRange $trigger 'hpBelow' 0.0 1.0 $src
         }
 
-        if (-not (Need $d 'modifiers' $src)) { }
+        $charge = Prop $d 'charge'
+        if ($null -ne $charge) {
+            InRange $charge 'duration' 0.2 10 $src
+            InRange $charge 'releaseSpeed' 50 2000 $src
+            InRange $charge 'aimLag' 0.0 2.0 $src
+            InRange $charge 'aimJitterDeg' 0.0 45 $src
+            InRange $charge 'ramDamageScale' 0.0 5.0 $src
+        }
+
+        # 蓄力技能靠 charge 生效，可以没有 modifiers
         $mods = ArrOf $d 'modifiers'
-        if ($mods.Count -eq 0) { Fail $src "modifiers 不能为空" }
+        if ($mods.Count -eq 0 -and $null -eq $charge) { Fail $src "modifiers 不能为空（没有 charge 时）" }
         foreach ($m in $mods) {
             if ($null -eq $m) { continue }
             $op = Prop $m 'op'

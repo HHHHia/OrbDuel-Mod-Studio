@@ -113,11 +113,22 @@ struct VfxDef {
     int count = 12;
 };
 
+// 蓄力冲刺：冷却到点后先原地蓄力，再沿「延迟锁定的敌人位置」冲出，撞到对手算一次重击。
+struct ChargeDef {
+    bool enabled = false;
+    float duration = 3.0f;         // 蓄力时长（秒）
+    float releaseSpeed = 500.0f;   // 释放瞬间的速度
+    float aimLag = 0.3f;           // 锁定点落后敌人多少秒
+    float aimJitterDeg = 6.0f;     // 每帧锁定方向的随机抖动（度）
+    float ramDamageScale = 0.12f;  // 撞击额外伤害 = scale × 接触瞬间相对速度
+};
+
 struct SkillDef {
     int format = 1;
     std::string id;
     LocalizedText name;
     TriggerDef trigger;
+    ChargeDef charge;
     std::vector<ModifierDef> modifiers;
     std::vector<VfxDef> vfx;
     bool stackRefresh = true;

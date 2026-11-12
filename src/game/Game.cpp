@@ -53,6 +53,15 @@ std::string hpText(const Fighter& fighter) {
     return std::to_string(hp) + "/" + std::to_string(maxHp);
 }
 
+// 技能名飘字：施放瞬间弹在球上方，上浮 + 淡出
+struct CastText {
+    Vec2 pos{};
+    std::string text;
+    float age = 0.0f;
+};
+
+constexpr float kCastTextSeconds = 0.9f;
+
 } // namespace
 
 int Game::run(const Options& options) {
@@ -127,6 +136,23 @@ int Game::run(const Options& options) {
 
     // 命中事件 → 结算伤害（Match 不是事件源，必须显式订阅）
     events.subscribe(EventType::Hit, [&match](const Event& event) { match.onEvent(event); });
+
+    // 技能名飘字：Match 只发事件，文字内容在这里查（技能名在 SkillDef 里）
+    std::vector<CastText> castTexts;
+    events.subscribe(EventType::SkillCast, [&match, &castTexts](const Event& event) {
+        const int slot = static_cast<int>(event.value);
+        for (int i = 0; i < 2; ++i) {
+            if (match.fighter(i).bodyId != event.a) {
+                continue;
+            }
+            const std::vector<SkillState>& states = match.skills(i).states();
+            if (slot < 0 || slot >= static_cast<int>(states.size()) || states[static_cast<std::size_t>(slot)].def == nullptr) {
+                return;
+            }
+            castTexts.push_back(CastText{event.pos, states[static_cast<std::size_t>(slot)].def->name.en, 0.0f});
+            return;
+        }
+    });
 
     auto setupMatch = [&]() {
         match.setup(*left, *right, *map, pack, rng);
@@ -255,6 +281,15 @@ int Game::run(const Options& options) {
                 }
             }
 
+            for (CastText& cast : castTexts) {
+                cast.age += frameSeconds;
+            }
+            castTexts.erase(std::remove_if(castTexts.begin(), castTexts.end(),
+                                           [](const CastText& cast) {
+                                               return cast.age >= kCastTextSeconds;
+                                           }),
+                            castTexts.end());
+
             // ---- 绘制 ----
             renderer.beginFrame(map->theme.bgColor);
 
@@ -274,6 +309,24 @@ int Game::run(const Options& options) {
                 } else {
                     renderer.drawCircle(obstacle.pos, obstacle.radius, color);
                     renderer.drawCircleLines(obstacle.pos, obstacle.radius, Rgba{80, 90, 130, 255});
+                }
+            }
+
+            // 蓄力虚线：指向延迟后的锁定点，抖动让落点没法完全预判
+            for (int i = 0; i < 2; ++i) {
+                const Body* body = world.body(match.fighter(i).bodyId);
+                if (body == nullptr) {
+                    continue;
+                }
+                for (const SkillState& state : match.skills(i).states()) {
+                    if (!state.charging) {
+                        continue;
+                    }
+                    for (float d = 0.0f; d < 460.0f; d += 22.0f) {
+                        renderer.drawLine(body->pos + state.aimDir * d,
+                                          body->pos + state.aimDir * (d + 12.0f), 2.0f,
+                                          Rgba{255, 215, 120, 170});
+                    }
                 }
             }
 
@@ -310,6 +363,16 @@ int Game::run(const Options& options) {
             }
 
             fx.draw(renderer);
+
+            for (const CastText& cast : castTexts) {
+                const float k = clampf(cast.age / kCastTextSeconds, 0.0f, 1.0f);
+                const Rgba color{255, 235, 150, static_cast<unsigned char>((1.0f - k) * 255.0f)};
+                const int width = renderer.measureText(cast.text, 8);
+                renderer.drawText(cast.text,
+                                  Vec2{cast.pos.x - static_cast<float>(width) * 0.5f,
+                                       cast.pos.y - 56.0f - k * 20.0f},
+                                  8, color);
+            }
 
             // ---- HUD ----
             const float barWidth = 340.0f;

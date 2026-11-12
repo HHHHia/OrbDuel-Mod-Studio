@@ -25,6 +25,12 @@ struct SkillState {
     float cooldownLeft = 0.0f;
     float activeLeft = 0.0f;
     bool active = false;
+
+    // 蓄力冲刺（def->charge.enabled 时才使用）
+    bool charging = false;
+    float chargeLeft = 0.0f;
+    Vec2 aimDir{1.0f, 0.0f};   // 当前锁定方向，已含抖动，虚线与冲出都用它
+    float ramLeft = 0.0f;      // > 0 表示「冲出后还能造成一次重击」的窗口
 };
 
 class SkillSystem {
@@ -38,16 +44,25 @@ public:
     void attach(int bodyId, const std::vector<const SkillDef*>& skills);
 
     // 每步调用：递减冷却、推进持续时间、检查自动触发。
-    void update(float dt, float hpRatio, Body& self, EventBus& events);
+    // enemy 只用于蓄力时锁定方向；rng 只用于锁定抖动（铁律 6：不许 rand()）。
+    void update(float dt, float hpRatio, Body& self, const Body& enemy, Rng& rng, EventBus& events);
 
     // 事件驱动的触发（on_hit / on_hit_by / on_wall_bounce）。
     void onEvent(const Event& event, Body& self);
+
+    // 被撞击：正在蓄力的技能立即作废并进 CD（不看这一下掉没掉血）。
+    void interruptCharge();
+
+    // 冲刺窗口内的第一次撞击：消费掉，并通过 outScale 返回额外伤害系数。
+    bool consumeRam(float& outScale);
 
     const std::vector<SkillState>& states() const;
     int bodyId() const;
 
 private:
     void cast(int slot, Body& self, EventBus& events);
+    void release(int slot, Body& self, EventBus& events);
+    Vec2 aimAt(const Body& self, const Body& enemy, const ChargeDef& charge, Rng& rng) const;
 
     std::vector<SkillState> states_;
     int bodyId_ = -1;

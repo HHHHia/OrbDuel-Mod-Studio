@@ -169,6 +169,16 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
             def.trigger.hpBelow = readFloat(trigger, "hpBelow", 0.3f);
         }
 
+        if (root.contains("charge") && root["charge"].is_object()) {
+            const json& charge = root["charge"];
+            def.charge.enabled = true;
+            def.charge.duration = readFloat(charge, "duration", 3.0f);
+            def.charge.releaseSpeed = readFloat(charge, "releaseSpeed", 500.0f);
+            def.charge.aimLag = readFloat(charge, "aimLag", 0.3f);
+            def.charge.aimJitterDeg = readFloat(charge, "aimJitterDeg", 6.0f);
+            def.charge.ramDamageScale = readFloat(charge, "ramDamageScale", 0.12f);
+        }
+
         if (root.contains("modifiers") && root["modifiers"].is_array()) {
             for (const json& item : root["modifiers"]) {
                 ModifierDef modifier;
@@ -198,7 +208,7 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
         def.stackRefresh = readString(root, "stack", "refresh") == "refresh";
         def.priority = readInt(root, "priority", 10);
 
-        if (def.modifiers.empty()) {
+        if (def.modifiers.empty() && !def.charge.enabled) {
             addIssue(issues, IssueSeverity::Warning, def.sourceFile, "modifiers 为空，这个技能不会有效果");
         }
 

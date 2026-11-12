@@ -19,7 +19,7 @@
 
 | 文件 | 内容 |
 |---|---|
-| `content/DataModel.hpp` | `SkinDef` `HitboxDef` `StatsDef` `TriggerDef` `ModifierDef` `VfxDef` `SkillDef` `CharacterDef` `ObstacleDef` `SpawnDef` `ShrinkDef` `MapDef` `ContentPack` |
+| `content/DataModel.hpp` | `SkinDef` `HitboxDef` `StatsDef` `TriggerDef` `ModifierDef` `VfxDef` `SkillDef` `CharacterDef` `ObstacleDef` `SpawnDef` `ChargeDef` `ShrinkDef` `MapDef` `ContentPack` |
 | `content/ContentLoader.hpp` | `loadAll(root)`、`poll()`、`pack()`、`issues()`、`hasFatal()` |
 
 ## 不变量

@@ -19,6 +19,11 @@ Match::Match(EventBus& events, World& world, Arena& arena)
       rule_(std::make_unique<HpRule>()),
       zone_(arena, ShrinkDef{}) {}
 
+Rng& Match::rngRef() {
+    static Rng fallback;
+    return rng_ != nullptr ? *rng_ : fallback;
+}
+
 void Match::setRule(std::unique_ptr<IMatchRule> rule) {
     if (rule) {
         rule_ = std::move(rule);
@@ -72,6 +77,7 @@ void Match::setup(const CharacterDef& left,
 
     world_.setRng(rng);
     world_.setWallParams(map.physics.wallRestitution, map.physics.bounceJitterDeg);
+    rng_ = &rng;
 
     const CharacterDef* defs[2] = {&left, &right};
 
@@ -170,7 +176,7 @@ void Match::update(float dt) {
         Fighter& fighter = fighters_[i];
         if (fighter.alive) {
             const float ratio = fighter.maxHp > 0.0f ? fighter.hp / fighter.maxHp : 0.0f;
-            skills_[i].update(dt, ratio, *bodies[i], events_);
+            skills_[i].update(dt, ratio, *bodies[i], *bodies[1 - i], rngRef(), events_);
         }
         if (fighter.comboTimer > 0.0f) {
             fighter.comboTimer -= dt;
@@ -232,6 +238,18 @@ void Match::onEvent(const Event& event) {
 
     stall_.onHit();
     hitCount_ += 1;
+
+    // 冲刺撞击：冲出去的那一方只让对手吃一次额外伤害（与碰撞伤害的倍率无关）
+    for (int i = 0; i < 2; ++i) {
+        float ramScale = 0.0f;
+        if (skills_[i].consumeRam(ramScale)) {
+            applyDamage(fighters_[1 - i].bodyId, ramScale * event.value, true);
+        }
+    }
+
+    // 撞上就算打断蓄力：不看这一下掉了多少血（碰撞伤害可能被数据关成 0）
+    skills_[0].interruptCharge();
+    skills_[1].interruptCharge();
 
     const float refSpeed = map_ != nullptr ? std::max(1.0f, map_->physics.refSpeed) : 400.0f;
     const float damageScale = map_ != nullptr ? map_->physics.damageScale : 1.0f;
@@ -326,5 +344,13 @@ float Match::elapsed() const { return elapsed_; }
 StallGuard& Match::stallGuard() { return stall_; }
 const StallGuard& Match::stallGuard() const { return stall_; }
 ZoneController& Match::zone() { return zone_; }
+
+const SkillSystem& Match::skills(int index) const {
+    static const SkillSystem kEmpty{};
+    if (index < 0 || index > 1) {
+        return kEmpty;
+    }
+    return skills_[index];
+}
 
 } // namespace orbduel
