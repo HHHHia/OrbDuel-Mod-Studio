@@ -49,7 +49,7 @@
 17. 万向天引进行中：被动失效（`suppressesPassive()`）、自己免伤害（`invulnerable()`，连缩圈伤害也不吃）、
     **整对不吃撞击伤害**（`omnipullActive()`）；吸力参数由 `pullField()` 提供，`Match` 负责施加。
     爆炸伤害与冷却都只在**吸完那一步**结算一次，冷却固定 = `trigger.cooldown`，从爆炸那一刻开始算。
-18. 撞击伤害系数 = `max(地图 damageScale, 各角色 hitbox.contact)`；0 表示这张图撞人不掉血。
+18. 撞击伤害按**挨撞的一方**算：`系数 = max(地图 damageScale, 该角色 hitbox.contact)`；0 表示这个人撞了不疼、也不反伤。
 19. 质量成长：`stats.massMax > stats.mass` 时每步把 `body.mass` 从 `mass` 线性改到 `massMax`（`massRamp` 秒），并同步 `invMass`。
 20. 传送、爆炸都必须走 `applyDamage()`；传送只改 `Body.pos`（并清 `force`），不改速度。
 

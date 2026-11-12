@@ -441,21 +441,11 @@ void Match::onEvent(const Event& event) {
     skills_[1].interruptCharge();
 
     const float refSpeed = map_ != nullptr ? std::max(1.0f, map_->physics.refSpeed) : 400.0f;
-
-    // 接触伤害系数：地图总开关和两个角色各自的 contact 取最大。
-    // 0 = 这张图撞人不掉血（duel-basic 的默认），黑洞靠 hitbox.contact 单独打开。
-    float contactScale = map_ != nullptr ? map_->physics.damageScale : 1.0f;
-    for (int i = 0; i < 2; ++i) {
-        if (fighters_[i].def != nullptr && fighters_[i].def->hitbox.contact > contactScale) {
-            contactScale = fighters_[i].def->hitbox.contact;
-        }
-    }
     // 万向天引期间整对不吃撞击伤害（黑洞自己还有无敌兜底）
-    if (skills_[0].omnipullActive() || skills_[1].omnipullActive()) {
-        contactScale = 0.0f;
-    }
+    const bool ultRunning = skills_[0].omnipullActive() || skills_[1].omnipullActive();
 
-    // 撞一次两边都疼：伤害按相对撞击速度算，各自结算
+    // 撞一次各自结算：系数按**挨撞的人**算 —— hitbox.contact 是「我这具身体挨撞有多疼」，
+    // 0 表示撞它不疼（也打不出反伤），地图的 damageScale 是全局底数。
     for (int i = 0; i < 2; ++i) {
         Fighter& fighter = fighters_[i];
         if (!fighter.alive) {
@@ -471,6 +461,14 @@ void Match::onEvent(const Event& event) {
         float multiplier = 1.0f + 0.15f * static_cast<float>(fighter.combo - 1);
         if (multiplier > 2.5f) {
             multiplier = 2.5f;
+        }
+
+        float contactScale = 0.0f;
+        if (!ultRunning) {
+            contactScale = map_ != nullptr ? map_->physics.damageScale : 1.0f;
+            if (fighter.def != nullptr && fighter.def->hitbox.contact > contactScale) {
+                contactScale = fighter.def->hitbox.contact;
+            }
         }
         const float damage = 12.0f * contactScale * (event.value / refSpeed) * multiplier;
 

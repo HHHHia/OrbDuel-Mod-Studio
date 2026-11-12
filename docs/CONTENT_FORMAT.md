@@ -52,7 +52,7 @@ content/
 | `hitbox.radius` | float | ✔ | 6–120 | 运动碰撞半径 |
 | `hitbox.offset` | float[2] | ✘ | ±40 | 相对贴图中心的偏移 |
 | `hitbox.ghost` | bool | ✘ | 默认 `false` | `true` = 对手可以直接穿进身体（黑洞）；不做分离也不推人，但撞击伤害照算 |
-| `hitbox.contact` | float | ✘ | 0–10，默认 0 | 接触伤害系数：0 = 撞它不掉血；1 = 常规撞击伤害。与地图的 `damageScale` 取大 |
+| `hitbox.contact` | float | ✘ | 0–10，默认 0 | **挨撞时**的接触伤害倍率：0 = 撞它不疼（也打不出反伤）；1 = 常规撞击伤害。和地图 `damageScale` 取大 |
 | `stats.mass` | float | ✔ | 0.2–20 | 质量，影响碰撞后的速度分配 |
 | `stats.massMax` | float | ✘ | 0–20，默认 0 | > `mass` 时质量随对局时间从 `mass` 长到它（0 = 不成长）；吸力会按 `当前质量 / mass` 放大 |
 | `stats.massRamp` | float | ✘ | 0–600 | 多少秒长到 `massMax`（默认 90） |
@@ -197,7 +197,7 @@ content/
   "range": 280.0, "rangeMax": 440.0, "growthSeconds": 90.0,
   "accel": 460.0, "coreFactor": 0.72,
   "damage": 6.0, "damageMax": 24.0,
-  "dpsEdge": 1.0, "dpsCenter": 3.0,
+  "dpsEdge": 1.0, "dpsCenter": 8.0,
   "tickInterval": 0.5, "teleportGuard": 1.5, "teleportMinDist": 240.0
 }
 ```
