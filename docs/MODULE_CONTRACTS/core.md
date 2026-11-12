@@ -42,5 +42,5 @@
 
 ## 验收
 
-- `--autotest` 能复现同一 seed 的碰撞计数（连续跑两次数字一致）
+- 同一 seed 连续跑两次 `--headless --seconds 60`，日志里的 `hits` / `hp0` / `hp1` 一致（`--autotest` 尚未实现）
 - Debug 构建下 `EventBus` 的队列长度有上限断言

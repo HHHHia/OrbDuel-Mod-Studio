@@ -37,8 +37,11 @@ OrbDuel 是一个 **C++17 + SDL2 2.32** 的 2D 双球物理对战游戏。
 # 冒烟测试：验证工具链、SDL2 链接、内容目录可读
 .\build\bin\orbduel.exe --selftest
 
-# 直接开一局（R 重开，ESC 退出）
+# 直接开一局（先进主菜单；对局内 ESC 回菜单，退出在菜单里点 QUIT GAME）
 .\build\bin\orbduel.exe
+
+# 跳过主菜单直接开局（脚本 / CI）
+.\build\bin\orbduel.exe --no-menu
 
 # 无窗口跑 60 秒，回归物理与结算
 .\build\bin\orbduel.exe --headless --seconds 60
@@ -92,7 +95,7 @@ content ──→ core
 2. 改 `character.json` 的 `id`、`name`、`stats`，`skills` 填 `content/skills/` 里已有的 id
 3. 放一张 `skin.png`（建议 256×256，背景透明）
 4. 跑 `.\tools\validate_content.ps1`
-5. 启动游戏 → 角色选择页应自动出现（热重载：不重启）
+5. 启动游戏 → 主菜单里应能看到这个角色（左右两侧都能切到；角色列表读 `content/characters/`，不写死 id。**热重载尚未实现**，改完要重启）
 
 ### 5.2 加一个技能
 
@@ -110,7 +113,7 @@ content ──→ core
 
 ## 6. 常见坑
 
-- **同向同速 = 永不碰撞**。两球无重力、同速平行时能一直不接触。任何改物理的改动都要跑 `StallGuard` 的长跑测试（`--autotest 600`）。
+- **同向同速 = 永不碰撞**。两球无重力、同速平行时能一直不接触。任何改物理的改动都要跑长跑回归（`--headless --seconds 60`；`--autotest` 尚未实现）。
 - **改 `Arena` 尺寸必须走 `setShrinkTarget()`**，不要直接改 `bounds`；否则球会卡在墙外。
 - **热重载失败不能崩**：`ContentLoader` 加载失败时保留旧包，错误写进屏幕控制台。
 - **不要给 `Body` 加游戏字段**（HP 放 `Match` 的 `Fighter` 里）。`physics` 要能被单独复用。

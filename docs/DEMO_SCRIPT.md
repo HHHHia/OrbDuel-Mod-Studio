@@ -7,11 +7,11 @@
 
 | 时间 | 画面 | 你说的话（英文，≤ 2 句） | 备用 |
 |---|---|---|---|
-| 0:00–0:08 | 游戏窗口已开着，两球对撞中 | "Two orbs, no gravity. Every collision is data-driven." | — |
-| 0:08–0:22 | 正常打一局，HP 条掉、火花、连击数字涨 | "Hit damage scales with impact speed, and combos multiply it." | 若没出连击，手动 `--autotest` 展示 |
+| 0:00–0:08 | 已点「开始游戏」，两球对撞中 | "Two orbs, no gravity. Every collision is data-driven." | — |
+| 0:08–0:22 | 正常打一局，HP 条掉、火花、连击数字涨 | "Hit damage scales with impact speed, and combos multiply it." | 若没出连击，改讲 `--headless --seconds 30` 的日志（`--autotest` 未实现） |
 | 0:22–0:30 | 场地开始缩圈，边界红光 + 球被推回 | "If the match drags, the arena closes in." | 提前把 `shrink.firstAt` 调到 8 s |
-| 0:30–0:42 | **切到资源管理器，拖一个 `content/characters/<new>/` 文件夹进去**；切回游戏，2 秒后新角色出现在选择列表 | "This folder is a character — skin, hitbox, stats, skills. No recompile." | 提前准备好文件夹，别现场建 |
-| 0:42–0:52 | 改 `skills/dash.json` 的 `value`（比如 220→600），保存；游戏里冲刺距离立刻变长 | "Even the skill numbers are hot-reloaded." | 用记事本，别开 IDE |
+| 0:30–0:42 | **切到资源管理器，拖一个 `content/characters/<new>/` 文件夹进去**；回游戏按 ESC 到主菜单，新角色出现在左右可切换列表 | "This folder is a character — skin, hitbox, stats, skills. No recompile." | 热重载未接：要重启 exe 才看得到；文件夹提前准备好 |
+| 0:42–0:52 | 改 `skills/dash.json` 的 `value`（比如 220→600），保存；重启后冲刺距离变长 | "Even the skill numbers are data." | 热重载未接，别承诺 "hot-reloaded" |
 | 0:52–1:00 | 切到 README / 仓库页 | "Repo is public, docs are in English and Chinese." | — |
 
 ## 演示前检查
@@ -21,7 +21,7 @@
 - [ ] 记事本已打开 `skills/dash.json`，光标停在 `value` 上
 - [ ] 窗口 1280×720，字体调到投影能看清
 - [ ] 关掉微信/QQ 通知
-- [ ] 备用：`--autotest 30` 的日志截图（万一现场卡死）
+- [ ] 备用：`--headless --seconds 30` 的日志截图（万一现场卡死；`--autotest` 未实现）
 
 ## 预设 Q&A
 

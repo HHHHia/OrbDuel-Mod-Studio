@@ -42,5 +42,5 @@
 ## 验收
 
 - 两球对撞后总动量和能量在恢复系数 1.0 时守恒（误差 < 1e-3）
-- `--autotest 600` 内没有球逃出 `Arena.bounds()`
+- 长跑 `--headless --seconds 600` 内没有球逃出 `Arena.bounds()`（`--autotest 600` 尚未实现）
 - 缩圈到最小尺寸时仍无卡墙

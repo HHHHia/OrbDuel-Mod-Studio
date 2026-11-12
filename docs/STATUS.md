@@ -1,7 +1,7 @@
 # 实现状态 / Status
 
 > **每次合并前更新这张表。** AI 开工第一件事是读这里，别猜哪些已经能跑。
-> 最后更新：2026-11-09（MVP 可玩版：两球对撞 + HP + 缩圈 + 粒子）
+> 最后更新：2026-11-13（主菜单：开始 / 退出 / 左右各自选角）
 
 ## 总览
 
@@ -27,7 +27,8 @@
 | `match/StallGuard` | ✅ | ✅ | L2 静默吸引（L1 抖动在 physics） |
 | `match/Zone` | ✅ | ✅ | 缩圈调度（时间 + 静默触发，带预警） |
 | `match/Skill` | ✅ | 🟡 | 冷却 + `add_speed` 生效；其余原语待接 |
-| `game/Game` | ✅ | ✅ | 主循环、装配、HUD、结算、重开 |
+| `game/Game` | ✅ | ✅ | 主循环、装配、HUD、结算、菜单↔对局切换 |
+| `game/Menu` | ✅ | ✅ | 主菜单：开始 / 退出（确认框）/ 左右各自选角，读 `content/characters/` 不写死 |
 | 内容包 | — | ✅ | 2 角色 / 4 技能 / 1 地图 / 1 字体 |
 
 图例：✅ 完成 / 🟡 部分 / ❌ 未开始
@@ -35,19 +36,33 @@
 ## 现在能玩什么
 
 ```powershell
-.\build\bin\orbduel.exe                 # 开一局（自动对战，无玩家输入）
+.\build\bin\orbduel.exe                 # 开主菜单（点开始游戏 / 按 Enter 进对局）
+.\build\bin\orbduel.exe --no-menu       # 跳过菜单直接开局
 .\build\bin\orbduel.exe --seed 42       # 固定随机种子，可复现
-.\build\bin\orbduel.exe --char blaze --enemy bulwark --map duel-basic
+.\build\bin\orbduel.exe --char blaze --enemy bulwark --map duel-basic   # 参数只做菜单预选
 .\build\bin\orbduel.exe --seconds 10    # 跑 10 秒自动退出
-.\build\bin\orbduel.exe --screenshot out.png   # 第 2 秒截图后退出
+.\build\bin\orbduel.exe --screenshot out.png   # 第 2 秒截图后退出（在菜单里就截菜单）
 ```
 
+- 启动先进主菜单：左右两张卡各自用 `<` `>` 切换角色（可以选同一个角色互打），`START GAME` 或 Enter 开局，`QUIT GAME` 弹确认框（点 No / 点框外 / ESC 取消）；
 - 两球自动对撞，撞击按相对速度扣血，2 秒内连击有倍率；
 - 25 秒后开始缩圈（每 12 秒一档，带 1 秒预警），场地缩小、障碍被压碎；
 - 5 秒没碰撞会触发「静默吸引」，球会缓慢靠近（肉眼几乎看不出）；
-- HP 归零 → 结算画面，按 `R` 重开，`ESC` 退出。
+- HP 归零 → 结算画面，显示 `RETURNING IN 5...`；期间按 `R` 重开同阵容，5 秒后自动回主菜单；
+- 对局中 `ESC` 回主菜单（**ESC 不再退出进程**）；退出只能在菜单里点 `QUIT GAME` → `YES`。
 
 ![screenshot](screenshot.png)
+
+## 验证记录（2026-11-13，主菜单）
+
+| 项 | 结果 | 备注 |
+|---|---|---|
+| 全量源码编译（21 个 `.cpp`） | ✅ | `-Wall -Wextra` 零警告，14.3 s |
+| 主菜单渲染 | ✅ | 1280×720：两张卡 + 头像 + 数值 + 技能名 + 按钮 |
+| 菜单点击自检（`SDL_PushEvent` 模拟鼠标） | ✅ | 12 项全过：开始 / 左右切换 / 循环回绕 / 确认框点框外取消 / YES 退出 / ESC 取消 / Enter 开局 / 点空白无反应 |
+| `--headless` 默认跳过菜单 | ✅ | 与改动前一致：`hits=1 hp0=78 hp1=118` |
+| `--no-menu --headless --seconds 10` | ✅ | 同上，回归无变化 |
+| 长跑 120 s | ✅ | 55 s 结算 → 5 s 倒计时 → 回菜单，无崩溃 |
 
 ## 验证记录（2026-11-09）
 
@@ -80,3 +95,6 @@
 - 没有单元测试；物理回归靠 `--headless --seconds N` + 日志。
 - `hitbox.offset` 还没进物理（现在只按半径算）。
 - 没有音效。
+- 主菜单不显示中文名：当前字体 PressStart2P 没有 CJK 字形，`name.zh` 会渲染成方框；要显示得换一个带中文的 TTF。
+- 菜单只能用鼠标操作（键盘只有 Enter 开局、ESC 关确认框），没有方向键导航。
+- 菜单不做地图选择，地图仍由 `--map` 决定。
