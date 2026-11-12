@@ -54,7 +54,7 @@ cmake --build build
 | `--seconds <n>`                | 跑 n 秒后自动退出          |
 | `--screenshot <file>`          | 第 2 秒存一张 PNG 后退出（当时在菜单就截菜单） |
 | `--headless`                   | 不开窗口，只跑逻辑（自动跳过菜单） |
-| `--no-menu`                    | 跳过主菜单，直接开局（脚本 / CI 用） |
+| `--no-menu`                    | 跳过主菜单，直接开局（脚本用） |
 
 ## 内容长什么样 / What content looks like
 
