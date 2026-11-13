@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <string>
 #include <vector>
 
 #include "orbduel/core/Types.hpp"
@@ -23,6 +24,7 @@ enum class EventType {
     ZoneShrink,       // value 新档位；pos 新边界中心
     Death,            // a 死亡者 id
     RoundEnd,         // a 胜者 id（-1 平局）
+    Damage,           // a 来源；b 目标；value 实际伤害；tag 伤害原因
     Count
 };
 
@@ -34,6 +36,9 @@ struct Event {
     Vec2 normal{};
     float value = 0.0f;
     float value2 = 0.0f;
+    float attackSpeedA = 0.0f;
+    float attackSpeedB = 0.0f;
+    std::string tag;
 };
 
 using EventHandler = std::function<void(const Event&)>;

@@ -23,6 +23,9 @@ struct Options {
     bool headless = false;      // 不创建窗口
     bool debug = false;         // 打开调试层
     float autotestSeconds = 0.0f; // >0 时无窗口跑物理回归
+    std::string sceneFile, modsRoot, theme, view;
+    bool play = false;
+    bool hidden = false;
     float runSeconds = 0.0f;    // >0 时跑够这么多秒自动退出（自测用）
     std::string screenshotPath; // 非空时在第 2 秒存一张 PNG 然后退出
 };

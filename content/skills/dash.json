@@ -1,15 +1,26 @@
 {
   "format": 1,
   "id": "dash",
-  "name": { "en": "Dash", "zh": "冲刺" },
-  "trigger": { "kind": "cooldown", "cooldown": 6.0 },
+  "name": {
+    "zh": "冲刺",
+    "en": "Dash"
+  },
+  "description": {
+    "zh": "每6秒沿当前方向加速，快速碰撞造成更高伤害。",
+    "en": "Dash"
+  },
+  "trigger": {
+    "kind": "cooldown",
+    "cooldown": 6
+  },
   "modifiers": [
-    { "op": "add_speed", "value": 220.0, "duration": 1.2, "curve": "ease_out" }
+    {
+      "value": 170,
+      "op": "add_speed",
+      "duration": 0
+    }
   ],
-  "vfx": [
-    { "on": "cast", "type": "trail", "color": [255, 180, 60, 255], "duration": 1.2 },
-    { "on": "cast", "type": "ring", "color": [255, 220, 120, 255], "value": 90.0 }
-  ],
+  "vfx": [],
   "stack": "refresh",
   "priority": 10
 }

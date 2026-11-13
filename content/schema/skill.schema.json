@@ -4,27 +4,64 @@
   "title": "OrbDuel skill",
   "type": "object",
   "additionalProperties": false,
-  "required": ["format", "id", "name", "trigger", "modifiers"],
+  "required": [
+    "format",
+    "id",
+    "name",
+    "trigger",
+    "modifiers"
+  ],
   "properties": {
-    "format": { "const": 1 },
-    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,31}$" },
+    "format": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
+    },
     "name": {
       "type": "object",
-      "required": ["en"],
+      "required": [
+        "en"
+      ],
       "properties": {
-        "en": { "type": "string", "minLength": 1, "maxLength": 32 },
-        "zh": { "type": "string", "maxLength": 16 }
+        "en": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "zh": {
+          "type": "string",
+          "maxLength": 16
+        }
       }
     },
     "trigger": {
       "type": "object",
-      "required": ["kind"],
+      "required": [
+        "kind"
+      ],
       "properties": {
         "kind": {
-          "enum": ["cooldown", "on_hit", "on_hit_by", "on_low_hp", "on_wall_bounce", "manual"]
+          "enum": [
+            "cooldown",
+            "on_hit",
+            "on_hit_by",
+            "on_low_hp",
+            "on_wall_bounce",
+            "manual"
+          ]
         },
-        "cooldown": { "type": "number", "minimum": 0.5, "maximum": 60 },
-        "hpBelow": { "type": "number", "minimum": 0, "maximum": 1 }
+        "cooldown": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 60
+        },
+        "hpBelow": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
       }
     },
     "modifiers": {
@@ -32,17 +69,48 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["op"],
+        "required": [
+          "op"
+        ],
         "properties": {
           "op": {
-            "enum": ["add_speed", "shield", "lifesteal", "slow_field",
-                     "teleport", "resize", "bounce_boost", "heal"]
+            "enum": [
+              "add_speed",
+              "shield",
+              "lifesteal",
+              "slow_field",
+              "teleport",
+              "resize",
+              "bounce_boost",
+              "heal",
+              "damage_boost",
+              "thorns"
+            ]
           },
-          "value": { "type": "number" },
-          "duration": { "type": "number", "minimum": 0, "maximum": 120 },
-          "radius": { "type": "number", "minimum": 0 },
-          "factor": { "type": "number", "minimum": 0, "maximum": 1 },
-          "curve": { "enum": ["linear", "ease_out", "ease_in_out"] }
+          "value": {
+            "type": "number"
+          },
+          "duration": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 120
+          },
+          "radius": {
+            "type": "number",
+            "minimum": 0
+          },
+          "factor": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "curve": {
+            "enum": [
+              "linear",
+              "ease_out",
+              "ease_in_out"
+            ]
+          }
         }
       }
     },
@@ -50,23 +118,72 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["on", "type"],
+        "required": [
+          "on",
+          "type"
+        ],
         "properties": {
-          "on": { "enum": ["cast", "hit", "expire"] },
-          "type": { "enum": ["trail", "burst", "ring", "flash", "screen_shake", "hit_stop"] },
+          "on": {
+            "enum": [
+              "cast",
+              "hit",
+              "expire"
+            ]
+          },
+          "type": {
+            "enum": [
+              "trail",
+              "burst",
+              "ring",
+              "flash",
+              "screen_shake",
+              "hit_stop"
+            ]
+          },
           "color": {
             "type": "array",
-            "items": { "type": "integer", "minimum": 0, "maximum": 255 },
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
             "minItems": 4,
             "maxItems": 4
           },
-          "duration": { "type": "number", "minimum": 0 },
-          "value": { "type": "number" },
-          "count": { "type": "integer", "minimum": 1, "maximum": 512 }
+          "duration": {
+            "type": "number",
+            "minimum": 0
+          },
+          "value": {
+            "type": "number"
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 512
+          }
         }
       }
     },
-    "stack": { "enum": ["refresh", "stack"] },
-    "priority": { "type": "integer" }
+    "stack": {
+      "enum": [
+        "refresh",
+        "stack"
+      ]
+    },
+    "priority": {
+      "type": "integer"
+    },
+    "description": {
+      "properties": {
+        "zh": {
+          "type": "string"
+        },
+        "en": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
   }
 }

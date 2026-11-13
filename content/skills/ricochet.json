@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "id": "ricochet",
+  "name": {
+    "zh": "弹性强化",
+    "en": "Ricochet"
+  },
+  "description": {
+    "zh": "周期性提高墙面反弹的速度保留率，维持机动力。",
+    "en": "Ricochet"
+  },
+  "trigger": {
+    "kind": "cooldown",
+    "cooldown": 7
+  },
+  "modifiers": [
+    {
+      "value": 0.18,
+      "op": "bounce_boost",
+      "duration": 3
+    }
+  ],
+  "vfx": [],
+  "stack": "refresh",
+  "priority": 10
+}

@@ -1,10 +1,43 @@
-﻿{
+{
   "format": 1,
   "id": "bulwark",
-  "name": { "en": "Bulwark", "zh": "磐石" },
-  "skin": { "texture": "skin.png", "scale": 1.0, "tint": [255, 255, 255, 255] },
-  "hitbox": { "shape": "circle", "radius": 30.0, "offset": [0, 0] },
-  "stats": { "mass": 2.2, "restitution": 0.88, "maxHp": 140.0, "startSpeed": 340.0 },
-  "skills": ["shield", "slow-field"]
+  "name": {
+    "zh": "磐石",
+    "en": "Bulwark"
+  },
+  "description": {
+    "zh": "防守反击：短时护盾配合荆棘反击，抵御高速冲撞。",
+    "en": "Bulwark"
+  },
+  "skin": {
+    "texture": "skin.png",
+    "tint": [
+      244,
+      199,
+      110,
+      255
+    ],
+    "scale": 1.0,
+    "pattern": "hex"
+  },
+  "hitbox": {
+    "shape": "circle",
+    "radius": 29,
+    "offset": [
+      0,
+      0
+    ]
+  },
+  "stats": {
+    "startSpeed": 340,
+    "restitution": 0.97,
+    "mass": 1.9,
+    "attack": 11.7,
+    "armor": 0.8,
+    "maxHp": 124
+  },
+  "skills": [
+    "shield",
+    "thorns"
+  ]
 }
-

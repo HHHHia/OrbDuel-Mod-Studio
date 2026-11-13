@@ -13,6 +13,8 @@ namespace log {
 void info(const std::string& message);
 void warn(const std::string& message);
 void error(const std::string& message);
+// 批量模拟可关闭控制台输出，保留错误缓冲。
+void setConsole(bool enabled);
 
 // 清空屏幕缓冲（不清控制台）。
 void clear();

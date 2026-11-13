@@ -1,0 +1,187 @@
+{
+  "byMap": {
+    "mechanisms": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 117.00968360900879,
+        "avgRemainingHp": 0.3346731166044871,
+        "avgSeconds": 45.7625279823939,
+        "draws": 1,
+        "games": 48,
+        "timeoutRate": 37.5,
+        "winRate": 69.79166666666667,
+        "wins": 33
+      },
+      "bulwark": {
+        "avgAbsorbed": 90.29320359230042,
+        "avgDamage": 94.60620745023091,
+        "avgRemainingHp": 0.1642165475835403,
+        "avgSeconds": 45.7625279823939,
+        "draws": 1,
+        "games": 48,
+        "timeoutRate": 37.5,
+        "winRate": 30.208333333333332,
+        "wins": 14
+      }
+    },
+    "obstacles": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 61.76403443018595,
+        "avgRemainingHp": 0.6463187256207069,
+        "avgSeconds": 59.80362423261007,
+        "draws": 0,
+        "games": 48,
+        "timeoutRate": 97.91666666666667,
+        "winRate": 60.416666666666664,
+        "wins": 29
+      },
+      "bulwark": {
+        "avgAbsorbed": 87.68232202529907,
+        "avgDamage": 49.12528340021769,
+        "avgRemainingHp": 0.5588283227601399,
+        "avgSeconds": 59.80362423261007,
+        "draws": 0,
+        "games": 48,
+        "timeoutRate": 97.91666666666667,
+        "winRate": 39.583333333333336,
+        "wins": 19
+      }
+    },
+    "open": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 76.82794904708862,
+        "avgRemainingHp": 0.6031657755374908,
+        "avgSeconds": 59.95157249768575,
+        "draws": 0,
+        "games": 48,
+        "timeoutRate": 97.91666666666667,
+        "winRate": 66.66666666666667,
+        "wins": 32
+      },
+      "bulwark": {
+        "avgAbsorbed": 108.73018995920818,
+        "avgDamage": 58.13408652941386,
+        "avgRemainingHp": 0.4512289362028241,
+        "avgSeconds": 59.95157249768575,
+        "draws": 0,
+        "games": 48,
+        "timeoutRate": 97.91666666666667,
+        "winRate": 33.333333333333336,
+        "wins": 16
+      }
+    },
+    "shrinking": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 136.5122882525126,
+        "avgRemainingHp": 0.3377314266593506,
+        "avgSeconds": 36.171943505605064,
+        "draws": 0,
+        "games": 48,
+        "timeoutRate": 4.166666666666667,
+        "winRate": 89.58333333333333,
+        "wins": 43
+      },
+      "bulwark": {
+        "avgAbsorbed": 91.06677532196045,
+        "avgDamage": 98.3113185564677,
+        "avgRemainingHp": 0.02358288228667031,
+        "avgSeconds": 36.171943505605064,
+        "draws": 0,
+        "games": 48,
+        "timeoutRate": 4.166666666666667,
+        "winRate": 10.416666666666666,
+        "wins": 5
+      }
+    }
+  },
+  "characters": {
+    "blaze": {
+      "avgAbsorbed": 0.0,
+      "avgDamage": 98.02848883469899,
+      "avgRemainingHp": 0.48047226110550884,
+      "avgSeconds": 50.42241705457369,
+      "draws": 1,
+      "games": 192,
+      "timeoutRate": 59.375,
+      "winRate": 71.61458333333333,
+      "wins": 137
+    },
+    "bulwark": {
+      "avgAbsorbed": 94.44312272469203,
+      "avgDamage": 75.04422398408254,
+      "avgRemainingHp": 0.29946417220829363,
+      "avgSeconds": 50.42241705457369,
+      "draws": 1,
+      "games": 192,
+      "timeoutRate": 59.375,
+      "winRate": 28.385416666666668,
+      "wins": 54
+    }
+  },
+  "firstSeed": 1000,
+  "games": 192,
+  "maps": [
+    "open",
+    "obstacles",
+    "mechanisms",
+    "shrinking"
+  ],
+  "matchups": {
+    "blaze": {
+      "bulwark": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 98.02848883469899,
+        "avgRemainingHp": 0.48047226110550884,
+        "avgSeconds": 50.42241705457369,
+        "draws": 1,
+        "games": 192,
+        "timeoutRate": 59.375,
+        "winRate": 71.61458333333333,
+        "wins": 137
+      }
+    },
+    "bulwark": {
+      "blaze": {
+        "avgAbsorbed": 94.44312272469203,
+        "avgDamage": 75.04422398408254,
+        "avgRemainingHp": 0.29946417220829363,
+        "avgSeconds": 50.42241705457369,
+        "draws": 1,
+        "games": 192,
+        "timeoutRate": 59.375,
+        "winRate": 28.385416666666668,
+        "wins": 54
+      }
+    }
+  },
+  "roster": [
+    {
+      "armor": 0.0,
+      "attack": 18.0,
+      "hp": 100.0,
+      "id": "blaze",
+      "name": "烈焰",
+      "skills": [
+        "dash",
+        "lifesteal"
+      ]
+    },
+    {
+      "armor": 1.0,
+      "attack": 10.0,
+      "hp": 140.0,
+      "id": "bulwark",
+      "name": "磐石",
+      "skills": [
+        "shield",
+        "slow-field"
+      ]
+    }
+  ],
+  "seedsPerMap": 24,
+  "swappedSides": true,
+  "wallSeconds": 0.2201751
+}

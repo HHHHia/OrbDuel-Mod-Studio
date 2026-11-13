@@ -1,5 +1,12 @@
 # 决策记录 / Decisions
 
+## ADR-016 C++ 模组与地图工作台（当前范围）
+
+扩展机制采用独立 C++ DLL 模组，配套地图编辑器、种子与离线分享、五种视觉风格。宿主及 SDK 统一为 Windows x64 / MSVC 2022 / C++17；DLL 边界采用 C 导出、简单结构与函数表，C++ 包装降低作者上手成本。模组在菜单中重新加载，不在比赛中卸载。
+
+编辑器引入 Dear ImGui v1.91.9b（MIT），使用官方 SDL2 + SDL_Renderer2 后端，源码离线随仓库提供。游戏仍使用 SDL2。地图分享采用 JSON 的 Base64URL 编码，不加入哈希、签名、版本锁和依赖解析。错误处理只针对无法读取、无法运行或缺失的必要资源。
+
+
 > 每条都是「背景 → 决定 → 代价」。AI 最容易犯的错是「顺手优化掉」这些决定，
 > 所以想推翻任何一条，先在这里加一条新的 ADR，写清为什么，再动代码。
 
@@ -7,8 +14,8 @@
 
 ## ADR-001 渲染用 SDL2 2.32
 
-**背景**：允许第三方库；机器上只有 MinGW（无 MSVC），队友环境未知；要 15 天内出可演示的东西。
-最初选的是 raylib，后来因为 ADR-015 的 DirectInput 事故整体迁移到 SDL2。
+**背景**：需要可离线构建的窗口与渲染库，并减少不必要的初始化依赖。
+最初选的是 raylib，后来因为 ADR-015 所述的初始化兼容性问题整体迁移到 SDL2。
 
 **决定**：SDL2 2.32.10 + SDL2_image 2.8.12 + SDL2_ttf 2.24.0，动态链接，
 MinGW 与 MSVC 两套预编译包放进 `third_party/sdl2/`，DLL 由 CMake 拷到 exe 旁边。
@@ -26,8 +33,8 @@ MinGW 与 MSVC 两套预编译包放进 `third_party/sdl2/`，DLL 由 CMake 拷�
 
 **决定**：不做。`render/` 里直接调 SDL2，其他模块不 include `<SDL.h>`。
 
-**理由**：换后端这件事在 15 天内不会发生（而且刚换过一次，不想再换）；
-虚接口会让三个队友都得读懂 PIMPL 才能画一个圆。真到要换的那天，`render/` 目录是唯一改动点。
+**理由**：当前只有一个渲染后端，不为未实现的替代后端增加虚接口。
+后续更换后端时，`render/` 目录是主要改动点。
 
 **代价**：`Renderer` 的公开签名里出现 `SDL_Texture*`、`SDL_Renderer*` 等 SDL 类型。
 
@@ -62,13 +69,13 @@ MinGW 与 MSVC 两套预编译包放进 `third_party/sdl2/`，DLL 由 CMake 拷�
 **背景**：评分项要求 "reusable feature not easily replaceable by existing packages"。
 物理手感和玩法深度都撑不起这个描述；能撑起来的是"内容即文件夹"。
 
-**决定**：角色/技能/地图全部外部 JSON，运行时轮询 `last_write_time` 热重载；校验失败不崩。
+**决定**：角色/技能/地图采用外部 JSON，支持重新加载；校验失败保留旧内容。ADR-016 进一步引入独立 C++ DLL，并采用菜单显式重新加载。
 
 **代价**：
 - 多一层数据模型（`DataModel.hpp` 约 12 个结构体）；
 - 所有数值都要从 JSON 走，写死一个数字就破坏了这个故事。
 
-**演示动作**：现场往 `content/characters/` 拖一个文件夹 → 2 秒内新角色出现。
+**演示动作**：导入角色文件夹，在菜单中重新加载后选择新角色。
 
 ---
 
@@ -140,7 +147,7 @@ MinGW 与 MSVC 两套预编译包放进 `third_party/sdl2/`，DLL 由 CMake 拷�
 
 ## ADR-012 文档中英双语，代码注释中文
 
-**背景**：作业要求英文 README（助教看），队友是中文母语；原文没规定注释语言。
+**背景**：面向中文与英文读者，同时保持代码注释的一致性。
 
 **决定**：`README.md` 双语；`docs/` 中文为主、标题与关键术语带英文；代码注释中文。
 
@@ -168,7 +175,7 @@ MinGW 与 MSVC 两套预编译包放进 `third_party/sdl2/`，DLL 由 CMake 拷�
 
 ---
 
-## ADR-015 从 raylib 迁到 SDL2（事故记录）
+## ADR-015 从 raylib 迁到 SDL2
 
 **背景**：第一版用 raylib 6.2 预编译包。冒烟程序能编能链，但一开窗就：
 
@@ -177,14 +184,14 @@ WARNING: GLFW: Error: 65544 Description: Win32: Failed to create interface
 FATAL: PLATFORM: Failed to initialize graphics device
 ```
 
-**排查**（在本机和普通终端都复现）：
+**原因**：
 1. 报错字符串来自 GLFW 3.4 `win32_joystick.c`：`DirectInput8Create` 失败时打印；
 2. 单独调 `DirectInput8Create` → 返回 `0x80004005 (E_FAIL)`，与 COM 初始化无关；
-3. 同样的进程里，原生 Win32 窗口创建成功、OpenGL 4.6（RTX 5060）上下文也创建成功；
+3. 窗口及 OpenGL 上下文本身可以正常创建；
 4. GLFW 的 `_glfwInitWin32` 把 `_glfwInitJoysticksWin32()` 的返回值当致命错误 →
    `glfwInit()` 直接失败 → raylib `InitWindow` fatal。
 
-结论：**本机 DirectInput 不可用**，而 raylib 没有开关能关掉 GLFW 的手柄初始化。
+结论：DirectInput 初始化失败可能阻止窗口创建，而该 raylib 版本没有关闭 GLFW 手柄初始化的开关。
 
 **决定**：换 SDL2。SDL2 的 `SDL_Init(SDL_INIT_VIDEO)` 不初始化手柄子系统，不碰 DirectInput。
 探针验证：`window OK (hidden 320x200, video=windows, renderer=direct3d)`。
@@ -195,3 +202,7 @@ FATAL: PLATFORM: Failed to initialize graphics device
 - 仓库里多 16 MB 预编译包。
 
 **教训**：选渲染库之前，先跑一个 30 行的「开窗 + 清屏」探针，别等 UI 写完了才发现初始化就挂。
+
+## ADR-017 角色扩展与离线平衡
+
+角色扩展到六种战斗定位，数值与技能组合均放在 content。通用内置修饰器增加 damage_boost 和 thorns，支持短时攻击窗口及防守反伤；反伤只响应 contact，不递归触发自身。反应技能开局可用，低血量技能每局一次；各修饰器按自己的 duration 到期。使用 C++ 离线循环赛，覆盖空场、障碍、机关、缩圈并交换左右位置；调参与留出种子分开。结果是默认角色在这些环境中的测试证据，不对任意玩家模组作平衡承诺。

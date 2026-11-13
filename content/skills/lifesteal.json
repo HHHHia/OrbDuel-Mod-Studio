@@ -1,14 +1,26 @@
 {
   "format": 1,
   "id": "lifesteal",
-  "name": { "en": "Lifesteal", "zh": "吸血" },
-  "trigger": { "kind": "on_hit", "cooldown": 2.0 },
+  "name": {
+    "zh": "嗜血",
+    "en": "Lifesteal"
+  },
+  "description": {
+    "zh": "碰撞后短时获得吸血，按实际造成的生命伤害恢复。",
+    "en": "Lifesteal"
+  },
+  "trigger": {
+    "kind": "on_hit",
+    "cooldown": 3
+  },
   "modifiers": [
-    { "op": "lifesteal", "value": 0.35, "duration": 3.0 }
+    {
+      "value": 0.16,
+      "op": "lifesteal",
+      "duration": 2
+    }
   ],
-  "vfx": [
-    { "on": "hit", "type": "burst", "color": [220, 60, 90, 255], "count": 14, "value": 90.0 }
-  ],
+  "vfx": [],
   "stack": "refresh",
-  "priority": 20
+  "priority": 10
 }

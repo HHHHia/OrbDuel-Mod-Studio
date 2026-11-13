@@ -1,0 +1,27 @@
+{
+  "format": 1,
+  "id": "ice-guard",
+  "name": {
+    "zh": "冰封屏障",
+    "en": "Ice Guard"
+  },
+  "description": {
+    "zh": "每局一次：生命低于35%时获得持续4秒的护盾。",
+    "en": "Ice Guard"
+  },
+  "trigger": {
+    "kind": "on_low_hp",
+    "cooldown": 1,
+    "hpBelow": 0.35
+  },
+  "modifiers": [
+    {
+      "value": 10,
+      "op": "shield",
+      "duration": 4
+    }
+  ],
+  "vfx": [],
+  "stack": "refresh",
+  "priority": 10
+}

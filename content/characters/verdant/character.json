@@ -1,0 +1,43 @@
+{
+  "format": 1,
+  "id": "verdant",
+  "name": {
+    "zh": "青芽",
+    "en": "Verdant"
+  },
+  "description": {
+    "zh": "恢复续航：周期恢复配合一次低血量复苏，持续作战。",
+    "en": "Verdant"
+  },
+  "skin": {
+    "texture": "skin.png",
+    "tint": [
+      143,
+      222,
+      132,
+      255
+    ],
+    "scale": 1.0,
+    "pattern": "leaf"
+  },
+  "hitbox": {
+    "shape": "circle",
+    "radius": 25,
+    "offset": [
+      0,
+      0
+    ]
+  },
+  "stats": {
+    "startSpeed": 390,
+    "restitution": 0.97,
+    "mass": 1.15,
+    "attack": 13,
+    "armor": 0,
+    "maxHp": 105
+  },
+  "skills": [
+    "regeneration",
+    "second-wind"
+  ]
+}

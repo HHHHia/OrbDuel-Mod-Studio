@@ -10,11 +10,9 @@
 OrbDuel 是一个 **C++17 + SDL2 2.32** 的 2D 双球物理对战游戏。
 
 核心设计一句话：**引擎不认识「球」和「技能」**。引擎只认实体（Body）、修饰器（Modifier）、事件（Event）；
-角色、技能、地图全部是 `content/` 下的外部文件夹，运行时可热重载。
+角色、技能和地图采用外部数据，新增行为由独立 C++ DLL 注册；在菜单中显式重新加载。
 
-这是 CS2310 小组作业（group08，2026-11-24 23:59 截止）。
-评分五项 `published / documented / functional / innovative / teamwork` 中，
-**innovative 押在「内容模组化」**上：别人拖一个文件夹进来，就能多一个角色、一套技能、一张图。
+项目的可复用能力是「内容模组化」：导入内容或独立 C++ 模组文件夹，即可扩展角色、技能和地图。
 
 ## 1. 开工前必读（按顺序）
 
@@ -37,7 +35,7 @@ OrbDuel 是一个 **C++17 + SDL2 2.32** 的 2D 双球物理对战游戏。
 # 冒烟测试：验证工具链、SDL2 链接、内容目录可读
 .\build\bin\orbduel.exe --selftest
 
-# 直接开一局（R 重开，ESC 退出）
+# 打开工作台，从主页开始对战或编辑地图
 .\build\bin\orbduel.exe
 
 # 无窗口跑 60 秒，回归物理与结算
@@ -47,7 +45,7 @@ OrbDuel 是一个 **C++17 + SDL2 2.32** 的 2D 双球物理对战游戏。
 .\tools\validate_content.ps1
 ```
 
-工具链基准：`g++ 16.2 (w64devkit)` + `CMake` + `Ninja`；MSVC 2022 亦可（CMake 自动选 `third_party/sdl2/msvc`）。
+工具链基准：Windows x64、MSVC 2022、CMake、C++17；宿主与 DLL 使用相同工具链。
 
 ## 3. 铁律（违反就回滚）
 
@@ -92,12 +90,12 @@ content ──→ core
 2. 改 `character.json` 的 `id`、`name`、`stats`，`skills` 填 `content/skills/` 里已有的 id
 3. 放一张 `skin.png`（建议 256×256，背景透明）
 4. 跑 `.\tools\validate_content.ps1`
-5. 启动游戏 → 角色选择页应自动出现（热重载：不重启）
+5. 在菜单中重新加载内容 → 主页角色选择列表应出现新角色
 
 ### 5.2 加一个技能
 
 1. 在 `content/skills/` 新建 `<id>.json`，从 `dash.json` 复制改
-2. 只允许用 `docs/CONTENT_FORMAT.md` 里列出的 `op` 与 `vfx.type`；**要新原语 = 改引擎**，先写 ADR
+2. JSON 技能使用 `docs/CONTENT_FORMAT.md` 中列出的 `op`；独立新行为可使用 C++ 模组 SDK，见 `docs/MOD_STUDIO.md`
 3. 把 id 加进某个角色的 `skills` 数组
 4. 校验 → 启动 → 触发一次看日志有没有 `skill.cast`
 
@@ -106,7 +104,7 @@ content ──→ core
 1. 复制 `content/maps/duel-basic/` 为 `content/maps/<new-id>/`
 2. 改 `map.json` 的 `size`、`spawns`、`obstacles`、`shrink`
 3. 需要背景就放 `bg.png`，尺寸与 `size` 一致
-4. 校验 → 启动 → 从地图列表进入
+4. 校验后运行；地图编辑器存档与种子生成流程见 `docs/MOD_STUDIO.md`
 
 ## 6. 常见坑
 
@@ -116,7 +114,7 @@ content ──→ core
 - **不要给 `Body` 加游戏字段**（HP 放 `Match` 的 `Fighter` 里）。`physics` 要能被单独复用。
 - SDL2 是**动态链接**：`SDL2.dll` / `SDL2_image.dll` / `SDL2_ttf.dll` 必须和 exe 同目录（CMake 会自动拷）。删了 DLL 会直接起不来。
 - 提交前确认没有把 `build/`、`.vs/`、`*.pdb` 带进 git。
-- **不要换回 raylib / GLFW**：GLFW 初始化手柄时调 `DirectInput8Create`，本机该调用返回 `E_FAIL`，GLFW 直接判定 `glfwInit()` 失败，窗口根本开不出来（ADR-015）。SDL2 的 video 初始化不碰 DirectInput。
+- **渲染使用 SDL2**：仅初始化 video 子系统，避免窗口创建依赖手柄初始化（ADR-015）。
 - 改 `.ps1` 必须存成 **UTF-8 with BOM**。Windows PowerShell 5.1 会把无 BOM 的 UTF-8 当 GBK 读，中文字符串直接把脚本语法搞崩。
 
 ## 7. 提交前自检

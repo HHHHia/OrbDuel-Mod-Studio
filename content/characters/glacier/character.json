@@ -1,0 +1,43 @@
+{
+  "format": 1,
+  "id": "glacier",
+  "name": {
+    "zh": "霜棱",
+    "en": "Glacier"
+  },
+  "description": {
+    "zh": "领域防守：减速削弱敌人的速度收益，低血量获得一次屏障。",
+    "en": "Glacier"
+  },
+  "skin": {
+    "texture": "skin.png",
+    "tint": [
+      130,
+      211,
+      255,
+      255
+    ],
+    "scale": 1.0,
+    "pattern": "crystal"
+  },
+  "hitbox": {
+    "shape": "circle",
+    "radius": 27,
+    "offset": [
+      0,
+      0
+    ]
+  },
+  "stats": {
+    "startSpeed": 380,
+    "restitution": 0.97,
+    "mass": 1.5,
+    "attack": 14.7,
+    "armor": 0.5,
+    "maxHp": 116
+  },
+  "skills": [
+    "slow-field",
+    "ice-guard"
+  ]
+}

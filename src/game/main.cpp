@@ -133,6 +133,21 @@ int main(int argc, char** argv) {
             listOnly = true;
         } else if (arg == "--headless") {
             options.headless = true;
+        } else if (arg == "--hidden") {
+            options.hidden = true;
+        } else if (arg == "--play") {
+            options.play = true;
+        } else if (arg == "--scene" && i + 1 < argc) {
+            options.sceneFile = argv[++i];
+        } else if (arg == "--mods" && i + 1 < argc) {
+            options.modsRoot = argv[++i];
+        } else if (arg == "--theme" && i + 1 < argc) {
+            options.theme = argv[++i];
+        } else if (arg == "--view" && i + 1 < argc) {
+            options.view = argv[++i];
+        } else if (arg == "--autotest" && i + 1 < argc) {
+            options.autotestSeconds = static_cast<float>(std::atof(argv[++i]));
+            options.headless = true;
         } else if (arg == "--content" && i + 1 < argc) {
             options.contentRoot = argv[++i];
         } else if (arg == "--map" && i + 1 < argc) {
@@ -157,6 +172,9 @@ int main(int argc, char** argv) {
             std::printf("  orbduel --list                  只列内容包\n");
             std::printf("  orbduel --headless              不开窗口（只做逻辑）\n");
             std::printf("  orbduel --seconds 5             跑 5 秒后自动退出\n");
+            std::printf("  orbduel --scene user/arena.json  读取工作台地图\n");
+            std::printf("  orbduel --autotest 600          快速无窗口物理回归\n");
+            std::printf("  orbduel --play                  直接开始自动对战\n");
             return 0;
         }
     }

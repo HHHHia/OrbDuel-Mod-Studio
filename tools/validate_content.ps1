@@ -86,9 +86,18 @@ function CheckColor($obj, [string]$name, [string]$src) {
     }
 }
 
+function CheckVector($obj, [string]$name, [string]$src) {
+    $v = Prop $obj $name
+    if ($null -eq $v) { return }
+    if (@($v).Count -ne 2) { Fail $src ("{0} 必须是两个数值" -f $name); return }
+    foreach ($n in $v) {
+        if ($n -isnot [ValueType] -or $n -is [bool]) { Fail $src ("{0} 的分量必须是数值" -f $name); return }
+    }
+}
+
 # ---------------------------------------------------------------------------
 $SkillKinds = @('cooldown', 'on_hit', 'on_hit_by', 'on_low_hp', 'on_wall_bounce', 'manual')
-$SkillOps = @('add_speed', 'shield', 'lifesteal', 'slow_field', 'teleport', 'resize', 'bounce_boost', 'heal')
+$SkillOps = @('add_speed', 'shield', 'lifesteal', 'slow_field', 'teleport', 'resize', 'bounce_boost', 'heal', 'damage_boost', 'thorns')
 $VfxTypes = @('trail', 'burst', 'ring', 'flash', 'screen_shake', 'hit_stop')
 $VfxOns = @('cast', 'hit', 'expire')
 
@@ -184,6 +193,7 @@ if (Test-Path $CharDir) {
         $hitbox = Prop $d 'hitbox'
         if (-not (Need $d 'hitbox' $src)) { }
         if ($null -ne $hitbox) {
+            CheckVector $hitbox 'offset' $src
             if ((Prop $hitbox 'shape') -ne 'circle') { Fail $src "hitbox.shape 目前只支持 'circle'" }
             InRange $hitbox 'radius' 6 120 $src
         }
@@ -235,6 +245,8 @@ if (Test-Path $MapDir) {
         if ($spawns.Count -ne 2) { Fail $src ("spawns 必须恰好 2 个，当前 " + $spawns.Count) }
         foreach ($s in $spawns) {
             if ($null -eq $s) { continue }
+            CheckVector $s 'pos' $src
+            CheckVector $s 'dir' $src
             $dir = ArrOf $s 'dir'
             if ($dir.Count -ne 2 -or ([double]$dir[0] -eq 0 -and [double]$dir[1] -eq 0)) {
                 Fail $src "spawns[].dir 必须是非零二维向量"

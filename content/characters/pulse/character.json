@@ -1,0 +1,43 @@
+{
+  "format": 1,
+  "id": "pulse",
+  "name": {
+    "zh": "雷脉",
+    "en": "Pulse"
+  },
+  "description": {
+    "zh": "窗口爆发：过载期间碰撞伤害提高，撞墙折跃改变进攻路线。",
+    "en": "Pulse"
+  },
+  "skin": {
+    "texture": "skin.png",
+    "tint": [
+      186,
+      151,
+      255,
+      255
+    ],
+    "scale": 1.0,
+    "pattern": "spark"
+  },
+  "hitbox": {
+    "shape": "circle",
+    "radius": 24,
+    "offset": [
+      0,
+      0
+    ]
+  },
+  "stats": {
+    "startSpeed": 415,
+    "restitution": 0.97,
+    "mass": 1.1,
+    "attack": 15.5,
+    "armor": 0,
+    "maxHp": 108
+  },
+  "skills": [
+    "overcharge",
+    "phase-step"
+  ]
+}

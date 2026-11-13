@@ -1,79 +1,25 @@
-﻿# 一键配置 + 构建 + 冒烟测试
-#
-#   .\build.ps1              释放版构建，然后跑 --selftest
-#   .\build.ps1 -SkipRun     只构建
-#   .\build.ps1 -DebugBuild  Debug 构建
-#   .\build.ps1 -Clean       删掉 build/ 重新配置（会先确认）
-#
-# 依赖：cmake。编译器用 PATH 里的 g++（w64devkit）或 MSVC。
-# SDL2 已离线在 third_party/，不需要联网。
-
+﻿# 一键构建 C++ 游戏、编辑器和示例模组；所有产物位于仓库的 build/。
 [CmdletBinding()]
-param(
-    [switch]$SkipRun,
-    [switch]$DebugBuild,
-    [switch]$Clean,
-    [string]$Generator = ''
-)
-
-$ErrorActionPreference = 'Stop'
-$Root = $PSScriptRoot
-$Build = Join-Path $Root 'build'
-$BuildType = if ($DebugBuild) { 'Debug' } else { 'Release' }
-
-function Find-Tool([string]$name) {
-    $cmd = Get-Command $name -ErrorAction SilentlyContinue
-    if ($cmd) { return $cmd.Source }
-    return $null
+param([switch]$SkipRun,[switch]$DebugBuild,[switch]$Clean,[string]$Generator='Visual Studio 17 2022')
+$ErrorActionPreference='Stop'
+$ProjectRoot=$PSScriptRoot
+$Build=Join-Path $ProjectRoot 'build'
+$BuildType=if($DebugBuild){'Debug'}else{'Release'}
+$CMake=(Get-Command cmake -ErrorAction SilentlyContinue).Source
+if(-not $CMake){
+    $vswhere=Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+    if(Test-Path -LiteralPath $vswhere){$vsPath=& $vswhere -latest -products '*' -property installationPath; if($vsPath){$candidate=Join-Path $vsPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe';if(Test-Path -LiteralPath $candidate){$CMake=$candidate}}}
 }
-
-$CMake = Find-Tool 'cmake'
-if (-not $CMake) {
-    Write-Host 'cmake 不在 PATH。' -ForegroundColor Red
-    Write-Host 'cmake 不在 PATH。装 CMake，或把 w64devkit 的 bin 目录加进 PATH。'
-    exit 2
+if(-not $CMake){Write-Error '请安装 Visual Studio 2022 的 C++ 桌面开发与 CMake 工具。';exit 2}
+if($Clean -and (Test-Path -LiteralPath $Build)){
+    $resolved=[IO.Path]::GetFullPath($Build)
+    $expected=[IO.Path]::GetFullPath((Join-Path $ProjectRoot 'build'))
+    if($resolved -ne $expected){throw '构建目录不在预期位置'}
+    Remove-Item -LiteralPath $resolved -Recurse -Force
 }
-
-if ($Clean -and (Test-Path $Build)) {
-    Write-Host "即将删除构建目录: $Build" -ForegroundColor Yellow
-    $answer = Read-Host '确认删除？(y/N)'
-    if ($answer -ne 'y') { Write-Host '已取消'; exit 1 }
-    Remove-Item -Recurse -Force $Build
-}
-
-if (-not $Generator) {
-    if (Find-Tool 'ninja') { $Generator = 'Ninja' }
-}
-
-$cache = Join-Path $Build 'CMakeCache.txt'
-if (-not (Test-Path $cache)) {
-    Write-Host "配置构建目录: $Build" -ForegroundColor Cyan
-    $cmakeArgs = @('-S', $Root, '-B', $Build, "-DCMAKE_BUILD_TYPE=$BuildType")
-    if ($Generator) { $cmakeArgs += @('-G', $Generator) }
-    & $CMake @cmakeArgs
-    if ($LASTEXITCODE -ne 0) { Write-Host 'cmake configure 失败' -ForegroundColor Red; exit 2 }
-}
-
-Write-Host "构建 ($BuildType)" -ForegroundColor Cyan
-& $CMake --build $Build --config $BuildType
-if ($LASTEXITCODE -ne 0) { Write-Host '构建失败' -ForegroundColor Red; exit 2 }
-
-$Exe = Join-Path $Build 'bin\orbduel.exe'
-if (-not (Test-Path $Exe)) {
-    Write-Host "找不到产物: $Exe" -ForegroundColor Red
-    exit 2
-}
-Write-Host "构建成功: $Exe" -ForegroundColor Green
-
-if (-not $SkipRun) {
-    Write-Host ''
-    Push-Location $Root
-    try {
-        & $Exe --selftest
-        $code = $LASTEXITCODE
-    } finally {
-        Pop-Location
-    }
-    exit $code
-}
-exit 0
+& $CMake -S $ProjectRoot -B $Build -G $Generator -A x64
+if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+& $CMake --build $Build --config $BuildType --parallel
+if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+Write-Host "构建成功：$Build\bin\orbduel.exe"
+if(-not $SkipRun){& (Join-Path $Build 'bin\orbduel.exe') --selftest;exit $LASTEXITCODE}

@@ -17,7 +17,7 @@ namespace {
 
 // ---------- JSON 小工具（缺字段/类型不对时退回默认值，不让解析炸掉） ----------
 
-float readFloat(const json& object, const char* key, float fallback) {
+float readFloat(const json &object, const char *key, float fallback) {
     auto it = object.find(key);
     if (it == object.end() || !it->is_number()) {
         return fallback;
@@ -25,7 +25,7 @@ float readFloat(const json& object, const char* key, float fallback) {
     return it->get<float>();
 }
 
-int readInt(const json& object, const char* key, int fallback) {
+int readInt(const json &object, const char *key, int fallback) {
     auto it = object.find(key);
     if (it == object.end() || !it->is_number_integer()) {
         return fallback;
@@ -33,8 +33,7 @@ int readInt(const json& object, const char* key, int fallback) {
     return it->get<int>();
 }
 
-
-std::string readString(const json& object, const char* key, const std::string& fallback) {
+std::string readString(const json &object, const char *key, const std::string &fallback) {
     auto it = object.find(key);
     if (it == object.end() || !it->is_string()) {
         return fallback;
@@ -42,7 +41,7 @@ std::string readString(const json& object, const char* key, const std::string& f
     return it->get<std::string>();
 }
 
-Vec2 readVec2(const json& object, const char* key, Vec2 fallback) {
+Vec2 readVec2(const json &object, const char *key, Vec2 fallback) {
     auto it = object.find(key);
     if (it == object.end() || !it->is_array() || it->size() != 2) {
         return fallback;
@@ -50,7 +49,7 @@ Vec2 readVec2(const json& object, const char* key, Vec2 fallback) {
     return Vec2{(*it)[0].get<float>(), (*it)[1].get<float>()};
 }
 
-Rgba readRgba(const json& object, const char* key, Rgba fallback) {
+Rgba readRgba(const json &object, const char *key, Rgba fallback) {
     auto it = object.find(key);
     if (it == object.end() || !it->is_array() || it->size() != 4) {
         return fallback;
@@ -63,7 +62,7 @@ Rgba readRgba(const json& object, const char* key, Rgba fallback) {
     return color;
 }
 
-LocalizedText readName(const json& object) {
+LocalizedText readName(const json &object) {
     LocalizedText name;
     auto it = object.find("name");
     if (it != object.end() && it->is_object()) {
@@ -73,49 +72,99 @@ LocalizedText readName(const json& object) {
     return name;
 }
 
-TriggerKind parseTriggerKind(const std::string& text) {
-    if (text == "on_hit") { return TriggerKind::OnHit; }
-    if (text == "on_hit_by") { return TriggerKind::OnHitBy; }
-    if (text == "on_low_hp") { return TriggerKind::OnLowHp; }
-    if (text == "on_wall_bounce") { return TriggerKind::OnWallBounce; }
-    if (text == "manual") { return TriggerKind::Manual; }
-    return TriggerKind::Cooldown;
+TriggerKind parseTriggerKind(const std::string &text) {
+    if (text == "on_hit") {
+        return TriggerKind::OnHit;
+    }
+    if (text == "on_hit_by") {
+        return TriggerKind::OnHitBy;
+    }
+    if (text == "on_low_hp") {
+        return TriggerKind::OnLowHp;
+    }
+    if (text == "on_wall_bounce") {
+        return TriggerKind::OnWallBounce;
+    }
+    if (text == "manual") {
+        return TriggerKind::Manual;
+    }
+    if (text == "cooldown")
+        return TriggerKind::Cooldown;
+    throw std::runtime_error("未知触发类型: " + text);
 }
 
-ModifierOp parseModifierOp(const std::string& text) {
-    if (text == "shield") { return ModifierOp::Shield; }
-    if (text == "lifesteal") { return ModifierOp::Lifesteal; }
-    if (text == "slow_field") { return ModifierOp::SlowField; }
-    if (text == "teleport") { return ModifierOp::Teleport; }
-    if (text == "resize") { return ModifierOp::Resize; }
-    if (text == "bounce_boost") { return ModifierOp::BounceBoost; }
-    if (text == "heal") { return ModifierOp::Heal; }
-    return ModifierOp::AddSpeed;
+ModifierOp parseModifierOp(const std::string &text) {
+    if (text == "damage_boost")
+        return ModifierOp::DamageBoost;
+    if (text == "thorns")
+        return ModifierOp::Thorns;
+    if (text == "shield") {
+        return ModifierOp::Shield;
+    }
+    if (text == "lifesteal") {
+        return ModifierOp::Lifesteal;
+    }
+    if (text == "slow_field") {
+        return ModifierOp::SlowField;
+    }
+    if (text == "teleport") {
+        return ModifierOp::Teleport;
+    }
+    if (text == "resize") {
+        return ModifierOp::Resize;
+    }
+    if (text == "bounce_boost") {
+        return ModifierOp::BounceBoost;
+    }
+    if (text == "heal") {
+        return ModifierOp::Heal;
+    }
+    if (text == "add_speed")
+        return ModifierOp::AddSpeed;
+    throw std::runtime_error("未知效果: " + text);
 }
 
-Curve parseCurve(const std::string& text) {
-    if (text == "ease_out") { return Curve::EaseOut; }
-    if (text == "ease_in_out") { return Curve::EaseInOut; }
+Curve parseCurve(const std::string &text) {
+    if (text == "ease_out") {
+        return Curve::EaseOut;
+    }
+    if (text == "ease_in_out") {
+        return Curve::EaseInOut;
+    }
     return Curve::Linear;
 }
 
-VfxType parseVfxType(const std::string& text) {
-    if (text == "trail") { return VfxType::Trail; }
-    if (text == "ring") { return VfxType::Ring; }
-    if (text == "flash") { return VfxType::Flash; }
-    if (text == "screen_shake") { return VfxType::ScreenShake; }
-    if (text == "hit_stop") { return VfxType::HitStop; }
+VfxType parseVfxType(const std::string &text) {
+    if (text == "trail") {
+        return VfxType::Trail;
+    }
+    if (text == "ring") {
+        return VfxType::Ring;
+    }
+    if (text == "flash") {
+        return VfxType::Flash;
+    }
+    if (text == "screen_shake") {
+        return VfxType::ScreenShake;
+    }
+    if (text == "hit_stop") {
+        return VfxType::HitStop;
+    }
     return VfxType::Burst;
 }
 
-VfxOn parseVfxOn(const std::string& text) {
-    if (text == "hit") { return VfxOn::Hit; }
-    if (text == "expire") { return VfxOn::Expire; }
+VfxOn parseVfxOn(const std::string &text) {
+    if (text == "hit") {
+        return VfxOn::Hit;
+    }
+    if (text == "expire") {
+        return VfxOn::Expire;
+    }
     return VfxOn::Cast;
 }
 
-void addIssue(std::vector<LoadIssue>& issues, IssueSeverity severity,
-              const std::string& source, const std::string& message) {
+void addIssue(std::vector<LoadIssue> &issues, IssueSeverity severity, const std::string &source,
+              const std::string &message) {
     issues.push_back(LoadIssue{severity, source, message});
     if (severity == IssueSeverity::Error) {
         log::error(source + ": " + message);
@@ -126,7 +175,7 @@ void addIssue(std::vector<LoadIssue>& issues, IssueSeverity severity,
 
 // ---------- 各类内容 ----------
 
-void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& issues) {
+void loadSkills(const fs::path &dir, ContentPack &pack, std::vector<LoadIssue> &issues) {
     std::error_code ec;
     if (!fs::is_directory(dir, ec)) {
         addIssue(issues, IssueSeverity::Error, "skills", "目录不存在");
@@ -134,14 +183,14 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
     }
 
     std::vector<fs::path> files;
-    for (const auto& entry : fs::directory_iterator(dir, ec)) {
+    for (const auto &entry : fs::directory_iterator(dir, ec)) {
         if (entry.is_regular_file(ec) && entry.path().extension() == ".json") {
             files.push_back(entry.path());
         }
     }
     std::sort(files.begin(), files.end());
 
-    for (const fs::path& file : files) {
+    for (const fs::path &file : files) {
         std::ifstream stream(file);
         if (!stream) {
             continue;
@@ -150,7 +199,7 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
         json root;
         try {
             stream >> root;
-        } catch (const std::exception& error) {
+        } catch (const std::exception &error) {
             addIssue(issues, IssueSeverity::Error, "skills/" + file.stem().string(),
                      std::string("JSON 解析失败: ") + error.what());
             continue;
@@ -160,17 +209,21 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
         def.format = readInt(root, "format", 1);
         def.id = readString(root, "id", file.stem().string());
         def.name = readName(root);
+        if (root.contains("description")) {
+            const auto &d = root["description"];
+            def.description = {readString(d, "en", ""), readString(d, "zh", "")};
+        }
         def.sourceFile = "skills/" + file.filename().string();
 
         if (root.contains("trigger") && root["trigger"].is_object()) {
-            const json& trigger = root["trigger"];
+            const json &trigger = root["trigger"];
             def.trigger.kind = parseTriggerKind(readString(trigger, "kind", "cooldown"));
             def.trigger.cooldown = readFloat(trigger, "cooldown", 5.0f);
             def.trigger.hpBelow = readFloat(trigger, "hpBelow", 0.3f);
         }
 
         if (root.contains("modifiers") && root["modifiers"].is_array()) {
-            for (const json& item : root["modifiers"]) {
+            for (const json &item : root["modifiers"]) {
                 ModifierDef modifier;
                 modifier.op = parseModifierOp(readString(item, "op", "add_speed"));
                 modifier.value = readFloat(item, "value", 0.0f);
@@ -183,7 +236,7 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
         }
 
         if (root.contains("vfx") && root["vfx"].is_array()) {
-            for (const json& item : root["vfx"]) {
+            for (const json &item : root["vfx"]) {
                 VfxDef vfx;
                 vfx.on = parseVfxOn(readString(item, "on", "cast"));
                 vfx.type = parseVfxType(readString(item, "type", "burst"));
@@ -206,7 +259,7 @@ void loadSkills(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& 
     }
 }
 
-void loadCharacters(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& issues) {
+void loadCharacters(const fs::path &dir, ContentPack &pack, std::vector<LoadIssue> &issues) {
     std::error_code ec;
     if (!fs::is_directory(dir, ec)) {
         addIssue(issues, IssueSeverity::Error, "characters", "目录不存在");
@@ -214,14 +267,14 @@ void loadCharacters(const fs::path& dir, ContentPack& pack, std::vector<LoadIssu
     }
 
     std::vector<fs::path> folders;
-    for (const auto& entry : fs::directory_iterator(dir, ec)) {
+    for (const auto &entry : fs::directory_iterator(dir, ec)) {
         if (entry.is_directory(ec)) {
             folders.push_back(entry.path());
         }
     }
     std::sort(folders.begin(), folders.end());
 
-    for (const fs::path& folder : folders) {
+    for (const fs::path &folder : folders) {
         const fs::path file = folder / "character.json";
         const std::string source = "characters/" + folder.filename().string();
         if (!fs::is_regular_file(file, ec)) {
@@ -237,9 +290,8 @@ void loadCharacters(const fs::path& dir, ContentPack& pack, std::vector<LoadIssu
         json root;
         try {
             stream >> root;
-        } catch (const std::exception& error) {
-            addIssue(issues, IssueSeverity::Error, source,
-                     std::string("JSON 解析失败: ") + error.what());
+        } catch (const std::exception &error) {
+            addIssue(issues, IssueSeverity::Error, source, std::string("JSON 解析失败: ") + error.what());
             continue;
         }
 
@@ -247,32 +299,39 @@ void loadCharacters(const fs::path& dir, ContentPack& pack, std::vector<LoadIssu
         def.format = readInt(root, "format", 1);
         def.id = readString(root, "id", folder.filename().string());
         def.name = readName(root);
+        if (root.contains("description")) {
+            const auto &d = root["description"];
+            def.description = {readString(d, "en", ""), readString(d, "zh", "")};
+        }
         def.sourceDir = source;
 
         if (root.contains("skin") && root["skin"].is_object()) {
-            const json& skin = root["skin"];
+            const json &skin = root["skin"];
             def.skin.texture = readString(skin, "texture", "skin.png");
+            def.skin.pattern = readString(skin, "pattern", "");
             def.skin.scale = readFloat(skin, "scale", 1.0f);
             def.skin.anchor = readVec2(skin, "anchor", Vec2{0.5f, 0.5f});
             def.skin.tint = readRgba(skin, "tint", Rgba{255, 255, 255, 255});
         }
 
         if (root.contains("hitbox") && root["hitbox"].is_object()) {
-            const json& hitbox = root["hitbox"];
+            const json &hitbox = root["hitbox"];
             def.hitbox.radius = readFloat(hitbox, "radius", 18.0f);
             def.hitbox.offset = readVec2(hitbox, "offset", Vec2{0.0f, 0.0f});
         }
 
         if (root.contains("stats") && root["stats"].is_object()) {
-            const json& stats = root["stats"];
+            const json &stats = root["stats"];
             def.stats.mass = readFloat(stats, "mass", 1.0f);
             def.stats.restitution = readFloat(stats, "restitution", 0.95f);
             def.stats.maxHp = readFloat(stats, "maxHp", 100.0f);
             def.stats.startSpeed = readFloat(stats, "startSpeed", 400.0f);
+            def.stats.attack = readFloat(stats, "attack", 12.0f);
+            def.stats.armor = readFloat(stats, "armor", 0.0f);
         }
 
         if (root.contains("skills") && root["skills"].is_array()) {
-            for (const json& item : root["skills"]) {
+            for (const json &item : root["skills"]) {
                 if (item.is_string()) {
                     def.skills.push_back(item.get<std::string>());
                 }
@@ -291,7 +350,7 @@ void loadCharacters(const fs::path& dir, ContentPack& pack, std::vector<LoadIssu
     }
 }
 
-void loadMaps(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& issues) {
+void loadMaps(const fs::path &dir, ContentPack &pack, std::vector<LoadIssue> &issues) {
     std::error_code ec;
     if (!fs::is_directory(dir, ec)) {
         addIssue(issues, IssueSeverity::Error, "maps", "目录不存在");
@@ -299,14 +358,14 @@ void loadMaps(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& is
     }
 
     std::vector<fs::path> folders;
-    for (const auto& entry : fs::directory_iterator(dir, ec)) {
+    for (const auto &entry : fs::directory_iterator(dir, ec)) {
         if (entry.is_directory(ec)) {
             folders.push_back(entry.path());
         }
     }
     std::sort(folders.begin(), folders.end());
 
-    for (const fs::path& folder : folders) {
+    for (const fs::path &folder : folders) {
         const fs::path file = folder / "map.json";
         const std::string source = "maps/" + folder.filename().string();
         if (!fs::is_regular_file(file, ec)) {
@@ -322,9 +381,8 @@ void loadMaps(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& is
         json root;
         try {
             stream >> root;
-        } catch (const std::exception& error) {
-            addIssue(issues, IssueSeverity::Error, source,
-                     std::string("JSON 解析失败: ") + error.what());
+        } catch (const std::exception &error) {
+            addIssue(issues, IssueSeverity::Error, source, std::string("JSON 解析失败: ") + error.what());
             continue;
         }
 
@@ -336,7 +394,7 @@ void loadMaps(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& is
         def.size = readVec2(root, "size", Vec2{1280.0f, 720.0f});
 
         if (root.contains("theme") && root["theme"].is_object()) {
-            const json& theme = root["theme"];
+            const json &theme = root["theme"];
             def.theme.bgTexture = readString(theme, "bgTexture", "");
             def.theme.bgColor = readRgba(theme, "bgColor", Rgba{16, 17, 24, 255});
             def.theme.wallColor = readRgba(theme, "wallColor", Rgba{90, 120, 255, 255});
@@ -344,7 +402,7 @@ void loadMaps(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& is
         }
 
         if (root.contains("spawns") && root["spawns"].is_array()) {
-            for (const json& item : root["spawns"]) {
+            for (const json &item : root["spawns"]) {
                 SpawnDef spawn;
                 spawn.pos = readVec2(item, "pos", Vec2{0.0f, 0.0f});
                 spawn.dir = readVec2(item, "dir", Vec2{1.0f, 0.0f});
@@ -354,7 +412,7 @@ void loadMaps(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& is
         }
 
         if (root.contains("obstacles") && root["obstacles"].is_array()) {
-            for (const json& item : root["obstacles"]) {
+            for (const json &item : root["obstacles"]) {
                 ObstacleDef obstacle;
                 obstacle.shape = readString(item, "shape", "rect");
                 obstacle.pos = readVec2(item, "pos", Vec2{0.0f, 0.0f});
@@ -366,7 +424,7 @@ void loadMaps(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& is
         }
 
         if (root.contains("physics") && root["physics"].is_object()) {
-            const json& physics = root["physics"];
+            const json &physics = root["physics"];
             def.physics.wallRestitution = readFloat(physics, "wallRestitution", 0.98f);
             def.physics.bounceJitterDeg = readFloat(physics, "bounceJitterDeg", 1.5f);
             def.physics.maxSpeed = readFloat(physics, "maxSpeed", 1800.0f);
@@ -375,7 +433,7 @@ void loadMaps(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& is
         }
 
         if (root.contains("shrink") && root["shrink"].is_object()) {
-            const json& shrink = root["shrink"];
+            const json &shrink = root["shrink"];
             def.shrink.firstAt = readFloat(shrink, "firstAt", 25.0f);
             def.shrink.interval = readFloat(shrink, "interval", 12.0f);
             def.shrink.step = readFloat(shrink, "step", 0.08f);
@@ -402,28 +460,37 @@ void loadMaps(const fs::path& dir, ContentPack& pack, std::vector<LoadIssue>& is
 ContentLoader::ContentLoader(std::string contentRoot) : root_(std::move(contentRoot)) {}
 
 bool ContentLoader::loadAll() {
-    pack_ = ContentPack{};
+    ContentPack candidate;
     issues_.clear();
-    stamps_.clear();
-
-    const fs::path root(root_);
-    loadSkills(root / "skills", pack_, issues_);
-    loadCharacters(root / "characters", pack_, issues_);
-    loadMaps(root / "maps", pack_, issues_);
-
-    return !pack_.characters.empty() && !pack_.maps.empty();
+    try {
+        const fs::path root(root_);
+        loadSkills(root / "skills", candidate, issues_);
+        loadCharacters(root / "characters", candidate, issues_);
+        loadMaps(root / "maps", candidate, issues_);
+        if (hasFatal() || candidate.characters.empty() || candidate.maps.empty())
+            return false;
+        for (const auto &c : candidate.characters) {
+            if (c.stats.mass <= 0 || c.stats.maxHp <= 0)
+                throw std::runtime_error(c.id + ": mass/maxHp 必须为正数");
+            for (const auto &id : c.skills)
+                if (!candidate.findSkill(id))
+                    throw std::runtime_error(c.id + ": 不存在的技能 " + id);
+        }
+        pack_ = std::move(candidate);
+        return true;
+    } catch (const std::exception &e) {
+        addIssue(issues_, IssueSeverity::Error, root_, e.what());
+        return false;
+    }
 }
 
-void ContentLoader::poll() {
-    // MVP：先不做热重载，阶段三再接（见 docs/ROADMAP.md）
-    pollTimer_ += 1.0f;
+const ContentPack &ContentLoader::pack() const {
+    return pack_;
 }
-
-const ContentPack& ContentLoader::pack() const { return pack_; }
 
 std::vector<std::string> ContentLoader::characterIds() const {
     std::vector<std::string> ids;
-    for (const CharacterDef& def : pack_.characters) {
+    for (const CharacterDef &def : pack_.characters) {
         ids.push_back(def.id);
     }
     return ids;
@@ -431,7 +498,7 @@ std::vector<std::string> ContentLoader::characterIds() const {
 
 std::vector<std::string> ContentLoader::skillIds() const {
     std::vector<std::string> ids;
-    for (const SkillDef& def : pack_.skills) {
+    for (const SkillDef &def : pack_.skills) {
         ids.push_back(def.id);
     }
     return ids;
@@ -439,16 +506,18 @@ std::vector<std::string> ContentLoader::skillIds() const {
 
 std::vector<std::string> ContentLoader::mapIds() const {
     std::vector<std::string> ids;
-    for (const MapDef& def : pack_.maps) {
+    for (const MapDef &def : pack_.maps) {
         ids.push_back(def.id);
     }
     return ids;
 }
 
-const std::vector<LoadIssue>& ContentLoader::issues() const { return issues_; }
+const std::vector<LoadIssue> &ContentLoader::issues() const {
+    return issues_;
+}
 
 bool ContentLoader::hasFatal() const {
-    for (const LoadIssue& issue : issues_) {
+    for (const LoadIssue &issue : issues_) {
         if (issue.severity == IssueSeverity::Error) {
             return true;
         }
@@ -456,12 +525,16 @@ bool ContentLoader::hasFatal() const {
     return false;
 }
 
-void ContentLoader::clearIssues() { issues_.clear(); }
+void ContentLoader::clearIssues() {
+    issues_.clear();
+}
 
-const std::string& ContentLoader::root() const { return root_; }
+const std::string &ContentLoader::root() const {
+    return root_;
+}
 
-const CharacterDef* ContentPack::findCharacter(const std::string& id) const {
-    for (const CharacterDef& def : characters) {
+const CharacterDef *ContentPack::findCharacter(const std::string &id) const {
+    for (const CharacterDef &def : characters) {
         if (def.id == id) {
             return &def;
         }
@@ -469,8 +542,8 @@ const CharacterDef* ContentPack::findCharacter(const std::string& id) const {
     return nullptr;
 }
 
-const SkillDef* ContentPack::findSkill(const std::string& id) const {
-    for (const SkillDef& def : skills) {
+const SkillDef *ContentPack::findSkill(const std::string &id) const {
+    for (const SkillDef &def : skills) {
         if (def.id == id) {
             return &def;
         }
@@ -478,8 +551,8 @@ const SkillDef* ContentPack::findSkill(const std::string& id) const {
     return nullptr;
 }
 
-const MapDef* ContentPack::findMap(const std::string& id) const {
-    for (const MapDef& def : maps) {
+const MapDef *ContentPack::findMap(const std::string &id) const {
+    for (const MapDef &def : maps) {
         if (def.id == id) {
             return &def;
         }

@@ -8,6 +8,7 @@
 namespace orbduel {
 
 struct Body {
+    float wallBoost = 0.0f; // 单体附加的墙面恢复系数，不包含技能或 HP 状态。
     int id = -1;
     Vec2 pos{};
     Vec2 vel{};

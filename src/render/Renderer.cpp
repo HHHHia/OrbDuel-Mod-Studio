@@ -9,9 +9,11 @@ namespace orbduel {
 
 Renderer::Renderer() = default;
 
-Renderer::~Renderer() { shutdown(); }
+Renderer::~Renderer() {
+    shutdown();
+}
 
-bool Renderer::init(int width, int height, const char* title, bool hidden) {
+bool Renderer::init(int width, int height, const char *title, bool hidden) {
     if (initialized_) {
         return true;
     }
@@ -20,21 +22,23 @@ bool Renderer::init(int width, int height, const char* title, bool hidden) {
         return false;
     }
 
-    Uint32 flags = SDL_WINDOW_SHOWN;
+    SDL_Rect usable{};
+    if (SDL_GetDisplayUsableBounds(0, &usable) == 0) {
+        width = std::min(width, std::max(960, usable.w - 80));
+        height = std::min(height, std::max(640, usable.h - 100));
+    }
+    Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
     if (hidden) {
-        flags = SDL_WINDOW_HIDDEN;
+        flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE;
     }
 
-    window_ = SDL_CreateWindow(title,
-                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               width, height, flags);
+    window_ = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
     if (window_ == nullptr) {
         SDL_Quit();
         return false;
     }
 
-    renderer_ = SDL_CreateRenderer(window_, -1,
-                                   SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer_ == nullptr) {
         renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED);
     }
@@ -54,7 +58,7 @@ bool Renderer::init(int width, int height, const char* title, bool hidden) {
 }
 
 void Renderer::shutdown() {
-    for (auto& entry : fonts_) {
+    for (auto &entry : fonts_) {
         if (entry.second != nullptr) {
             TTF_CloseFont(entry.second);
         }
@@ -79,7 +83,9 @@ void Renderer::shutdown() {
     initialized_ = false;
 }
 
-bool Renderer::isInitialized() const { return initialized_; }
+bool Renderer::isInitialized() const {
+    return initialized_;
+}
 
 bool Renderer::pumpEvents() {
     pressedKeys_.clear();
@@ -103,8 +109,12 @@ bool Renderer::wasKeyPressed(SDL_Scancode code) const {
     return false;
 }
 
-bool Renderer::shouldClose() const { return closed_; }
-void Renderer::requestClose() { closed_ = true; }
+bool Renderer::shouldClose() const {
+    return closed_;
+}
+void Renderer::requestClose() {
+    closed_ = true;
+}
 
 void Renderer::beginFrame(Rgba clearColor) {
     const SDL_Color color = toSdl(clearColor);
@@ -112,10 +122,16 @@ void Renderer::beginFrame(Rgba clearColor) {
     SDL_RenderClear(renderer_);
 }
 
-void Renderer::endFrame() { SDL_RenderPresent(renderer_); }
+void Renderer::endFrame() {
+    SDL_RenderPresent(renderer_);
+}
 
-int Renderer::width() const { return width_; }
-int Renderer::height() const { return height_; }
+int Renderer::width() const {
+    return width_;
+}
+int Renderer::height() const {
+    return height_;
+}
 
 float Renderer::fps() const {
     const std::uint32_t now = SDL_GetTicks();
@@ -192,9 +208,8 @@ void Renderer::drawLine(Vec2 from, Vec2 to, float thickness, Rgba color) {
     const float half = (static_cast<float>(layers) - 1.0f) * 0.5f;
     for (int i = 0; i < layers; ++i) {
         const Vec2 offset = normal * (static_cast<float>(i) - half);
-        SDL_RenderDrawLineF(renderer_,
-                            from.x + offset.x, from.y + offset.y,
-                            to.x + offset.x, to.y + offset.y);
+        SDL_RenderDrawLineF(renderer_, from.x + offset.x, from.y + offset.y, to.x + offset.x,
+                            to.y + offset.y);
     }
 }
 
@@ -223,7 +238,7 @@ void Renderer::drawRectLines(Rect rect, float thickness, Rgba color) {
     drawLine(bottomLeft, topLeft, thickness, color);
 }
 
-void Renderer::drawSprite(SDL_Texture* texture, Vec2 center, float rotationDeg, float scale, Rgba tint) {
+void Renderer::drawSprite(SDL_Texture *texture, Vec2 center, float rotationDeg, float scale, Rgba tint) {
     if (texture == nullptr || scale <= 0.0f) {
         return;
     }
@@ -246,13 +261,13 @@ void Renderer::drawSprite(SDL_Texture* texture, Vec2 center, float rotationDeg, 
     SDL_SetTextureAlphaMod(texture, 255);
 }
 
-bool Renderer::loadFont(const std::string& ttfPath, int baseSize) {
+bool Renderer::loadFont(const std::string &ttfPath, int baseSize) {
     if (TTF_WasInit() == 0) {
         if (TTF_Init() != 0) {
             return false;
         }
     }
-    for (auto& entry : fonts_) {
+    for (auto &entry : fonts_) {
         if (entry.second != nullptr) {
             TTF_CloseFont(entry.second);
         }
@@ -262,7 +277,7 @@ bool Renderer::loadFont(const std::string& ttfPath, int baseSize) {
     fontPath_ = ttfPath;
     baseFontSize_ = baseSize;
 
-    TTF_Font* font = TTF_OpenFont(ttfPath.c_str(), baseSize);
+    TTF_Font *font = TTF_OpenFont(ttfPath.c_str(), baseSize);
     if (font == nullptr) {
         return false;
     }
@@ -270,7 +285,7 @@ bool Renderer::loadFont(const std::string& ttfPath, int baseSize) {
     return true;
 }
 
-TTF_Font* Renderer::fontFor(int fontSize) const {
+TTF_Font *Renderer::fontFor(int fontSize) const {
     const int size = fontSize > 0 ? fontSize : baseFontSize_;
     auto it = fonts_.find(size);
     if (it != fonts_.end()) {
@@ -279,7 +294,7 @@ TTF_Font* Renderer::fontFor(int fontSize) const {
     if (fontPath_.empty()) {
         return nullptr;
     }
-    TTF_Font* font = TTF_OpenFont(fontPath_.c_str(), size);
+    TTF_Font *font = TTF_OpenFont(fontPath_.c_str(), size);
     if (font == nullptr) {
         return nullptr;
     }
@@ -287,36 +302,35 @@ TTF_Font* Renderer::fontFor(int fontSize) const {
     return font;
 }
 
-void Renderer::drawText(const std::string& text, Vec2 position, int fontSize, Rgba color) {
+void Renderer::drawText(const std::string &text, Vec2 position, int fontSize, Rgba color) {
     if (text.empty()) {
         return;
     }
-    TTF_Font* font = fontFor(fontSize);
+    TTF_Font *font = fontFor(fontSize);
     if (font == nullptr) {
         return;
     }
 
     const SDL_Color c = toSdl(color);
-    SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text.c_str(), c);
+    SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text.c_str(), c);
     if (surface == nullptr) {
         return;
     }
 
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer_, surface);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer_, surface);
     if (texture != nullptr) {
-        SDL_FRect dst{position.x, position.y,
-                      static_cast<float>(surface->w), static_cast<float>(surface->h)};
+        SDL_FRect dst{position.x, position.y, static_cast<float>(surface->w), static_cast<float>(surface->h)};
         SDL_RenderCopyF(renderer_, texture, nullptr, &dst);
         SDL_DestroyTexture(texture);
     }
     SDL_FreeSurface(surface);
 }
 
-int Renderer::measureText(const std::string& text, int fontSize) const {
+int Renderer::measureText(const std::string &text, int fontSize) const {
     if (text.empty()) {
         return 0;
     }
-    TTF_Font* font = fontFor(fontSize);
+    TTF_Font *font = fontFor(fontSize);
     if (font == nullptr) {
         return 0;
     }
@@ -326,21 +340,22 @@ int Renderer::measureText(const std::string& text, int fontSize) const {
     return w;
 }
 
-SDL_Renderer* Renderer::backend() const { return renderer_; }
+SDL_Renderer *Renderer::backend() const {
+    return renderer_;
+}
 
-bool Renderer::saveScreenshot(const std::string& path) {
+bool Renderer::saveScreenshot(const std::string &path) {
     if (renderer_ == nullptr || width_ <= 0 || height_ <= 0) {
         return false;
     }
 
-    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, width_, height_, 32,
-                                                          SDL_PIXELFORMAT_ARGB8888);
+    SDL_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, width_, height_, 32, SDL_PIXELFORMAT_ARGB8888);
     if (surface == nullptr) {
         return false;
     }
 
-    const bool readOk = SDL_RenderReadPixels(renderer_, nullptr, SDL_PIXELFORMAT_ARGB8888,
-                                             surface->pixels, surface->pitch) == 0;
+    const bool readOk = SDL_RenderReadPixels(renderer_, nullptr, SDL_PIXELFORMAT_ARGB8888, surface->pixels,
+                                             surface->pitch) == 0;
     const bool saved = readOk && IMG_SavePNG(surface, path.c_str()) == 0;
     SDL_FreeSurface(surface);
     return saved;

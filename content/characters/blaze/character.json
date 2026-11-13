@@ -1,10 +1,43 @@
-﻿{
+{
   "format": 1,
   "id": "blaze",
-  "name": { "en": "Blaze", "zh": "烈焰" },
-  "skin": { "texture": "skin.png", "scale": 1.0, "tint": [255, 255, 255, 255] },
-  "hitbox": { "shape": "circle", "radius": 24.0, "offset": [0, 0] },
-  "stats": { "mass": 1.0, "restitution": 0.95, "maxHp": 100.0, "startSpeed": 420.0 },
-  "skills": ["dash", "lifesteal"]
+  "name": {
+    "zh": "烈焰",
+    "en": "Blaze"
+  },
+  "description": {
+    "zh": "冲锋吸血：靠冲刺和碰撞恢复维持进攻，速度是伤害来源。",
+    "en": "Blaze"
+  },
+  "skin": {
+    "texture": "skin.png",
+    "tint": [
+      255,
+      155,
+      85,
+      255
+    ],
+    "scale": 1.0,
+    "pattern": "flame"
+  },
+  "hitbox": {
+    "shape": "circle",
+    "radius": 24,
+    "offset": [
+      0,
+      0
+    ]
+  },
+  "stats": {
+    "startSpeed": 420,
+    "restitution": 0.97,
+    "mass": 1,
+    "attack": 12.5,
+    "armor": 0,
+    "maxHp": 108
+  },
+  "skills": [
+    "dash",
+    "lifesteal"
+  ]
 }
-

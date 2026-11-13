@@ -1,14 +1,32 @@
 {
   "format": 1,
   "id": "slow-field",
-  "name": { "en": "Slow Field", "zh": "减速力场" },
-  "trigger": { "kind": "cooldown", "cooldown": 9.0 },
+  "name": {
+    "zh": "寒霜领域",
+    "en": "Frost Field"
+  },
+  "description": {
+    "zh": "周期性展开减速领域，同时加速追击；领域削弱附近对手的速度。",
+    "en": "Frost Field"
+  },
+  "trigger": {
+    "kind": "cooldown",
+    "cooldown": 8
+  },
   "modifiers": [
-    { "op": "slow_field", "radius": 180.0, "factor": 0.6, "duration": 2.5 }
+    {
+      "radius": 220,
+      "factor": 0.82,
+      "op": "slow_field",
+      "duration": 2.4
+    },
+    {
+      "value": 130,
+      "duration": 0,
+      "op": "add_speed"
+    }
   ],
-  "vfx": [
-    { "on": "cast", "type": "ring", "color": [120, 140, 255, 255], "value": 180.0, "duration": 0.6 }
-  ],
+  "vfx": [],
   "stack": "refresh",
-  "priority": 30
+  "priority": 10
 }

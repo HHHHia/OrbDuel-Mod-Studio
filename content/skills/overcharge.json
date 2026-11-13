@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "id": "overcharge",
+  "name": {
+    "zh": "过载",
+    "en": "Overcharge"
+  },
+  "description": {
+    "zh": "每10秒进入5秒过载，碰撞攻击提高25%。",
+    "en": "Overcharge"
+  },
+  "trigger": {
+    "kind": "cooldown",
+    "cooldown": 10
+  },
+  "modifiers": [
+    {
+      "value": 1.25,
+      "op": "damage_boost",
+      "duration": 5
+    }
+  ],
+  "vfx": [],
+  "stack": "refresh",
+  "priority": 10
+}

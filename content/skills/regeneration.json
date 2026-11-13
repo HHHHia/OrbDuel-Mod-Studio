@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "id": "regeneration",
+  "name": {
+    "zh": "自然恢复",
+    "en": "Regeneration"
+  },
+  "description": {
+    "zh": "每8秒恢复少量生命，满血时不会积攒治疗。",
+    "en": "Regeneration"
+  },
+  "trigger": {
+    "kind": "cooldown",
+    "cooldown": 8
+  },
+  "modifiers": [
+    {
+      "value": 4,
+      "op": "heal",
+      "duration": 0
+    }
+  ],
+  "vfx": [],
+  "stack": "refresh",
+  "priority": 10
+}

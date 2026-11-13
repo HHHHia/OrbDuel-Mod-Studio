@@ -1,0 +1,43 @@
+{
+  "format": 1,
+  "id": "zephyr",
+  "name": {
+    "zh": "逐风",
+    "en": "Zephyr"
+  },
+  "description": {
+    "zh": "反弹机动：撞墙加速并强化弹性，适合多障碍场地。",
+    "en": "Zephyr"
+  },
+  "skin": {
+    "texture": "skin.png",
+    "tint": [
+      94,
+      229,
+      213,
+      255
+    ],
+    "scale": 1.0,
+    "pattern": "chevron"
+  },
+  "hitbox": {
+    "shape": "circle",
+    "radius": 22,
+    "offset": [
+      0,
+      0
+    ]
+  },
+  "stats": {
+    "startSpeed": 460,
+    "restitution": 0.97,
+    "mass": 0.8,
+    "attack": 13.5,
+    "armor": 0,
+    "maxHp": 102
+  },
+  "skills": [
+    "wall-dash",
+    "ricochet"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "format": 1,
+  "id": "phase-step",
+  "name": {
+    "zh": "相位折跃",
+    "en": "Phase Step"
+  },
+  "description": {
+    "zh": "撞墙后向随机方向短距离跃迁，并获得一次加速。",
+    "en": "Phase Step"
+  },
+  "trigger": {
+    "kind": "on_wall_bounce",
+    "cooldown": 8
+  },
+  "modifiers": [
+    {
+      "radius": 100,
+      "op": "teleport",
+      "duration": 0
+    },
+    {
+      "value": 60,
+      "op": "add_speed",
+      "duration": 0
+    }
+  ],
+  "vfx": [],
+  "stack": "refresh",
+  "priority": 10
+}

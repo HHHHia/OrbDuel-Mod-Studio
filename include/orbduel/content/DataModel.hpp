@@ -19,15 +19,16 @@ struct LocalizedText {
 };
 
 struct SkinDef {
-    std::string texture;          // 相对角色目录
-    float scale = 1.0f;           // 只影响绘制
-    Vec2 anchor{0.5f, 0.5f};      // 归一化锚点
+    std::string pattern;     // 可选程序化徽记，空字符串使用原贴图。
+    std::string texture;     // 相对角色目录
+    float scale = 1.0f;      // 只影响绘制
+    Vec2 anchor{0.5f, 0.5f}; // 归一化锚点
     Rgba tint{255, 255, 255, 255};
 };
 
 struct HitboxDef {
     float radius = 18.0f;
-    Vec2 offset{};                // 贴图中心 → 碰撞中心的偏移
+    Vec2 offset{}; // 贴图中心 → 碰撞中心的偏移
 };
 
 struct StatsDef {
@@ -35,17 +36,20 @@ struct StatsDef {
     float restitution = 0.95f;
     float maxHp = 100.0f;
     float startSpeed = 420.0f;
+    float attack = 12.0f;
+    float armor = 0.0f;
 };
 
 struct CharacterDef {
     int format = 1;
     std::string id;
     LocalizedText name;
+    LocalizedText description;
     SkinDef skin;
     HitboxDef hitbox;
     StatsDef stats;
-    std::vector<std::string> skills;   // 0~2 个技能 id
-    std::string sourceDir;             // 例如 "characters/blaze"
+    std::vector<std::string> skills; // 0~2 个技能 id
+    std::string sourceDir;           // 例如 "characters/blaze"
 };
 
 enum class TriggerKind {
@@ -54,7 +58,7 @@ enum class TriggerKind {
     OnHitBy,
     OnLowHp,
     OnWallBounce,
-    Manual            // 预留给玩家输入
+    Manual // 预留给玩家输入
 };
 
 enum class ModifierOp {
@@ -65,29 +69,16 @@ enum class ModifierOp {
     Teleport,
     Resize,
     BounceBoost,
-    Heal
+    Heal,
+    DamageBoost,
+    Thorns
 };
 
-enum class Curve {
-    Linear = 0,
-    EaseOut,
-    EaseInOut
-};
+enum class Curve { Linear = 0, EaseOut, EaseInOut };
 
-enum class VfxType {
-    Trail = 0,
-    Burst,
-    Ring,
-    Flash,
-    ScreenShake,
-    HitStop
-};
+enum class VfxType { Trail = 0, Burst, Ring, Flash, ScreenShake, HitStop };
 
-enum class VfxOn {
-    Cast = 0,
-    Hit,
-    Expire
-};
+enum class VfxOn { Cast = 0, Hit, Expire };
 
 struct TriggerDef {
     TriggerKind kind = TriggerKind::Cooldown;
@@ -117,16 +108,17 @@ struct SkillDef {
     int format = 1;
     std::string id;
     LocalizedText name;
+    LocalizedText description;
     TriggerDef trigger;
     std::vector<ModifierDef> modifiers;
     std::vector<VfxDef> vfx;
     bool stackRefresh = true;
     int priority = 10;
-    std::string sourceFile;      // 例如 "skills/dash.json"
+    std::string sourceFile; // 例如 "skills/dash.json"
 };
 
 struct ObstacleDef {
-    std::string shape;           // "rect" | "circle"
+    std::string shape; // "rect" | "circle"
     Vec2 pos{};
     Vec2 size{};
     float radius = 0.0f;
@@ -136,11 +128,11 @@ struct ObstacleDef {
 struct SpawnDef {
     Vec2 pos{};
     Vec2 dir{1.0f, 0.0f};
-    std::string character;       // 可选：指定该出生点固定角色
+    std::string character; // 可选：指定该出生点固定角色
 };
 
 struct ThemeDef {
-    std::string bgTexture;       // 可为空
+    std::string bgTexture; // 可为空
     Rgba bgColor{16, 17, 24, 255};
     Rgba wallColor{90, 120, 255, 255};
     float wallThickness = 6.0f;
@@ -176,7 +168,7 @@ struct MapDef {
     PhysicsDef physics;
     ShrinkDef shrink;
     std::uint32_t seed = 0;
-    std::string sourceDir;       // 例如 "maps/duel-basic"
+    std::string sourceDir; // 例如 "maps/duel-basic"
 };
 
 struct ContentPack {
@@ -184,9 +176,9 @@ struct ContentPack {
     std::vector<SkillDef> skills;
     std::vector<MapDef> maps;
 
-    const CharacterDef* findCharacter(const std::string& id) const;
-    const SkillDef* findSkill(const std::string& id) const;
-    const MapDef* findMap(const std::string& id) const;
+    const CharacterDef *findCharacter(const std::string &id) const;
+    const SkillDef *findSkill(const std::string &id) const;
+    const MapDef *findMap(const std::string &id) const;
 };
 
 } // namespace orbduel

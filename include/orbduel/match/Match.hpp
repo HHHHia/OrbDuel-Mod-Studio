@@ -28,39 +28,36 @@ struct CharacterDef;
 struct MapDef;
 struct ContentPack;
 
-enum class MatchPhase {
-    Idle = 0,
-    Fighting,
-    Finished
-};
+enum class MatchPhase { Idle = 0, Fighting, Finished };
 
 struct Fighter {
     int bodyId = -1;
-    const CharacterDef* def = nullptr;
+    const CharacterDef *def = nullptr;
     float hp = 100.0f;
     float maxHp = 100.0f;
     float shield = 0.0f;
+    float shieldTime = 0.0f;
+    float damageDealt = 0.0f;
+    float damageAbsorbed = 0.0f;
+    float healingDone = 0.0f;
     int combo = 0;
     float comboTimer = 0.0f;
     bool alive = true;
 };
 
 class Match {
-public:
-    Match(EventBus& events, World& world, Arena& arena);
+  public:
+    Match(EventBus &events, World &world, Arena &arena);
     ~Match() = default;
 
-    Match(const Match&) = delete;
-    Match& operator=(const Match&) = delete;
+    Match(const Match &) = delete;
+    Match &operator=(const Match &) = delete;
 
     void setRule(std::unique_ptr<IMatchRule> rule);
 
     // 建两个 Body、挂技能、重置 HP。rng 用于初始偏角抖动（防僵局）。
-    void setup(const CharacterDef& left,
-               const CharacterDef& right,
-               const MapDef& map,
-               const ContentPack& pack,
-               Rng& rng);
+    void setup(const CharacterDef &left, const CharacterDef &right, const MapDef &map,
+               const ContentPack &pack, Rng &rng);
 
     void start();
     void reset();
@@ -69,25 +66,32 @@ public:
     void update(float dt);
 
     // 只处理本步派发的事件。
-    void onEvent(const Event& event);
+    void onEvent(const Event &event);
 
     // 唯一扣血入口。countsForCombo=false 时用于缩圈等环境伤害。
     void applyDamage(int victimBodyId, float amount, bool countsForCombo);
+    // 模组与技能共用的状态入口，伤害事件保留来源和原因。
+    void damage(int sourceBodyId, int targetBodyId, float amount, const std::string &cause);
+    void heal(int bodyId, float amount);
+    void giveShield(int bodyId, float amount, float duration);
+    void configure(float timeLimit, bool shrink, bool stall);
+    void finishStep();
 
     MatchPhase phase() const;
     int hitCount() const;
-    const Fighter& fighter(int index) const;
-    const MatchResult& result() const;
+    const Fighter &fighter(int index) const;
+    const MatchResult &result() const;
     float elapsed() const;
+    const std::vector<SkillState> &skillStates(int index) const;
 
-    StallGuard& stallGuard();
-    ZoneController& zone();
-    const StallGuard& stallGuard() const;
+    StallGuard &stallGuard();
+    ZoneController &zone();
+    const StallGuard &stallGuard() const;
 
-private:
-    EventBus& events_;
-    World& world_;
-    Arena& arena_;
+  private:
+    EventBus &events_;
+    World &world_;
+    Arena &arena_;
 
     std::unique_ptr<IMatchRule> rule_;
     Fighter fighters_[2];
@@ -99,7 +103,10 @@ private:
     MatchResult result_{};
     float elapsed_ = 0.0f;
     int hitCount_ = 0;
-    const MapDef* map_ = nullptr;
+    const MapDef *map_ = nullptr;
+    float timeLimit_ = 60.0f;
+    bool shrinkEnabled_ = false, stallEnabled_ = true;
+    void evaluate();
 };
 
 } // namespace orbduel

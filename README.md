@@ -1,102 +1,90 @@
-# OrbDuel
+# OrbDuel / Mod Studio
 
-Two orbs, one arena, zero gravity. Character / skill / map are **data folders** you can hot-reload.
+C++17 + SDL2 自动物理对战与地图创作工具。通过独立 C++ DLL 新增能力，在地图编辑器中调参数，再通过离线分享码还原地图和规则。
 
-两个球、一块场地、没有重力。角色 / 技能 / 地图都是**外部文件夹**，改完不用重编译。
+A C++17 physics duel and offline arena workshop. Native C++ mods register new behaviors without recompiling the game. Edit their parameters, generate an arena from a seed, and share the complete edited layout offline.
 
----
+![地图编辑器](docs/previews/cosmos.png)
 
-## 这是什么 / What this is
+## 运行与构建
 
-一个 C++17 + SDL2 的 2D 双球物理对战游戏，重点不在玩法多复杂，而在**内容与引擎解耦**：
-引擎只提供「实体 + 修饰器 + 事件」，角色和技能全部由 `content/` 下的 JSON 描述。
-往 `content/characters/` 里丢一个文件夹，游戏里就多一个角色。
-
-A 2D two-orb physics duel in C++17 + SDL2. The point is not the gameplay depth — it is
-**content/engine separation**: the engine only knows bodies, modifiers and events; every
-character and skill is described by JSON under `content/`. Drop a folder into
-`content/characters/` and a new character appears.
-
-## 快速开始 / Quick start
-
-需要 / Requires: CMake ≥ 3.20，Ninja，MinGW-w64 g++ 13+（或 MSVC 2022）。
-SDL2 2.32.10 已放在 `third_party/`，**不需要联网、不需要 vcpkg**。
+Windows x64；开发需要 Visual Studio 2022 / Build Tools 的“使用 C++ 的桌面开发”及 CMake。SDL2 和 Dear ImGui 源码/运行库已随仓库提供，不需要在线下载依赖。
 
 ```powershell
-.\build.ps1                     # 配置 + 构建 + 跑冒烟测试
-.\build\bin\orbduel.exe         # 启动游戏
-.\tools\validate_content.ps1    # 校验所有内容包
+.\build.ps1
+.\build\bin\orbduel.exe
 ```
 
-手动构建 / Manual build:
+`build.ps1` 会自动寻找 VS 附带的 CMake。默认构建 Release 游戏与三个独立示例模组。
+
+手动构建：
 
 ```powershell
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
 ```
 
-## 一局是什么样 / A round
+本轮原生插件版本统一使用 MSVC x64，不再声称支持原来的 MinGW 构建。
 
-两球自动对撞（当前没有玩家输入）：按相对撞击速度扣血，2 秒内连续命中吃连击倍率；
-25 秒后开始缩圈，场地缩小、压到边界的障碍碎裂；5 秒没有碰撞会触发极弱的「静默吸引」。
-HP 归零结束，`R` 重开，`ESC` 退出。
+## 创作流程
 
-![screenshot](docs/screenshot.png)
+1. 打开“地图编辑器”，输入种子并生成场地。
+2. 选择矩形、圆形障碍或模组机关，点击画布放置；拖动对象调整位置。
+3. 选中传送门，在右侧选择关联出口、出口方向和速度倍率；其他机关也会自动显示自己的参数。
+4. 调整角色、技能、时间上限、缩圈和风格，点击“测试地图”。
+5. 返回编辑器继续修改；测试不会改写地图草稿。
+6. 保存地图，或打开“分享码”复制完整配置。对方安装相同的模组文件夹后离线导入。
 
-| 参数                           | 作用                       |
-| ------------------------------ | -------------------------- |
-| `--char <id>` / `--enemy <id>` | 指定角色（默认前两个）     |
-| `--map <id>`                   | 指定地图                   |
-| `--seed <n>`                   | 固定随机种子，同一局可复现 |
-| `--seconds <n>`                | 跑 n 秒后自动退出          |
-| `--screenshot <file>`          | 第 2 秒存一张 PNG 后退出   |
-| `--headless`                   | 不开窗口，只跑逻辑         |
+快捷键：`Ctrl+S` 保存、`Ctrl+Z/Y` 撤销/重做、`Delete` 删除选中机关或障碍；`Esc` 从对战返回编辑器或取消当前选择。
 
-## 内容长什么样 / What content looks like
+五种风格：星空、地下城、霓虹都市、熔岩遗迹、冰晶圣殿。背景、边界和障碍配色随风格变化；可以调整装饰密度、动画和自定义配色。风格不改变物理规则。
 
-```
-content/characters/blaze/
-  character.json      # 皮肤、碰撞半径、质量、HP、技能列表
-  skin.png            # 贴图（建议 256×256，透明背景）
-```
+## 模组不只是调数值
 
-```json
-{
-  "format": 1,
-  "id": "blaze",
-  "name": { "en": "Blaze", "zh": "烈焰" },
-  "skin":   { "texture": "skin.png", "scale": 1.0 },
-  "hitbox": { "shape": "circle", "radius": 24.0 },
-  "stats":  { "mass": 1.0, "restitution": 0.95, "maxHp": 100.0, "startSpeed": 420.0 },
-  "skills": ["dash", "lifesteal"]
-}
+游戏通过 `orbduel_register` 加载独立 DLL。传送门、引力场、弹射板的逻辑均在模组中，宿主通过统一接口读取类型与参数。模组可以查询实体、改变速度和位置、生成/移除机关、处理事件、自定义绘制；也可以附着在角色上。
+
+普通玩家只改界面参数；作者从 `mod-sdk/template` 的旋风模组开始，编写新的 C++ 行为。
+
+```powershell
+cmake -S mod-sdk/template -B build-template -A x64
+cmake --build build-template --config Release
 ```
 
-完整字段见 [`docs/CONTENT_FORMAT.md`](docs/CONTENT_FORMAT.md)。
+把 `build-template/package/my-mod/` 整个文件夹复制到 `build/bin/mods/`，在“模组工坊”点击重新加载，即可在编辑器放置旋风。游戏不需要重新编译。
 
-## 文档 / Docs
+- [新手与作者教程](docs/MOD_STUDIO.md)
+- [公共 SDK](mod-sdk/include/orbduel_mod.hpp)
+- [地图与分享格式](docs/CONTENT_FORMAT.md)
+- [当前架构](docs/ARCHITECTURE.md)
+- [实际验证记录](docs/STATUS.md)
 
-| 文档                                               | 内容                             |
-| -------------------------------------------------- | -------------------------------- |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)     | 分层、数据流、防僵局与缩圈设计   |
-| [`docs/CONTENT_FORMAT.md`](docs/CONTENT_FORMAT.md) | 角色 / 技能 / 地图 JSON 规范     |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md)           | 关键技术决策与理由（ADR）        |
-| [`docs/ROADMAP.md`](docs/ROADMAP.md)               | 15 天计划、分工、DoD、砍功能清单 |
-| [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md)       | 1 分钟演示分镜                   |
-| [`docs/STATUS.md`](docs/STATUS.md)                 | 当前实现状态（AI 靠它找落点）    |
-| [`AGENTS.md`](AGENTS.md)                           | 给 AI 和队友的工程规则           |
+## 六角色与十二技能
 
-## 技术栈 / Stack
+新增逐风、霜棱、雷脉和青芽，搭配冲刺吸血、护盾反伤、反弹机动、领域追击、过载爆发和恢复续航。主页可直接选择角色与应用预设；对局显示技能冷却、生效状态和实际治疗量。
 
-- C++17，CMake + Ninja
-- SDL2 2.32.10 + SDL2_image + SDL2_ttf（动态链接，MinGW / MSVC 两套预编译包，DLL 自动拷贝）
-- 自研圆-圆物理（无重力、固定步长 120 Hz、seeded 随机）
+本轮以 15360 局独立种子对战验证默认角色，覆盖四类场地与左右位置交换。结果和复现方法见 [平衡记录](docs/BALANCE.md)。旧地图保存的自定义数值不被覆盖，需要时点击“应用预设”。
 
-## 团队 / Team
+## 当前对战规则
 
-CS2310 group08 — 6 人。模块归属见 `docs/ROADMAP.md`。
+两球自动移动；碰撞时按各自朝向对手的速度分别计算伤害，再扣护甲、消耗目标护盾。没有全局同步连击倍率。默认一分钟上限；血量归零先判负，超时比较剩余血量比例。加速、护盾、回血、吸血和范围减速已有实现。缩圈和防僵局可开关。
 
-## 许可证 / License
+技能效果会影响胜负，但任意自定义技能或新模组的平衡仍需要试玩调整；编辑器中可以直接修改生命、攻击、护甲、速度、质量及技能。
 
-代码 MIT。第三方：SDL2 / SDL2_image / SDL2_ttf（zlib），见 `third_party/sdl2/*/LICENSE-*.txt`。
-游戏素材逐个登记在 `content/ASSETS.md`，**只收 CC0 或自制**。
+## 命令行
+
+```powershell
+.\build\bin\orbduel.exe --selftest --window
+.\build\bin\orbduel.exe --headless --seconds 60
+.\build\bin\orbduel.exe --autotest 600
+.\build\bin\orbduel.exe --scene user/arena.json --play
+.\build\bin\orbduel.exe --mods path/to/mods
+```
+
+`--headless` 真正跳过 SDL 初始化并快速推进逻辑。`--autotest` 连续运行多局，输出碰撞、机关触发和最长静默时间。截图可使用 `--hidden --view editor --theme cosmos --screenshot out.png`。
+
+发布包使用 `tools/package.ps1`，包含游戏、模组、资源、SDK 和教程；双击其中的游戏即可运行。
+
+## 许可证
+
+项目代码 MIT。SDL2 系列为 zlib，Dear ImGui 为 MIT，内置字体为 SIL OFL。对应许可证随仓库和发布包提供。程序化场景由本项目绘制；素材来源见 `content/ASSETS.md`。

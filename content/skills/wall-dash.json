@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "id": "wall-dash",
+  "name": {
+    "zh": "折返冲刺",
+    "en": "Wall Dash"
+  },
+  "description": {
+    "zh": "撞墙后沿反弹方向加速；障碍反弹也能触发。",
+    "en": "Wall Dash"
+  },
+  "trigger": {
+    "kind": "on_wall_bounce",
+    "cooldown": 3.5
+  },
+  "modifiers": [
+    {
+      "value": 110,
+      "op": "add_speed",
+      "duration": 0
+    }
+  ],
+  "vfx": [],
+  "stack": "refresh",
+  "priority": 10
+}

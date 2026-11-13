@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "id": "second-wind",
+  "name": {
+    "zh": "复苏",
+    "en": "Second Wind"
+  },
+  "description": {
+    "zh": "每局一次：生命低于35%时恢复12点生命，并获得一次小幅加速。",
+    "en": "Second Wind"
+  },
+  "trigger": {
+    "kind": "on_low_hp",
+    "cooldown": 1,
+    "hpBelow": 0.35
+  },
+  "modifiers": [
+    {
+      "value": 12,
+      "op": "heal",
+      "duration": 0
+    },
+    {
+      "value": 65,
+      "op": "add_speed",
+      "duration": 0
+    }
+  ],
+  "vfx": [],
+  "stack": "refresh",
+  "priority": 10
+}

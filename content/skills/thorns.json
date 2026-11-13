@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "id": "thorns",
+  "name": {
+    "zh": "荆棘反击",
+    "en": "Reprisal"
+  },
+  "description": {
+    "zh": "受到碰撞后短时反弹18%的碰撞伤害；护盾吸收部分也计入，反伤不会再次触发反伤。",
+    "en": "Reprisal"
+  },
+  "trigger": {
+    "kind": "on_hit_by",
+    "cooldown": 6
+  },
+  "modifiers": [
+    {
+      "value": 0.18,
+      "op": "thorns",
+      "duration": 2
+    }
+  ],
+  "vfx": [],
+  "stack": "refresh",
+  "priority": 10
+}

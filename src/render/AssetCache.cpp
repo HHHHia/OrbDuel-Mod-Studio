@@ -8,13 +8,15 @@ namespace {
 constexpr std::size_t kMaxErrors = 8;
 }
 
-AssetCache::AssetCache(SDL_Renderer* renderer) : renderer_(renderer) {
+AssetCache::AssetCache(SDL_Renderer *renderer) : renderer_(renderer) {
     IMG_Init(IMG_INIT_PNG);
 }
 
-AssetCache::~AssetCache() { clear(); }
+AssetCache::~AssetCache() {
+    clear();
+}
 
-SDL_Texture* AssetCache::get(const std::string& path) {
+SDL_Texture *AssetCache::get(const std::string &path) {
     auto it = textures_.find(path);
     if (it != textures_.end()) {
         return it->second;
@@ -23,7 +25,7 @@ SDL_Texture* AssetCache::get(const std::string& path) {
         return nullptr;
     }
 
-    SDL_Texture* texture = IMG_LoadTexture(renderer_, path.c_str());
+    SDL_Texture *texture = IMG_LoadTexture(renderer_, path.c_str());
     if (texture == nullptr) {
         if (errors_.size() < kMaxErrors) {
             errors_.push_back(path + ": " + IMG_GetError());
@@ -35,7 +37,13 @@ SDL_Texture* AssetCache::get(const std::string& path) {
     return texture;
 }
 
-bool AssetCache::reload(const std::string& path) {
+bool AssetCache::reload(const std::string &path) {
+    SDL_Texture *fresh = renderer_ ? IMG_LoadTexture(renderer_, path.c_str()) : nullptr;
+    if (!fresh) {
+        if (errors_.size() < kMaxErrors)
+            errors_.push_back(path + ": " + IMG_GetError());
+        return false;
+    }
     auto it = textures_.find(path);
     if (it != textures_.end()) {
         if (it->second != nullptr) {
@@ -43,12 +51,13 @@ bool AssetCache::reload(const std::string& path) {
         }
         textures_.erase(it);
     }
-    return get(path) != nullptr;
+    textures_[path] = fresh;
+    return true;
 }
 
 void AssetCache::reloadAll() {
-    std::unordered_map<std::string, SDL_Texture*> fresh;
-    for (auto& entry : textures_) {
+    std::unordered_map<std::string, SDL_Texture *> fresh;
+    for (auto &entry : textures_) {
         if (entry.second != nullptr) {
             SDL_DestroyTexture(entry.second);
         }
@@ -58,7 +67,7 @@ void AssetCache::reloadAll() {
 }
 
 void AssetCache::clear() {
-    for (auto& entry : textures_) {
+    for (auto &entry : textures_) {
         if (entry.second != nullptr) {
             SDL_DestroyTexture(entry.second);
         }
@@ -66,6 +75,8 @@ void AssetCache::clear() {
     textures_.clear();
 }
 
-const std::vector<std::string>& AssetCache::errors() const { return errors_; }
+const std::vector<std::string> &AssetCache::errors() const {
+    return errors_;
+}
 
 } // namespace orbduel
