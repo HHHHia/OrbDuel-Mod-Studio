@@ -1,6 +1,6 @@
 # 当前实现状态 / Status
 
-更新：2026-11-13。当前分支：feature/mod-studio。
+更新：2026-11-14。当前分支：main（feature/mod-studio 已合并）。
 
 ## 角色与平衡更新（0.3.0）
 
@@ -45,6 +45,6 @@
 - 保留疾锋三角皮肤、蓄力虚线、学习缩短、打断与抗打断、单次重击及贯穿阈值。
 - 保留黑洞 ghost 身体、质量与引力成长、核心安全传送、传送保护、万向天引无敌/被动抑制/爆炸后冷却，以及原始 HP 缩圈终局。
 - 分享与文件快照补齐 shape、ghost、contact、massMax、massRamp、offset 和 anchor。
-- CTest 分为 studio 与 integration；独立机制测试覆盖以上规则。JSON schema 同步修复 charge、空 modifiers、零碰撞倍率与完全缩圈范围。
+- CTest 分为 studio 与 integration；独立机制测试覆盖以上规则。内容校验与加载器同步修复 charge、空 modifiers、零碰撞倍率与完全缩圈范围。
 - 显式 --map 使用原布局；--no-menu、--lang、--shot-at 在工作台入口中保留。旧菜单由工作台接管。
 - 整合后的实际截图：[疾锋蓄力](previews/merged-charge.png)、[黑洞牵引与英文名称](previews/merged-pull.png)。

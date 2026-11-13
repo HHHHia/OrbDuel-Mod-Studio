@@ -41,7 +41,7 @@ OrbDuel 是一个 **C++17 + SDL2 2.32** 的 2D 双球物理对战游戏。
 # 无窗口跑 60 秒，回归物理与结算
 .\build\bin\orbduel.exe --headless --seconds 60
 
-# 校验所有内容包（schema + 资源引用）
+# 校验所有内容包（字段 + 资源引用）
 .\tools\validate_content.ps1
 ```
 
@@ -66,7 +66,7 @@ OrbDuel 是一个 **C++17 + SDL2 2.32** 的 2D 双球物理对战游戏。
 |---|---|---|---|
 | `core/` | Vec2/Rect、固定步长时钟、seeded RNG、事件总线、日志 | 不知道游戏规则 | `MODULE_CONTRACTS/core.md` |
 | `physics/` | 圆体、弹性碰撞、场地边界、障碍 | 不知道 HP、技能、贴图 | `MODULE_CONTRACTS/physics.md` |
-| `render/` | SDL2 封装、精灵、粒子、调试绘制 | 不推进物理、不改游戏状态 | `MODULE_CONTRACTS/render.md` |
+| `render/` | SDL2 封装、精灵、程序化风格与主题 | 不推进物理、不改游戏状态 | `MODULE_CONTRACTS/render.md` |
 | `content/` | JSON 数据模型、加载、校验、热重载 | 不写死任何具体角色 | `MODULE_CONTRACTS/content.md` |
 | `match/` | HP、伤害、连击、缩圈、防僵局、技能冷却 | 不直接画东西 | `MODULE_CONTRACTS/match.md` |
 | `game/` | 装配所有模块、主循环、输入 | 不实现具体规则 | `MODULE_CONTRACTS/game.md` |

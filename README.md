@@ -31,10 +31,6 @@ ctest --test-dir build -C Release --output-on-failure
 
 > ⚠️ 临时清单，**交作业前整块删除**。做完把 `[ ]` 改 `[x]`。
 
-**先合分支**
-
-- [ ] `feature/mod-studio` 合进 `main`，合完重跑 `build.ps1 -SkipRun`、`ctest`、`validate_content.ps1`
-
 **功能**
 
 - [ ] 技能冷却条：血条下方一条进度条（现在只有模组工坊里的数值表，对局 HUD 没有条）

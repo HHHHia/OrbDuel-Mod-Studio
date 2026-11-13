@@ -1,8 +1,8 @@
 #pragma once
 
 // 内容数据模型：纯数据，不依赖 SDL2，也不依赖 physics。
-// 字段与 content/schema/*.schema.json 一一对应；改动必须同步
-// docs/CONTENT_FORMAT.md 与 schema（AGENTS 铁律 1）。
+// 字段以本结构、ContentLoader 与 tools/validate_content.ps1 为准；改动必须同步
+// docs/CONTENT_FORMAT.md（AGENTS 铁律 1）。
 
 #include <array>
 #include <cstdint>
