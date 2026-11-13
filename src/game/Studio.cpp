@@ -2,7 +2,7 @@
 #include "orbduel/content/ContentLoader.hpp"
 #include "orbduel/content/Scene.hpp"
 #include "orbduel/core/Time.hpp"
-#include "orbduel/game/Game.hpp"
+#include "orbduel/game/Studio.hpp"
 #include "orbduel/match/Simulation.hpp"
 #include "orbduel/render/AssetCache.hpp"
 #include "orbduel/render/Renderer.hpp"

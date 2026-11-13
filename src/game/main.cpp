@@ -9,7 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "orbduel/game/Game.hpp"
+#include "orbduel/game/Options.hpp"
+#include "orbduel/game/Studio.hpp"
 #include "orbduel/version.hpp"
 
 namespace fs = std::filesystem;
@@ -213,5 +214,5 @@ int main(int argc, char **argv) {
         return exitCode;
     }
 
-    return orbduel::Game().run(options);
+    return orbduel::runStudio(options);
 }

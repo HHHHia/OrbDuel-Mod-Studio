@@ -1,11 +1,8 @@
 #pragma once
 
-// 可执行入口的装配层。
+// 进程入口参数：命令行解析结果与工作台运行参数。
 //
-// 不变量（game 契约）：
-//   1. 物理步数只由 Clock 决定
-//   2. 场景切换不重建 ContentLoader（热重载跨场景保持）
-//   3. --autotest 不开窗口，输出一行机器可读汇总
+// 字段语义由 game 层解释（runStudio）；core / physics / content / match 不感知它。
 
 #include <cstdint>
 #include <string>
@@ -31,18 +28,6 @@ struct Options {
     std::string screenshotPath;  // 非空时在 shotAtSeconds 存一张 PNG 然后退出
     float shotAtSeconds = 2.0f;  // 截图时刻（秒）；调试/文档用，不影响游戏逻辑
     std::string language = "en"; // 界面语言：en = 英文名（默认）/ zh = 中文名（需要系统中文字体）
-};
-
-class Game {
-  public:
-    Game();
-    ~Game();
-
-    Game(const Game &) = delete;
-    Game &operator=(const Game &) = delete;
-
-    // 返回进程退出码：0 正常 / 2 初始化失败 / 3 内容致命错误。
-    int run(const Options &options);
 };
 
 } // namespace orbduel

@@ -27,7 +27,8 @@
 #include "orbduel/match/StallGuard.hpp"
 #include "orbduel/match/Zone.hpp"
 
-#include "orbduel/game/Game.hpp"
+#include "orbduel/game/Options.hpp"
+#include "orbduel/game/Studio.hpp"
 
 namespace orbduel {
 
