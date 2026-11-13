@@ -73,7 +73,7 @@ class Renderer {
     void drawText(const std::string &text, Vec2 position, int fontSize, Rgba color);
     int measureText(const std::string &text, int fontSize) const;
 
-    // 给 AssetCache / Fx 用，别在业务代码里直接拿它画东西。
+    // 给 AssetCache 用，别在业务代码里直接拿它画东西。
     SDL_Renderer *backend() const;
 
     // 把当前帧存成 PNG（调试 / 截图用）。

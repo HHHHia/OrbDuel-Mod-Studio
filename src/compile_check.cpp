@@ -16,8 +16,6 @@
 #include "orbduel/physics/World.hpp"
 
 #include "orbduel/render/AssetCache.hpp"
-#include "orbduel/render/DebugDraw.hpp"
-#include "orbduel/render/Fx.hpp"
 #include "orbduel/render/Renderer.hpp"
 
 #include "orbduel/content/ContentLoader.hpp"
@@ -30,7 +28,6 @@
 #include "orbduel/match/Zone.hpp"
 
 #include "orbduel/game/Game.hpp"
-#include "orbduel/game/Input.hpp"
 
 namespace orbduel {
 
