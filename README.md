@@ -27,6 +27,29 @@ ctest --test-dir build -C Release --output-on-failure
 
 本轮原生插件版本统一使用 MSVC x64，不再声称支持原来的 MinGW 构建。
 
+## 待办 / TODO
+
+> ⚠️ 临时清单，**交作业前整块删除**。做完把 `[ ]` 改 `[x]`。
+
+**先合分支**
+
+- [ ] `feature/mod-studio` 合进 `main`，合完重跑 `build.ps1 -SkipRun`、`ctest`、`validate_content.ps1`
+
+**功能**
+
+- [ ] 技能冷却条：血条下方一条进度条（现在只有模组工坊里的数值表，对局 HUD 没有条）
+- [ ] 全屏：F11 / Alt+Enter 切换
+- [ ] 语言切换：菜单内 EN / 中文（现在只有 `--lang` 参数）
+- [ ] 技能图鉴页：菜单里列出全部技能，`description.zh` 字段已经有了，缺的是列表页
+- [ ] 结算统计：总伤害 / 最高连击 / DPS / 耗时
+- [ ] 音效：碰撞 / 冲刺 / 爆炸，SDL2 audio 直接播 WAV，素材进 `content/ASSETS.md`
+- [ ] UI：磨砂面板（半透明 + 亮边 + 阴影）；液态玻璃要 shader，`SDL_Renderer` 做不到
+
+**团队账**
+
+- [ ] 6 人每人 ≥5 次有意义的 commit（现在 4 人是 0 次，`git log` 查得到）
+- [ ] 5 位队友填姓名 + Student ID
+
 ## 创作流程
 
 1. 打开“地图编辑器”，输入种子并生成场地。
@@ -88,6 +111,18 @@ cmake --build build-template --config Release
 `--headless` 真正跳过 SDL 初始化并快速推进逻辑。`--autotest` 连续运行多局，输出碰撞、机关触发和最长静默时间。截图可使用 `--hidden --view editor --theme cosmos --screenshot out.png`。
 
 发布包使用 `tools/package.ps1`，包含游戏、模组、资源、SDK 和教程；双击其中的游戏即可运行。
+
+## 团队 / Team
+
+CS2310 group08（CityU，2026 秋），6 人。
+
+| 姓名 / Name | Student ID |
+| --- | --- |
+| LEE Pak Ho | 60556000 |
+| （待填） | （待填） |
+| （待填） | （待填） |
+| （待填） | （待填） |
+| （待填） | （待填） |
 
 ## 许可证
 
