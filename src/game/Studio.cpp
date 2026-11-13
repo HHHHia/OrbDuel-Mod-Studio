@@ -137,7 +137,7 @@ class Studio {
     float elapsed = 0, speed = 1;
     char file[1024]{};
     std::vector<char> code = std::vector<char>(262144, 0);
-    bool share = false, files = false;
+    bool share = false, files = false, quitConfirm = false, quitRequested = false;
     explicit Studio(const Options &o) : options(o), loader(o.contentRoot) {
         root = fs::u8path(o.contentRoot).parent_path().u8string();
         userRoot = root + "/user";
@@ -362,6 +362,14 @@ class Studio {
         ImGui::PopStyleColor(2);
         return b;
     }
+    bool danger(const char *t, ImVec2 size = {0, 0}) {
+        ImGui::PushStyleColor(ImGuiCol_Button, color(.62f, .18f, .18f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color(.78f, .24f, .24f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, color(.52f, .13f, .13f));
+        bool b = ImGui::Button(t, size);
+        ImGui::PopStyleColor(3);
+        return b;
+    }
     void style() {
         ImGui::StyleColorsDark();
         auto &s = ImGui::GetStyle();
@@ -436,8 +444,14 @@ class Studio {
             ImGui::Checkbox("网格吸附", &grid);
             ImGui::TextDisabled("点击画布放置\n拖动调整位置\nDelete 删除\nCtrl+Z 撤销");
         }
-        ImGui::SetCursorPosY(std::max(ImGui::GetCursorPosY() + 20, ImGui::GetWindowHeight() - 85));
+        ImGui::SetCursorPosY(std::max(ImGui::GetCursorPosY() + 20, ImGui::GetWindowHeight() - 125));
         ImGui::Separator();
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, color(.35f, .12f, .12f, .75f));
+        ImGui::PushStyleColor(ImGuiCol_HeaderActive, color(.45f, .15f, .15f, .75f));
+        ImGui::PushStyleColor(ImGuiCol_Text, color(.95f, .42f, .42f));
+        if (ImGui::Selectable("退出游戏", false, 0, {0, 32}))
+            quitConfirm = true;
+        ImGui::PopStyleColor(3);
         ImGui::TextDisabled("ORBDUEL / STUDIO");
         ImGui::TextDisabled("C++17 / 离线创作");
         ImGui::EndChild();
@@ -1200,6 +1214,23 @@ class Studio {
         ImGui::EndChild();
     }
     void dialogs() {
+        if (quitConfirm) {
+            ImGui::OpenPopup("退出游戏");
+            quitConfirm = false;
+        }
+        if (ImGui::BeginPopupModal("退出游戏", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("确定退出 OrbDuel？");
+            ImGui::TextDisabled("当前草稿会写入 user/last-scene.json，下次启动可恢复。");
+            ImGui::Spacing();
+            if (danger("退出", {100, 32})) {
+                quitRequested = true;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("取消", {100, 32}))
+                ImGui::CloseCurrentPopup();
+            ImGui::EndPopup();
+        }
         if (share) {
             ImGui::OpenPopup("离线分享");
             share = false;
@@ -1338,8 +1369,8 @@ class Studio {
             while (SDL_PollEvent(&e)) {
                 ImGui_ImplSDL2_ProcessEvent(&e);
                 if (e.type == SDL_QUIT)
-                    running = false;
-                if (e.type == SDL_KEYDOWN && !io.WantTextInput) {
+                    quitConfirm = true;
+                if (e.type == SDL_KEYDOWN && !io.WantTextInput && !ImGui::IsPopupOpen("退出游戏")) {
                     bool ctrl = (e.key.keysym.mod & KMOD_CTRL) != 0;
                     if (ctrl && e.key.keysym.sym == SDLK_s)
                         save();
@@ -1428,6 +1459,8 @@ class Studio {
             if (shot)
                 running = false;
             if (options.runSeconds > 0 && wall >= options.runSeconds)
+                running = false;
+            if (quitRequested)
                 running = false;
         }
         if (options.screenshotPath.empty()) {
