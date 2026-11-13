@@ -97,7 +97,7 @@
         "wallRestitution": { "type": "number", "minimum": 0, "maximum": 1 },
         "bounceJitterDeg": { "type": "number", "minimum": 0, "maximum": 5 },
         "maxSpeed": { "type": "number", "minimum": 100, "maximum": 5000 },
-        "damageScale": { "type": "number", "minimum": 0.1, "maximum": 10 },
+        "damageScale": { "type": "number", "minimum": 0, "maximum": 10 },
         "refSpeed": { "type": "number", "minimum": 1 }
       }
     },
@@ -107,7 +107,7 @@
         "firstAt": { "type": "number", "minimum": 5, "maximum": 300 },
         "interval": { "type": "number", "minimum": 3, "maximum": 120 },
         "step": { "type": "number", "minimum": 0.01, "maximum": 0.2 },
-        "minInset": { "type": "number", "minimum": 0, "maximum": 0.9 },
+        "minInset": { "type": "number", "minimum": 0, "maximum": 1.0 },
         "warnTime": { "type": "number", "minimum": 0, "maximum": 5 },
         "animTime": { "type": "number", "minimum": 0.1, "maximum": 10 },
         "damagePerSec": { "type": "number", "minimum": 0, "maximum": 50 },

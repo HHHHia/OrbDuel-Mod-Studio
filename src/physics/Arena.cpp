@@ -6,9 +6,9 @@ namespace orbduel {
 
 namespace {
 
-Rect insetRect(const Rect& base, float inset01) {
+Rect insetRect(const Rect &base, float inset01) {
     const float minSide = std::min(base.w, base.h);
-    const float px = clampf(inset01, 0.0f, 0.9f) * 0.5f * minSide;
+    const float px = clampf(inset01, 0.0f, 1.0f) * 0.5f * minSide;
     Rect out;
     out.x = base.x + px;
     out.y = base.y + px;
@@ -34,21 +34,35 @@ void Arena::configure(Rect baseBounds, float maxSpeed) {
     maxSpeed_ = maxSpeed;
 }
 
-void Arena::addObstacle(const Obstacle& obstacle) {
+void Arena::addObstacle(const Obstacle &obstacle) {
     obstacles_.push_back(obstacle);
 }
 
-void Arena::clearObstacles() { obstacles_.clear(); }
+void Arena::clearObstacles() {
+    obstacles_.clear();
+}
 
-Rect Arena::bounds() const { return current_; }
-Rect Arena::baseBounds() const { return base_; }
-Rect Arena::targetBounds() const { return target_; }
-float Arena::maxSpeed() const { return maxSpeed_; }
-bool Arena::isShrinking() const { return shrinking_; }
-float Arena::inset01() const { return inset01_; }
+Rect Arena::bounds() const {
+    return current_;
+}
+Rect Arena::baseBounds() const {
+    return base_;
+}
+Rect Arena::targetBounds() const {
+    return target_;
+}
+float Arena::maxSpeed() const {
+    return maxSpeed_;
+}
+bool Arena::isShrinking() const {
+    return shrinking_;
+}
+float Arena::inset01() const {
+    return inset01_;
+}
 
 void Arena::setShrinkTarget(float inset01, float duration) {
-    const float clamped = clampf(inset01, 0.0f, 0.9f);
+    const float clamped = clampf(inset01, 0.0f, 1.0f);
     shrinkFrom_ = inset01_;
     shrinkTo_ = clamped;
     shrinkTime_ = 0.0f;
@@ -82,14 +96,13 @@ std::vector<int> Arena::update(float dt) {
 
     // 缩圈压出边界的障碍直接碎掉
     for (std::size_t i = 0; i < obstacles_.size();) {
-        const Obstacle& obstacle = obstacles_[i];
+        const Obstacle &obstacle = obstacles_[i];
         bool inside = true;
         if (obstacle.shape == ObstacleShape::Rect) {
             const float halfW = obstacle.size.x * 0.5f;
             const float halfH = obstacle.size.y * 0.5f;
             inside = obstacle.pos.x - halfW >= current_.left() &&
-                     obstacle.pos.x + halfW <= current_.right() &&
-                     obstacle.pos.y - halfH >= current_.top() &&
+                     obstacle.pos.x + halfW <= current_.right() && obstacle.pos.y - halfH >= current_.top() &&
                      obstacle.pos.y + halfH <= current_.bottom();
         } else {
             inside = obstacle.pos.x - obstacle.radius >= current_.left() &&
@@ -111,13 +124,11 @@ std::vector<int> Arena::update(float dt) {
 }
 
 bool Arena::contains(Vec2 point, float radius) const {
-    return point.x - radius >= current_.left() &&
-           point.x + radius <= current_.right() &&
-           point.y - radius >= current_.top() &&
-           point.y + radius <= current_.bottom();
+    return point.x - radius >= current_.left() && point.x + radius <= current_.right() &&
+           point.y - radius >= current_.top() && point.y + radius <= current_.bottom();
 }
 
-bool Arena::resolveOverlaps(Body& body, float wallRestitution) {
+bool Arena::resolveOverlaps(Body &body, float wallRestitution) {
     bool moved = false;
     const float r = body.radius;
 
@@ -153,7 +164,11 @@ bool Arena::resolveOverlaps(Body& body, float wallRestitution) {
     return moved;
 }
 
-std::vector<Obstacle>& Arena::obstacles() { return obstacles_; }
-const std::vector<Obstacle>& Arena::obstacles() const { return obstacles_; }
+std::vector<Obstacle> &Arena::obstacles() {
+    return obstacles_;
+}
+const std::vector<Obstacle> &Arena::obstacles() const {
+    return obstacles_;
+}
 
 } // namespace orbduel

@@ -185,8 +185,8 @@ void Simulation::onEvent(const Event &e) {
     }
     orbmod::Event event{name, e.a, e.b, -1, v(e.pos), e.value, e.tag.c_str()};
     forward(event);
-    if (e.type == EventType::Hit) {
-        flashes.push_back({e.pos, .35f});
+    if (e.type == EventType::Hit || e.type == EventType::SkillExpire) {
+        flashes.push_back({e.pos, .5f});
     }
     if (e.type == EventType::Hit || e.type == EventType::Damage || e.type == EventType::SkillCast) {
         log.push_back(std::to_string(int(match.elapsed())) + "s  " + name + "  " + e.tag + "  " +
@@ -214,9 +214,14 @@ void Simulation::step(float dt) {
         if (i.type->api.step)
             i.type->api.step(i.state, dt);
     match.update(dt);
+    arena.update(dt);
+    // 场地已经装不下角色时先结算，避免退化边界继续参与物理。
+    match.finishStep();
+    if (match.phase() != MatchPhase::Fighting) {
+        events.dispatch();
+        return;
+    }
     world.step(dt);
-    auto crushed = arena.update(dt);
-    (void)crushed;
     for (auto &b : world.bodies())
         if (b.active && arena.resolveOverlaps(b, scene.map.physics.wallRestitution) && scene.shrink)
             match.damage(-1, b.id, scene.map.shrink.damagePerSec * dt, "environment");

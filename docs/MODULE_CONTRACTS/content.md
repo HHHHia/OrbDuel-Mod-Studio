@@ -10,3 +10,6 @@
 
 - CharacterDef / SkillDef 增加可选 description，SkinDef 增加 pattern；地图快照完整保存，旧文档缺少时使用空值。
 - ModifierOp 新增 DamageBoost 和 Thorns，字段与技能 schema、内容工具同步。
+- 同时保留 skin.shape、hitbox.ghost/contact、stats.massMax/massRamp、Passive/Pierce、ChargeDef/GravityDef/OmnipullDef；加载器和 schema 解释全部字段。
+- 地图快照完整保存程序化形状、身体属性、成长值、offset 与 anchor；旧快照缺少字段时使用模型默认值。
+- dash 保持蓄力定义；原工作台瞬时技能更名为 burst-dash，所有内置工作台引用同步更新。

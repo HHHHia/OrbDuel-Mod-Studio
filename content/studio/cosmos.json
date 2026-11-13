@@ -7,10 +7,10 @@
         "en": "Blaze"
       },
       "radius": 24,
-      "scale": 1.0,
+      "scale": 1,
       "hp": 108,
       "skills": [
-        "dash",
+        "burst-dash",
         "lifesteal"
       ],
       "speed": 420,
@@ -39,7 +39,7 @@
         "en": "Bulwark"
       },
       "radius": 29,
-      "scale": 1.0,
+      "scale": 1,
       "hp": 124,
       "skills": [
         "shield",
@@ -74,99 +74,99 @@
   "nextObjectId": 5,
   "objects": [
     {
-      "angle": 0.0,
+      "angle": 0,
       "id": 1,
       "owner": -1,
       "params": {
-        "affect": 0.0,
+        "affect": 0,
         "custom": 18,
         "repel": false,
-        "strength": 180.0
+        "strength": 180
       },
       "pos": [
         333.5,
-        222.0
+        222
       ],
-      "radius": 42.0,
+      "radius": 42,
       "size": [
-        80.0,
-        80.0
+        80,
+        80
       ],
       "type": "gravity.field"
     },
     {
-      "angle": 0.0,
+      "angle": 0,
       "id": 2,
       "owner": -1,
       "params": {
         "cooldown": 0.5,
-        "shield": 0.0,
-        "speed": 700.0
+        "shield": 0,
+        "speed": 700
       },
       "pos": [
-        512.0,
+        512,
         518.4000244140625
       ],
-      "radius": 42.0,
+      "radius": 42,
       "size": [
-        80.0,
-        80.0
+        80,
+        80
       ],
       "type": "launch.pad"
     },
     {
-      "angle": 0.0,
+      "angle": 0,
       "id": 3,
       "owner": -1,
       "params": {
-        "affect": 0.0,
+        "affect": 0,
         "color": [
           0.5098039507865906,
           0.5882353186607361,
-          1.0,
-          1.0
+          1,
+          1
         ],
         "cooldown": 0.699999988079071,
-        "gain": 1.0,
-        "mode": 1.0,
+        "gain": 1,
+        "mode": 1,
         "target": 4
       },
       "pos": [
         665.5999755859375,
         201.60000610351562
       ],
-      "radius": 42.0,
+      "radius": 42,
       "size": [
-        80.0,
-        80.0
+        80,
+        80
       ],
       "type": "portal.portal"
     },
     {
-      "angle": 180.0,
+      "angle": 180,
       "id": 4,
       "owner": -1,
       "params": {
-        "affect": 0.0,
+        "affect": 0,
         "color": [
           0.5098039507865906,
           0.5882353186607361,
-          1.0,
-          1.0
+          1,
+          1
         ],
         "cooldown": 0.699999988079071,
-        "gain": 1.0,
-        "mode": 1.0,
+        "gain": 1,
+        "mode": 1,
         "target": 3
       },
       "pos": [
         614.4000244140625,
         518.4000244140625
       ],
-      "radius": 42.0,
+      "radius": 42,
       "size": [
-        80.0,
-        80.0
+        80,
+        80
       ],
       "type": "portal.portal"
     }
@@ -182,7 +182,7 @@
       "shape": "rect",
       "size": [
         89.16636657714844,
-        24.0
+        24
       ]
     },
     {
@@ -195,7 +195,7 @@
       "shape": "rect",
       "size": [
         89.16636657714844,
-        24.0
+        24
       ]
     },
     {
@@ -208,7 +208,7 @@
       "shape": "circle",
       "size": [
         78.1222152709961,
-        24.0
+        24
       ]
     },
     {
@@ -221,7 +221,7 @@
       "shape": "circle",
       "size": [
         78.1222152709961,
-        24.0
+        24
       ]
     },
     {
@@ -234,7 +234,7 @@
       "shape": "rect",
       "size": [
         79.68368530273438,
-        24.0
+        24
       ]
     },
     {
@@ -247,52 +247,52 @@
       "shape": "rect",
       "size": [
         79.68368530273438,
-        24.0
+        24
       ]
     }
   ],
   "rules": {
     "animTime": 1.5,
-    "damagePerSec": 4.0,
-    "damageScale": 1.0,
-    "firstAt": 25.0,
-    "interval": 12.0,
+    "damagePerSec": 4,
+    "damageScale": 1,
+    "firstAt": 25,
+    "interval": 12,
     "jitter": 1.5,
-    "lullTrigger": 8.0,
-    "maxSpeed": 1800.0,
+    "lullTrigger": 8,
+    "maxSpeed": 1800,
     "minInset": 0.4000000059604645,
-    "refSpeed": 400.0,
+    "refSpeed": 400,
     "shrink": false,
     "stall": true,
     "step": 0.07999999821186066,
-    "timeLimit": 60.0,
+    "timeLimit": 60,
     "wallRestitution": 0.9800000190734863,
-    "warnTime": 1.0
+    "warnTime": 1
   },
   "seed": 42,
   "size": [
-    1280.0,
-    720.0
+    1280,
+    720
   ],
   "spawns": [
     {
       "dir": [
-        1.0,
-        0.0
+        1,
+        0
       ],
       "pos": [
-        192.0,
-        360.0
+        192,
+        360
       ]
     },
     {
       "dir": [
-        -1.0,
-        0.0
+        -1,
+        0
       ],
       "pos": [
-        1088.0,
-        360.0
+        1088,
+        360
       ]
     }
   ],
@@ -300,7 +300,7 @@
     "accent": [
       0.6299999952316284,
       0.6600000262260437,
-      1.0
+      1
     ],
     "animate": true,
     "background": [

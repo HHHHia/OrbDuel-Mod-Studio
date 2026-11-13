@@ -17,14 +17,15 @@
 namespace orbduel {
 
 enum class EventType {
-    Hit = 0,          // a 打中 b；pos 接触点，normal 法线，value 相对速度，value2 伤害
-    WallBounce,       // a 撞墙；pos 接触点，normal 法线
-    ObstacleCrushed,  // a 障碍 id；pos 位置
-    SkillCast,        // a 施法者；value 技能在角色 skills[] 里的槽位
-    ZoneShrink,       // value 新档位；pos 新边界中心
-    Death,            // a 死亡者 id
-    RoundEnd,         // a 胜者 id（-1 平局）
-    Damage,           // a 来源；b 目标；value 实际伤害；tag 伤害原因
+    Hit = 0,         // a 打中 b；pos 接触点，normal 法线，value 相对速度，value2 伤害
+    WallBounce,      // a 撞墙；pos 接触点，normal 法线
+    ObstacleCrushed, // a 障碍 id；pos 位置
+    SkillCast,       // a 施法者；value 技能在角色 skills[] 里的槽位
+    ZoneShrink,      // value 新档位；pos 新边界中心
+    SkillExpire,     // a 施法者；pos 效果中心，value 半径（爆炸/传送这类「到点」效果）
+    Death,           // a 死亡者 id
+    RoundEnd,        // a 胜者 id（-1 平局）
+    Damage,          // a 来源；b 目标；value 实际伤害；tag 伤害原因
     Count
 };
 
@@ -41,29 +42,29 @@ struct Event {
     std::string tag;
 };
 
-using EventHandler = std::function<void(const Event&)>;
+using EventHandler = std::function<void(const Event &)>;
 
 class EventBus {
-public:
+  public:
     EventBus();
     ~EventBus();
 
-    EventBus(const EventBus&) = delete;
-    EventBus& operator=(const EventBus&) = delete;
+    EventBus(const EventBus &) = delete;
+    EventBus &operator=(const EventBus &) = delete;
 
     void subscribe(EventType type, EventHandler handler);
 
     // 清空订阅者（不清理队列）。场景切换时用。
     void clearSubscribers();
 
-    void publish(const Event& event);
+    void publish(const Event &event);
 
     // 分发队列里的全部事件。可分发的数量有上限（1024/步），超出丢弃并记警告。
     void dispatch();
 
     std::size_t queuedCount() const;
 
-private:
+  private:
     static constexpr std::size_t kTypeCount = static_cast<std::size_t>(EventType::Count);
 
     std::vector<EventHandler> handlers_[kTypeCount];

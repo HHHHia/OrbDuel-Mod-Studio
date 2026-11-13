@@ -43,6 +43,7 @@ int World::addBody(const Body &body) {
 
 void World::clear() {
     bodies_.clear();
+    phaseContacts_.clear();
 }
 
 Body *World::body(int id) {
@@ -85,6 +86,7 @@ void World::step(float dt) {
     }
 
     // 2) 球-球
+    std::set<std::uint64_t> phaseContacts;
     for (std::size_t i = 0; i < bodies_.size(); ++i) {
         for (std::size_t j = i + 1; j < bodies_.size(); ++j) {
             Body &a = bodies_[i];
@@ -97,13 +99,35 @@ void World::step(float dt) {
                 continue;
             }
             const float closing = contact.relSpeed;
-            const float speedA = std::max(0.0f, dot(a.vel, contact.normal));
-            const float speedB = std::max(0.0f, -dot(b.vel, contact.normal));
-            resolveCircles(a, b, contact);
+            const float speedA = std::max(0.f, dot(a.vel, contact.normal));
+            const float speedB = std::max(0.f, -dot(b.vel, contact.normal));
 
-            // 分离中的接触不再次命中，避免贴合时刷伤害和触发器。
-            if (closing <= 0.001f) {
-                continue;
+            // 贯穿体：不分离、不换速度；对方只在「刚撞上」的那一步被推开一次。
+            // 重叠期间会连续命中同一个配对，所以用 phaseContacts_ 记住「这一趟已经算过」。
+            const bool aPhases = a.ghost || a.phasePush > 0.0f;
+            const bool bPhases = b.ghost || b.phasePush > 0.0f;
+            if (aPhases || bPhases) {
+                const int low = std::min(a.id, b.id);
+                const int high = std::max(a.id, b.id);
+                const std::uint64_t key =
+                    (static_cast<std::uint64_t>(low) << 32) | static_cast<std::uint32_t>(high);
+                const bool firstTouch = phaseContacts_.count(key) == 0;
+                phaseContacts.insert(key);
+                if (!firstTouch || closing <= 0.0f) {
+                    continue;
+                }
+                // 黑洞（ghost）：谁都不弹、谁都不推，只是穿过去
+                if (a.ghost || b.ghost) {
+                    // 不推
+                } else if (aPhases && !bPhases) {
+                    b.vel += contact.normal * a.phasePush;
+                } else if (bPhases && !aPhases) {
+                    a.vel -= contact.normal * b.phasePush;
+                }
+            } else {
+                resolveCircles(a, b, contact);
+                if (closing <= 0.f)
+                    continue;
             }
 
             Event event;
@@ -118,6 +142,7 @@ void World::step(float dt) {
             events_.publish(event);
         }
     }
+    phaseContacts_.swap(phaseContacts);
 
     // 3) 障碍
     for (Body &b : bodies_) {
@@ -164,13 +189,12 @@ void World::step(float dt) {
         }
 
         bool bounced = false;
-        const float restitution = clampf(wallRestitution_ + b.wallBoost, 0, 1);
         Vec2 normal{0.0f, 0.0f};
 
         if (b.pos.x - b.radius < bounds.left()) {
             b.pos.x = bounds.left() + b.radius;
             if (b.vel.x < 0.0f) {
-                b.vel.x = -b.vel.x * restitution;
+                b.vel.x = -b.vel.x * std::min(1.f, wallRestitution_ + b.wallBoost);
                 bounced = true;
                 normal = Vec2{1.0f, 0.0f};
             }
@@ -178,7 +202,7 @@ void World::step(float dt) {
         if (b.pos.x + b.radius > bounds.right()) {
             b.pos.x = bounds.right() - b.radius;
             if (b.vel.x > 0.0f) {
-                b.vel.x = -b.vel.x * restitution;
+                b.vel.x = -b.vel.x * std::min(1.f, wallRestitution_ + b.wallBoost);
                 bounced = true;
                 normal = Vec2{-1.0f, 0.0f};
             }
@@ -186,7 +210,7 @@ void World::step(float dt) {
         if (b.pos.y - b.radius < bounds.top()) {
             b.pos.y = bounds.top() + b.radius;
             if (b.vel.y < 0.0f) {
-                b.vel.y = -b.vel.y * restitution;
+                b.vel.y = -b.vel.y * std::min(1.f, wallRestitution_ + b.wallBoost);
                 bounced = true;
                 normal = Vec2{0.0f, 1.0f};
             }
@@ -194,7 +218,7 @@ void World::step(float dt) {
         if (b.pos.y + b.radius > bounds.bottom()) {
             b.pos.y = bounds.bottom() - b.radius;
             if (b.vel.y > 0.0f) {
-                b.vel.y = -b.vel.y * restitution;
+                b.vel.y = -b.vel.y * std::min(1.f, wallRestitution_ + b.wallBoost);
                 bounced = true;
                 normal = Vec2{0.0f, -1.0f};
             }

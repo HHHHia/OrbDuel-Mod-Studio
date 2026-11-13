@@ -61,6 +61,8 @@ int main(int argc, char **argv) {
         scene.fighters[0].skills.clear();
         scene.fighters[1].skills.clear();
         scene.stall = false;
+        // 通用效果测试显式打开碰撞伤害；基础地图保留主分支的 damageScale=0。
+        scene.map.physics.damageScale = 1;
         auto draftBefore = sceneJson(scene);
         Simulation first(scene, loader.pack(), plugins), second(scene, loader.pack(), plugins);
         for (int i = 0; i < 5000; ++i) {
@@ -82,7 +84,7 @@ int main(int argc, char **argv) {
             s.match.onEvent(e);
             float left = scene.fighters[0].stats.maxHp - s.match.fighter(0).hp,
                   right = scene.fighters[1].stats.maxHp - s.match.fighter(1).hp;
-            check(right > left, "damage depends on each attacker's incoming speed");
+            check(right > left, "contact damage respects attacker stats and victim armor");
             s.match.giveShield(0, 20, 1);
             float hp = s.match.fighter(0).hp;
             s.match.damage(1, 0, 12, "test");

@@ -1,5 +1,31 @@
 # 角色、技能与平衡记录
 
+> 下方六角色表和 results.json 是整合前的历史结果。当前采用相对速度、挨撞系数和连击，不再适用原报告的平衡结论；请先看本节整合回归。
+
+## 整合版回归
+
+当前九角色、十六技能；保留主分支三个角色和四个技能的原始数值。使用种子 70000–70031，每类场地 32 个种子、36 对角色、交换左右位置、四类场地，共 9216 局；所有对局完成并检查了最终位置、速度和 HP 为有限数值。原始数据及完整技能定义见 [integration.json](balance/integration.json)。这轮没有调参；木人桩也计入回归，得分率用来发现问题，不代表竞技平衡已达标。
+
+| 角色 | 得分率 |
+| --- | ---: |
+| 烈焰 | 14.7% |
+| 磐石 | 53.8% |
+| 霜棱 | 35.1% |
+| 疾锋 | 91.8% |
+| 雷脉 | 34.2% |
+| 黑洞 | 83.6% |
+| 青芽 | 40.9% |
+| 木人桩 | 86.3% |
+| 逐风 | 9.5% |
+
+左右侧得分率为 50.44%。角色强弱差异明显，需要另行设计统一平衡目标；本次整合不通过修改队友角色数值消除这些差异。
+
+```powershell
+.\build\Release\orbduel_balance.exe content build/bin/mods build/balance/integration.json 32 70000
+```
+
+## 历史六角色报告
+
 版本：0.3.0-roster。新增四个角色、七个技能，总计六角色、十二技能；保留可自由修改的参数和 C++ 模组扩展。
 
 ## 角色定位
@@ -71,7 +97,7 @@
 .\build\Release\orbduel_balance.exe content build/bin/mods build/balance/recheck.json 128 50000
 ```
 
-测试工具为 C++，直接使用实际 Simulation 和独立 DLL，没有简化战斗公式。完整结果、角色参数和技能定义见 [results.json](balance/results.json)，旧基线见 [baseline.json](balance/baseline.json)。
+测试工具为 C++，直接使用实际 Simulation 和独立 DLL，没有简化战斗公式。上述 128/50000 命令在当前版本会运行全部九角色，不能复现整合前六角色旧表；要复查旧表需使用整合前提交 a28a8d9。完整结果、角色参数和技能定义见 [results.json](balance/results.json)，旧基线见 [baseline.json](balance/baseline.json)。
 
 结果只说明本轮默认角色、固定规则和这四类场地的表现；自定义技能搭配、玩家模组和其他地图仍可能产生强弱差异。没有限制玩家数值，也没有添加哈希、版本锁或额外验证系统。
 

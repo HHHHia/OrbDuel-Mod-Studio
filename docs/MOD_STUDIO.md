@@ -1,5 +1,9 @@
 # 模组与地图工作台 / Mod Studio
 
+整合回归包含独立 SDK 模板加载。模板编译后，可运行
+`build/Release/orbduel_integration_tests.exe content build/bin/mods build-template/package`，
+检查外部旋风 DLL 是否通过 SDK 改变实际物理，无需将该行为链接进宿主。
+
 ## 1. 普通玩家
 
 在“地图编辑器”左边选对象，点击画布放置，再选中对象修改右侧属性。位置、半径和朝向是公共属性，剩余控件由模组作者声明，游戏自动生成。

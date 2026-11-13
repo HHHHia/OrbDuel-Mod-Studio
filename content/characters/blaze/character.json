@@ -17,7 +17,7 @@
       85,
       255
     ],
-    "scale": 1.0,
+    "scale": 1,
     "pattern": "flame"
   },
   "hitbox": {
@@ -26,7 +26,8 @@
     "offset": [
       0,
       0
-    ]
+    ],
+    "contact": 1
   },
   "stats": {
     "startSpeed": 420,
@@ -37,7 +38,7 @@
     "maxHp": 108
   },
   "skills": [
-    "dash",
+    "burst-dash",
     "lifesteal"
   ]
 }

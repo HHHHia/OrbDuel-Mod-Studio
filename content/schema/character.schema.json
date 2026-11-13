@@ -51,6 +51,13 @@
           "type": "string",
           "minLength": 1
         },
+        "shape": {
+          "type": "string",
+          "enum": [
+            "sprite",
+            "triangle"
+          ]
+        },
         "scale": {
           "type": "number",
           "minimum": 0.1,
@@ -95,6 +102,14 @@
           "minimum": 6,
           "maximum": 120
         },
+        "ghost": {
+          "type": "boolean"
+        },
+        "contact": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
         "offset": {
           "type": "array",
           "items": {
@@ -119,6 +134,16 @@
           "type": "number",
           "minimum": 0.2,
           "maximum": 20
+        },
+        "massMax": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "massRamp": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 600
         },
         "restitution": {
           "type": "number",

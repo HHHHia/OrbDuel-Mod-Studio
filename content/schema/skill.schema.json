@@ -49,7 +49,8 @@
             "on_hit_by",
             "on_low_hp",
             "on_wall_bounce",
-            "manual"
+            "manual",
+            "passive"
           ]
         },
         "cooldown": {
@@ -66,7 +67,7 @@
     },
     "modifiers": {
       "type": "array",
-      "minItems": 1,
+      "minItems": 0,
       "items": {
         "type": "object",
         "required": [
@@ -83,6 +84,7 @@
               "resize",
               "bounce_boost",
               "heal",
+              "pierce",
               "damage_boost",
               "thorns"
             ]
@@ -104,6 +106,16 @@
             "minimum": 0,
             "maximum": 1
           },
+          "minSpeed": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1800
+          },
+          "push": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 600
+          },
           "curve": {
             "enum": [
               "linear",
@@ -111,6 +123,134 @@
               "ease_in_out"
             ]
           }
+        }
+      }
+    },
+    "gravity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "range": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 2000
+        },
+        "rangeMax": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 2000
+        },
+        "accel": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 6000
+        },
+        "coreFactor": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        },
+        "damage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 500
+        },
+        "damageMax": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 500
+        },
+        "growthSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 600
+        },
+        "dpsEdge": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "dpsCenter": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "tickInterval": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10
+        },
+        "teleportGuard": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 30
+        },
+        "teleportMinDist": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3000
+        }
+      }
+    },
+    "omnipull": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rangeFrom": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 2000
+        },
+        "rangeTo": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 2000
+        },
+        "accel": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 6000
+        },
+        "durationFrom": {
+          "type": "number",
+          "minimum": 0.2,
+          "maximum": 20
+        },
+        "durationTo": {
+          "type": "number",
+          "minimum": 0.2,
+          "maximum": 20
+        },
+        "damageFrom": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 500
+        },
+        "damageTo": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 500
+        },
+        "growthSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 600
+        },
+        "dpsEdge": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "dpsCenter": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "invincible": {
+          "type": "boolean"
+        },
+        "suppressPassive": {
+          "type": "boolean"
         }
       }
     },
@@ -184,6 +324,67 @@
         }
       },
       "type": "object"
+    },
+    "charge": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "duration": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "durationMin": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "durationLearningCasts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "releaseSpeed": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2000
+        },
+        "aimLag": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "aimJitterDeg": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 45
+        },
+        "aimLagMin": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2
+        },
+        "aimJitterMinDeg": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 45
+        },
+        "aimLearningCasts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "interruptImmuneCasts": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "ramDamageScale": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5
+        }
+      }
     }
   }
 }

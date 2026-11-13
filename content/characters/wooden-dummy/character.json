@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "id": "wooden-dummy",
+  "name": { "en": "Wooden Dummy", "zh": "木人桩" },
+  "skin": { "texture": "skin.png", "scale": 1.0, "tint": [255, 255, 255, 255] },
+  "hitbox": { "shape": "circle", "radius": 30.0, "offset": [0, 0] },
+  "stats": { "mass": 3.0, "restitution": 0.88, "maxHp": 1000.0, "startSpeed": 260.0 },
+  "skills": []
+}

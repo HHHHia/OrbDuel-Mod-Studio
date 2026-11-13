@@ -17,7 +17,7 @@
       132,
       255
     ],
-    "scale": 1.0,
+    "scale": 1,
     "pattern": "leaf"
   },
   "hitbox": {
@@ -26,7 +26,8 @@
     "offset": [
       0,
       0
-    ]
+    ],
+    "contact": 1
   },
   "stats": {
     "startSpeed": 390,

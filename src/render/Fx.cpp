@@ -22,62 +22,64 @@ std::uint8_t fade(std::uint8_t base, float ratio) {
 
 Fx::Fx() = default;
 
-void Fx::bind(EventBus& events) {
-    events.subscribe(EventType::Hit, [this](const Event& event) {
+void Fx::bind(EventBus &events) {
+    events.subscribe(EventType::Hit, [this](const Event &event) {
         const float speed = event.value;
         spawnBurst(event.pos, 16, 90.0f + speed * 0.35f, Rgba{255, 190, 110, 255});
         spawnRing(event.pos, 22.0f + speed * 0.06f, Rgba{255, 240, 200, 200});
         addShake(1.5f + speed * 0.008f);
     });
 
-    events.subscribe(EventType::WallBounce, [this](const Event& event) {
+    events.subscribe(EventType::WallBounce, [this](const Event &event) {
         if (event.value > 260.0f) {
             spawnBurst(event.pos, 5, 40.0f, Rgba{140, 170, 255, 160});
         }
     });
 
-    events.subscribe(EventType::ObstacleCrushed, [this](const Event& event) {
+    events.subscribe(EventType::ObstacleCrushed, [this](const Event &event) {
         spawnBurst(event.pos, 24, 130.0f, Rgba{200, 200, 210, 255});
         spawnRing(event.pos, 40.0f, Rgba{220, 220, 230, 200});
         addShake(3.0f);
     });
 
-    events.subscribe(EventType::SkillCast, [this](const Event& event) {
-        spawnRing(event.pos, 34.0f, Rgba{120, 220, 255, 220});
+    events.subscribe(EventType::SkillCast,
+                     [this](const Event &event) { spawnRing(event.pos, 34.0f, Rgba{120, 220, 255, 220}); });
+
+    events.subscribe(EventType::SkillExpire, [this](const Event &event) {
+        spawnBurst(event.pos, 28, 240.0f, Rgba{190, 140, 255, 255});
+        spawnRing(event.pos, event.value > 8.0f ? event.value : 40.0f, Rgba{200, 160, 255, 220});
+        addShake(4.5f);
     });
 
-    events.subscribe(EventType::Death, [this](const Event&) {
+    events.subscribe(EventType::Death, [this](const Event &) {
         addShake(6.0f);
         addHitStop(0.08f);
     });
 }
 
 void Fx::update(float dt) {
-    for (Particle& p : particles_) {
+    for (Particle &p : particles_) {
         p.life -= dt;
         p.pos += p.vel * dt;
         p.vel *= 0.985f;
     }
 
-    particles_.erase(
-        std::remove_if(particles_.begin(), particles_.end(),
-                       [](const Particle& p) { return p.life <= 0.0f; }),
-        particles_.end());
+    particles_.erase(std::remove_if(particles_.begin(), particles_.end(),
+                                    [](const Particle &p) { return p.life <= 0.0f; }),
+                     particles_.end());
 
-    for (RingFx& ring : rings_) {
+    for (RingFx &ring : rings_) {
         ring.elapsed += dt;
     }
     rings_.erase(
-        std::remove_if(rings_.begin(), rings_.end(),
-                       [](const RingFx& r) { return r.elapsed >= r.duration; }),
+        std::remove_if(rings_.begin(), rings_.end(), [](const RingFx &r) { return r.elapsed >= r.duration; }),
         rings_.end());
 
-    for (TrailFx& trail : trails_) {
+    for (TrailFx &trail : trails_) {
         trail.life -= dt;
     }
     trails_.erase(
-        std::remove_if(trails_.begin(), trails_.end(),
-                       [](const TrailFx& t) { return t.life <= 0.0f; }),
+        std::remove_if(trails_.begin(), trails_.end(), [](const TrailFx &t) { return t.life <= 0.0f; }),
         trails_.end());
 
     if (shake_ > 0.0f) {
@@ -92,20 +94,20 @@ void Fx::update(float dt) {
     }
 }
 
-void Fx::draw(Renderer& renderer) {
-    for (const TrailFx& trail : trails_) {
+void Fx::draw(Renderer &renderer) {
+    for (const TrailFx &trail : trails_) {
         Rgba color = trail.color;
         color.a = fade(color.a, trail.life / trail.maxLife);
         renderer.drawCircle(trail.pos, trail.size * 0.5f, color);
     }
 
-    for (const Particle& p : particles_) {
+    for (const Particle &p : particles_) {
         Rgba color = p.color;
         color.a = fade(color.a, p.life / p.maxLife);
         renderer.drawCircle(p.pos, p.size, color);
     }
 
-    for (const RingFx& ring : rings_) {
+    for (const RingFx &ring : rings_) {
         const float t = ring.duration > 0.0f ? (ring.elapsed / ring.duration) : 1.0f;
         const float radius = ring.maxRadius * t;
         Rgba color = ring.color;
@@ -179,8 +181,12 @@ void Fx::addHitStop(float seconds) {
     hitStop_ = std::max(hitStop_, seconds);
 }
 
-bool Fx::hitStopActive() const { return hitStop_ > 0.0f; }
-void Fx::consumeHitStop() { hitStop_ = 0.0f; }
+bool Fx::hitStopActive() const {
+    return hitStop_ > 0.0f;
+}
+void Fx::consumeHitStop() {
+    hitStop_ = 0.0f;
+}
 
 float Fx::shakeOffsetX() const {
     if (shake_ <= 0.0f) {

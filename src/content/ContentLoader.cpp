@@ -49,6 +49,14 @@ Vec2 readVec2(const json &object, const char *key, Vec2 fallback) {
     return Vec2{(*it)[0].get<float>(), (*it)[1].get<float>()};
 }
 
+bool readBool(const json &object, const char *key, bool fallback) {
+    auto it = object.find(key);
+    if (it == object.end() || !it->is_boolean()) {
+        return fallback;
+    }
+    return it->get<bool>();
+}
+
 Rgba readRgba(const json &object, const char *key, Rgba fallback) {
     auto it = object.find(key);
     if (it == object.end() || !it->is_array() || it->size() != 4) {
@@ -88,12 +96,16 @@ TriggerKind parseTriggerKind(const std::string &text) {
     if (text == "manual") {
         return TriggerKind::Manual;
     }
+    if (text == "passive")
+        return TriggerKind::Passive;
     if (text == "cooldown")
         return TriggerKind::Cooldown;
     throw std::runtime_error("未知触发类型: " + text);
 }
 
 ModifierOp parseModifierOp(const std::string &text) {
+    if (text == "pierce")
+        return ModifierOp::Pierce;
     if (text == "damage_boost")
         return ModifierOp::DamageBoost;
     if (text == "thorns")
@@ -222,6 +234,56 @@ void loadSkills(const fs::path &dir, ContentPack &pack, std::vector<LoadIssue> &
             def.trigger.hpBelow = readFloat(trigger, "hpBelow", 0.3f);
         }
 
+        if (root.contains("charge") && root["charge"].is_object()) {
+            const json &charge = root["charge"];
+            def.charge.enabled = true;
+            def.charge.duration = readFloat(charge, "duration", 3.0f);
+            def.charge.durationMin = readFloat(charge, "durationMin", 0.0f);
+            def.charge.durationLearningCasts = readInt(charge, "durationLearningCasts", 10);
+            def.charge.releaseSpeed = readFloat(charge, "releaseSpeed", 500.0f);
+            def.charge.aimLag = readFloat(charge, "aimLag", 0.3f);
+            def.charge.aimJitterDeg = readFloat(charge, "aimJitterDeg", 6.0f);
+            def.charge.aimLagMin = readFloat(charge, "aimLagMin", 0.05f);
+            def.charge.aimJitterMinDeg = readFloat(charge, "aimJitterMinDeg", 0.5f);
+            def.charge.aimLearningCasts = readInt(charge, "aimLearningCasts", 5);
+            def.charge.interruptImmuneCasts = readInt(charge, "interruptImmuneCasts", 15);
+            def.charge.ramDamageScale = readFloat(charge, "ramDamageScale", 0.12f);
+        }
+
+        if (root.contains("gravity") && root["gravity"].is_object()) {
+            const json &gravity = root["gravity"];
+            def.gravity.enabled = true;
+            def.gravity.range = readFloat(gravity, "range", 260.0f);
+            def.gravity.rangeMax = readFloat(gravity, "rangeMax", def.gravity.range);
+            def.gravity.accel = readFloat(gravity, "accel", 420.0f);
+            def.gravity.coreFactor = readFloat(gravity, "coreFactor", 0.7f);
+            def.gravity.damage = readFloat(gravity, "damage", 6.0f);
+            def.gravity.damageMax = readFloat(gravity, "damageMax", 18.0f);
+            def.gravity.growthSeconds = readFloat(gravity, "growthSeconds", 90.0f);
+            def.gravity.dpsEdge = readFloat(gravity, "dpsEdge", 0.0f);
+            def.gravity.dpsCenter = readFloat(gravity, "dpsCenter", 0.0f);
+            def.gravity.tickInterval = readFloat(gravity, "tickInterval", 0.5f);
+            def.gravity.teleportGuard = readFloat(gravity, "teleportGuard", 1.5f);
+            def.gravity.teleportMinDist = readFloat(gravity, "teleportMinDist", 240.0f);
+        }
+
+        if (root.contains("omnipull") && root["omnipull"].is_object()) {
+            const json &pull = root["omnipull"];
+            def.omnipull.enabled = true;
+            def.omnipull.rangeFrom = readFloat(pull, "rangeFrom", 200.0f);
+            def.omnipull.rangeTo = readFloat(pull, "rangeTo", 340.0f);
+            def.omnipull.accel = readFloat(pull, "accel", 1200.0f);
+            def.omnipull.durationFrom = readFloat(pull, "durationFrom", 2.0f);
+            def.omnipull.durationTo = readFloat(pull, "durationTo", 5.0f);
+            def.omnipull.damageFrom = readFloat(pull, "damageFrom", 20.0f);
+            def.omnipull.damageTo = readFloat(pull, "damageTo", 48.0f);
+            def.omnipull.growthSeconds = readFloat(pull, "growthSeconds", 90.0f);
+            def.omnipull.dpsEdge = readFloat(pull, "dpsEdge", 0.0f);
+            def.omnipull.dpsCenter = readFloat(pull, "dpsCenter", 0.0f);
+            def.omnipull.invincible = readBool(pull, "invincible", true);
+            def.omnipull.suppressPassive = readBool(pull, "suppressPassive", true);
+        }
+
         if (root.contains("modifiers") && root["modifiers"].is_array()) {
             for (const json &item : root["modifiers"]) {
                 ModifierDef modifier;
@@ -230,6 +292,8 @@ void loadSkills(const fs::path &dir, ContentPack &pack, std::vector<LoadIssue> &
                 modifier.duration = readFloat(item, "duration", 0.0f);
                 modifier.radius = readFloat(item, "radius", 0.0f);
                 modifier.factor = readFloat(item, "factor", 1.0f);
+                modifier.minSpeed = readFloat(item, "minSpeed", 0.0f);
+                modifier.push = readFloat(item, "push", 0.0f);
                 modifier.curve = parseCurve(readString(item, "curve", "linear"));
                 def.modifiers.push_back(modifier);
             }
@@ -251,8 +315,39 @@ void loadSkills(const fs::path &dir, ContentPack &pack, std::vector<LoadIssue> &
         def.stackRefresh = readString(root, "stack", "refresh") == "refresh";
         def.priority = readInt(root, "priority", 10);
 
-        if (def.modifiers.empty()) {
+        if (def.modifiers.empty() && !def.charge.enabled && !def.gravity.enabled && !def.omnipull.enabled) {
             addIssue(issues, IssueSeverity::Warning, def.sourceFile, "modifiers 为空，这个技能不会有效果");
+        }
+
+        if (def.gravity.enabled) {
+            if (def.gravity.range <= 0.0f) {
+                addIssue(issues, IssueSeverity::Error, def.sourceFile, "gravity.range 必须大于 0");
+            }
+            if (def.gravity.coreFactor <= 0.0f || def.gravity.coreFactor > 1.0f) {
+                addIssue(issues, IssueSeverity::Error, def.sourceFile, "gravity.coreFactor 必须落在 (0, 1]");
+            }
+            if (def.gravity.damageMax < def.gravity.damage) {
+                addIssue(issues, IssueSeverity::Warning, def.sourceFile,
+                         "gravity.damageMax 小于 damage，伤害不会成长");
+            }
+            if (def.gravity.growthSeconds <= 0.0f) {
+                addIssue(issues, IssueSeverity::Error, def.sourceFile, "gravity.growthSeconds 必须大于 0");
+            }
+            if (def.gravity.tickInterval <= 0.0f) {
+                addIssue(issues, IssueSeverity::Error, def.sourceFile, "gravity.tickInterval 必须大于 0");
+            }
+        }
+
+        if (def.omnipull.enabled) {
+            if (def.omnipull.growthSeconds <= 0.0f) {
+                addIssue(issues, IssueSeverity::Error, def.sourceFile, "omnipull.growthSeconds 必须大于 0");
+            }
+            if (def.omnipull.rangeTo < def.omnipull.rangeFrom ||
+                def.omnipull.damageTo < def.omnipull.damageFrom ||
+                def.omnipull.durationTo < def.omnipull.durationFrom) {
+                addIssue(issues, IssueSeverity::Warning, def.sourceFile,
+                         "omnipull 的 *To 小于 *From，越放越弱");
+            }
         }
 
         pack.skills.push_back(def);
@@ -309,6 +404,7 @@ void loadCharacters(const fs::path &dir, ContentPack &pack, std::vector<LoadIssu
             const json &skin = root["skin"];
             def.skin.texture = readString(skin, "texture", "skin.png");
             def.skin.pattern = readString(skin, "pattern", "");
+            def.skin.shape = readString(skin, "shape", "sprite");
             def.skin.scale = readFloat(skin, "scale", 1.0f);
             def.skin.anchor = readVec2(skin, "anchor", Vec2{0.5f, 0.5f});
             def.skin.tint = readRgba(skin, "tint", Rgba{255, 255, 255, 255});
@@ -318,11 +414,15 @@ void loadCharacters(const fs::path &dir, ContentPack &pack, std::vector<LoadIssu
             const json &hitbox = root["hitbox"];
             def.hitbox.radius = readFloat(hitbox, "radius", 18.0f);
             def.hitbox.offset = readVec2(hitbox, "offset", Vec2{0.0f, 0.0f});
+            def.hitbox.ghost = readBool(hitbox, "ghost", false);
+            def.hitbox.contact = readFloat(hitbox, "contact", 0.0f);
         }
 
         if (root.contains("stats") && root["stats"].is_object()) {
             const json &stats = root["stats"];
             def.stats.mass = readFloat(stats, "mass", 1.0f);
+            def.stats.massMax = readFloat(stats, "massMax", 0.0f);
+            def.stats.massRamp = readFloat(stats, "massRamp", 90.0f);
             def.stats.restitution = readFloat(stats, "restitution", 0.95f);
             def.stats.maxHp = readFloat(stats, "maxHp", 100.0f);
             def.stats.startSpeed = readFloat(stats, "startSpeed", 400.0f);

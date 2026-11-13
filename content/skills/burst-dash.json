@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "id": "burst-dash",
+  "name": {
+    "en": "Burst Dash",
+    "zh": "疾速脉冲"
+  },
+  "description": {
+    "zh": "每6秒沿当前方向加速，快速碰撞造成更高伤害。",
+    "en": "Dash"
+  },
+  "trigger": {
+    "kind": "cooldown",
+    "cooldown": 6
+  },
+  "modifiers": [
+    {
+      "value": 170,
+      "op": "add_speed",
+      "duration": 0
+    }
+  ],
+  "vfx": [],
+  "stack": "refresh",
+  "priority": 10
+}

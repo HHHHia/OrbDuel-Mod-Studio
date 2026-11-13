@@ -1,3 +1,4 @@
+#include "BodyShape.hpp"
 #include "orbduel/content/ContentLoader.hpp"
 #include "orbduel/content/Scene.hpp"
 #include "orbduel/core/Time.hpp"
@@ -28,8 +29,9 @@ ImU32 ink(Rgba c) {
 ImVec4 color(float r, float g, float b, float a = 1) {
     return {r, g, b, a};
 }
+bool chineseNames = false;
 const char *displayName(const LocalizedText &name) {
-    return name.zh.empty() ? name.en.c_str() : name.zh.c_str();
+    return chineseNames && !name.zh.empty() ? name.zh.c_str() : name.en.c_str();
 }
 // 内容指定的通用徽记，不按角色 ID 判断外观。
 void emblem(ImDrawList *d, ImVec2 center, float radius, const std::string &pattern, ImU32 tint) {
@@ -175,8 +177,19 @@ class Studio {
         }
         plugins.load(modRoot, disabled);
         doc = SceneDocument::fromPack(loader.pack());
-        generateScene(doc, options.seed ? options.seed : doc.map.seed, pairs, groups,
-                      plugins.generationTypes());
+        if (!options.mapId.empty()) {
+            if (auto *m = loader.pack().findMap(options.mapId)) {
+                doc.map = *m;
+                doc.shrink = true;
+                doc.timeLimit = 0;
+            } else {
+                message = "找不到地图: " + options.mapId;
+                return false;
+            }
+        } else if (options.sceneFile.empty()) {
+            generateScene(doc, options.seed ? options.seed : doc.map.seed, pairs, groups,
+                          plugins.generationTypes());
+        }
         syncMods();
         std::string error;
         if (!options.sceneFile.empty()) {
@@ -197,9 +210,6 @@ class Studio {
         if (!options.enemyId.empty())
             if (auto *c = loader.pack().findCharacter(options.enemyId))
                 doc.fighters[1] = *c;
-        if (!options.mapId.empty())
-            if (auto *m = loader.pack().findMap(options.mapId))
-                doc.map = *m;
         if (options.view == "editor")
             page = 1;
         else if (options.view == "mods")
@@ -275,9 +285,10 @@ class Studio {
             std::fprintf(stderr, "%s\n", e.c_str());
             return 3;
         }
-        float seconds = options.autotestSeconds > 0
-                            ? options.autotestSeconds
-                            : (options.runSeconds > 0 ? options.runSeconds : doc.timeLimit);
+        float seconds =
+            options.autotestSeconds > 0
+                ? options.autotestSeconds
+                : (options.runSeconds > 0 ? options.runSeconds : (doc.timeLimit > 0 ? doc.timeLimit : 120.f));
         int rounds = 0, hits = 0, activations = 0;
         float lull = 0;
         game = std::make_unique<Simulation>(doc, loader.pack(), plugins);
@@ -637,11 +648,13 @@ class Studio {
         section("对战规则");
         if (ImGui::DragFloat("时间上限", &doc.timeLimit, 1, 1, 600, "%.0f 秒"))
             change();
-        if (ImGui::SliderFloat("伤害倍率", &doc.map.physics.damageScale, .1f, 5))
+        if (ImGui::SliderFloat("伤害倍率", &doc.map.physics.damageScale, 0, 5))
             change();
         if (ImGui::Checkbox("缩圈", &doc.shrink))
             change();
         if (doc.shrink) {
+            if (ImGui::SliderFloat("最大缩圈比例", &doc.map.shrink.minInset, 0, 1))
+                change();
             if (ImGui::DragFloat("首次缩圈", &doc.map.shrink.firstAt, 1, 1, 300, "%.0f 秒"))
                 change();
             if (ImGui::DragFloat("挤压伤害/秒", &doc.map.shrink.damagePerSec, .2f, 0, 50))
@@ -678,6 +691,19 @@ class Studio {
                     change();
                 if (ImGui::DragFloat("质量", &f.stats.mass, .05f, .1f, 20))
                     change();
+                if (ImGui::TreeNode("身体与成长")) {
+                    if (ImGui::Checkbox("可穿入身体", &f.hitbox.ghost))
+                        change();
+                    if (ImGui::DragFloat("挨撞系数", &f.hitbox.contact, .02f, 0, 10))
+                        change();
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip("与地图碰撞倍率取较大值；由挨撞角色决定。");
+                    if (ImGui::DragFloat("质量上限", &f.stats.massMax, .05f, 0, 20))
+                        change();
+                    if (ImGui::DragFloat("成长秒数", &f.stats.massRamp, 1, .1f, 600))
+                        change();
+                    ImGui::TreePop();
+                }
                 for (int slot = 0; slot < 2; ++slot) {
                     ImGui::PushID(slot);
                     std::string id = slot < int(f.skills.size()) ? f.skills[slot] : "";
@@ -788,7 +814,38 @@ class Studio {
             auto &ch = scene.fighters[i];
             auto *texture = assets->get(root + "/content/" + ch.sourceDir + "/" + ch.skin.texture);
             d->AddCircleFilled(center, radius * scale, IM_COL32(c.r, c.g, c.b, 60), 40);
-            if (texture && ch.skin.pattern.empty()) {
+            float facing = b && game ? angleOf(b->vel) : angleOf(scene.map.spawns[i].dir);
+            if (game) {
+                for (const auto &state : game->match.skillStates(i)) {
+                    if (state.charging) {
+                        facing = angleOf(state.aimDir);
+                        const float tip = skinTipDistance(ch.skin, radius);
+                        for (float dash = 0; dash < 460; dash += 22)
+                            d->AddLine(view.at(p + state.aimDir * (tip + dash)),
+                                       view.at(p + state.aimDir * (tip + dash + 12)),
+                                       IM_COL32(255, 215, 120, 170), 2);
+                    }
+                    if (state.pullLeft > 0)
+                        d->AddCircle(center, state.pullRadius * scale, IM_COL32(190, 140, 255, 150), 64, 2);
+                }
+                if (f.gravity.range > 0 && !game->match.skills(i).suppressesPassive()) {
+                    float t = f.gravity.growthSeconds > 0
+                                  ? clampf(game->match.elapsed() / f.gravity.growthSeconds, 0, 1)
+                                  : 1;
+                    float range = f.gravity.range + (f.gravity.rangeMax - f.gravity.range) * t;
+                    d->AddCircle(center, range * scale, IM_COL32(160, 120, 235, 70), 64, 1);
+                }
+            }
+            if (ch.skin.shape == "triangle") {
+                Vec2 dir = fromAngle(facing), side{-dir.y, dir.x};
+                auto tip = view.at(p + dir * (radius * kDartTip));
+                auto tail = p + dir * (radius * kDartTail);
+                d->AddTriangleFilled(tip, view.at(tail + side * (radius * kDartHalfWidth)),
+                                     view.at(tail - side * (radius * kDartHalfWidth)), ink(ch.skin.tint));
+                d->AddTriangle(tip, view.at(tail + side * (radius * kDartHalfWidth)),
+                               view.at(tail - side * (radius * kDartHalfWidth)), IM_COL32(255, 225, 170, 255),
+                               2);
+            } else if (texture && ch.skin.pattern.empty()) {
                 float extent = radius * scale * ch.skin.scale;
                 d->AddImage((ImTextureID)(intptr_t)texture, {center.x - extent, center.y - extent},
                             {center.x + extent, center.y + extent}, {0, 0}, {1, 1}, ink(ch.skin.tint));
@@ -1071,7 +1128,10 @@ class Studio {
             return;
         ImGui::Text("自动对战 / %s", game->scene.name.c_str());
         ImGui::SameLine();
-        ImGui::TextDisabled("%.1f / %.0f 秒", game->match.elapsed(), game->scene.timeLimit);
+        if (game->scene.timeLimit > 0)
+            ImGui::TextDisabled("%.1f / %.0f 秒", game->match.elapsed(), game->scene.timeLimit);
+        else
+            ImGui::TextDisabled("%.1f 秒 / 无时限", game->match.elapsed());
         if (ImGui::Button(paused ? "继续" : "暂停"))
             paused = !paused;
         ImGui::SameLine();
@@ -1096,12 +1156,27 @@ class Studio {
             ImGui::ProgressBar(f.hp / f.maxHp, {-1, 7}, "");
             ImGui::PopStyleColor();
             for (const auto &state : game->match.skillStates(i)) {
+                const bool passive = state.def->trigger.kind == TriggerKind::Passive;
                 const char *status =
-                    state.active
-                        ? "生效"
-                        : (state.lowTriggered ? "已使用" : (state.cooldownLeft > 0 ? "冷却" : "待命"));
-                ImGui::TextDisabled("%s  %s %.1fs", displayName(state.def->name), status,
-                                    state.active ? state.activeLeft : state.cooldownLeft);
+                    passive
+                        ? "被动"
+                        : (state.charging
+                               ? "蓄力"
+                               : (state.pullLeft > 0
+                                      ? "牵引"
+                                      : (state.active ? "生效"
+                                                      : (state.lowTriggered
+                                                             ? "已使用"
+                                                             : (state.cooldownLeft > 0 ? "冷却" : "待命")))));
+                const float left =
+                    state.charging
+                        ? state.chargeLeft
+                        : (state.pullLeft > 0 ? state.pullLeft
+                                              : (state.active ? state.activeLeft : state.cooldownLeft));
+                if (passive)
+                    ImGui::TextDisabled("%s  %s", displayName(state.def->name), status);
+                else
+                    ImGui::TextDisabled("%s  %s %.1fs", displayName(state.def->name), status, left);
                 if (ImGui::IsItemHovered())
                     ImGui::SetTooltip("%s", state.def->description.zh.c_str());
             }
@@ -1221,6 +1296,7 @@ class Studio {
         }
     }
     int run() {
+        chineseNames = options.language == "zh";
         if (options.headless)
             return headless();
         if (!renderer.init(1480, 900, "OrbDuel | Mod Studio", options.hidden))
@@ -1241,7 +1317,7 @@ class Studio {
         style();
         ImGui_ImplSDL2_InitForSDLRenderer(SDL_GetWindowFromID(1), renderer.backend());
         ImGui_ImplSDLRenderer2_Init(renderer.backend());
-        if (options.play)
+        if (options.play || !options.startInMenu)
             start();
         Clock clock(1.f / 120, 24);
         auto previous = SDL_GetPerformanceCounter();
@@ -1340,7 +1416,7 @@ class Studio {
             ImGui::Render();
             renderer.beginFrame({11, 14, 22, 255});
             ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer.backend());
-            bool shot = !options.screenshotPath.empty() && wall >= 1;
+            bool shot = !options.screenshotPath.empty() && wall >= options.shotAtSeconds;
             if (shot)
                 renderer.saveScreenshot(options.screenshotPath);
             renderer.endFrame();

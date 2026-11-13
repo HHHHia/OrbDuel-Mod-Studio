@@ -28,6 +28,7 @@ bool Renderer::init(int width, int height, const char *title, bool hidden) {
         height = std::min(height, std::max(640, usable.h - 100));
     }
     Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+
     if (hidden) {
         flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE;
     }
@@ -65,6 +66,13 @@ void Renderer::shutdown() {
     }
     fonts_.clear();
     fontPath_.clear();
+    for (auto &entry : fallbackFonts_) {
+        if (entry.second != nullptr) {
+            TTF_CloseFont(entry.second);
+        }
+    }
+    fallbackFonts_.clear();
+    fallbackFontPath_.clear();
 
     if (renderer_ != nullptr) {
         SDL_DestroyRenderer(renderer_);
@@ -89,12 +97,18 @@ bool Renderer::isInitialized() const {
 
 bool Renderer::pumpEvents() {
     pressedKeys_.clear();
+    mouseClicked_ = false;
     SDL_Event event;
     while (SDL_PollEvent(&event) != 0) {
         if (event.type == SDL_QUIT) {
             closed_ = true;
         } else if (event.type == SDL_KEYDOWN) {
             pressedKeys_.push_back(event.key.keysym.scancode);
+        } else if (event.type == SDL_MOUSEMOTION) {
+            mousePosition_ = Vec2{static_cast<float>(event.motion.x), static_cast<float>(event.motion.y)};
+        } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+            mousePosition_ = Vec2{static_cast<float>(event.button.x), static_cast<float>(event.button.y)};
+            mouseClicked_ = true;
         }
     }
     return !closed_;
@@ -114,6 +128,13 @@ bool Renderer::shouldClose() const {
 }
 void Renderer::requestClose() {
     closed_ = true;
+}
+
+Vec2 Renderer::mousePosition() const {
+    return mousePosition_;
+}
+bool Renderer::wasMouseClicked() const {
+    return mouseClicked_;
 }
 
 void Renderer::beginFrame(Rgba clearColor) {
@@ -238,6 +259,25 @@ void Renderer::drawRectLines(Rect rect, float thickness, Rgba color) {
     drawLine(bottomLeft, topLeft, thickness, color);
 }
 
+void Renderer::drawConvexPoly(const Vec2 *points, int count, Rgba color) {
+    if (renderer_ == nullptr || points == nullptr || count < 3) {
+        return;
+    }
+    // 凸多边形从 0 号顶点扇形三角化，正好 count-2 个三角形
+    const SDL_Color c = toSdl(color);
+    std::vector<SDL_Vertex> vertices;
+    vertices.reserve(static_cast<std::size_t>(count - 2) * 3);
+    for (int i = 1; i + 1 < count; ++i) {
+        for (const Vec2 &p : {points[0], points[i], points[i + 1]}) {
+            SDL_Vertex vertex{};
+            vertex.position = SDL_FPoint{p.x, p.y};
+            vertex.color = c;
+            vertices.push_back(vertex);
+        }
+    }
+    SDL_RenderGeometry(renderer_, nullptr, vertices.data(), static_cast<int>(vertices.size()), nullptr, 0);
+}
+
 void Renderer::drawSprite(SDL_Texture *texture, Vec2 center, float rotationDeg, float scale, Rgba tint) {
     if (texture == nullptr || scale <= 0.0f) {
         return;
@@ -285,28 +325,77 @@ bool Renderer::loadFont(const std::string &ttfPath, int baseSize) {
     return true;
 }
 
-TTF_Font *Renderer::fontFor(int fontSize) const {
-    const int size = fontSize > 0 ? fontSize : baseFontSize_;
-    auto it = fonts_.find(size);
-    if (it != fonts_.end()) {
+bool Renderer::loadFallbackFont(const std::string &ttfPath, int baseSize) {
+    if (TTF_WasInit() == 0) {
+        if (TTF_Init() != 0) {
+            return false;
+        }
+    }
+    for (auto &entry : fallbackFonts_) {
+        if (entry.second != nullptr) {
+            TTF_CloseFont(entry.second);
+        }
+    }
+    fallbackFonts_.clear();
+    fallbackFontPath_.clear();
+
+    TTF_Font *font = TTF_OpenFont(ttfPath.c_str(), baseSize);
+    if (font == nullptr) {
+        return false;
+    }
+    fallbackFontPath_ = ttfPath;
+    fallbackBaseFontSize_ = baseSize;
+    fallbackFonts_[baseSize] = font;
+    return true;
+}
+
+bool Renderer::hasFallbackFont() const {
+    return !fallbackFontPath_.empty();
+}
+
+TTF_Font *Renderer::fontFor(int fontSize, bool fallback) const {
+    const int size = fontSize > 0 ? fontSize : (fallback ? fallbackBaseFontSize_ : baseFontSize_);
+    std::unordered_map<int, TTF_Font *> &cache = fallback ? fallbackFonts_ : fonts_;
+    const std::string &path = fallback ? fallbackFontPath_ : fontPath_;
+
+    auto it = cache.find(size);
+    if (it != cache.end()) {
         return it->second;
     }
-    if (fontPath_.empty()) {
+    if (path.empty()) {
         return nullptr;
     }
-    TTF_Font *font = TTF_OpenFont(fontPath_.c_str(), size);
+    TTF_Font *font = TTF_OpenFont(path.c_str(), size);
     if (font == nullptr) {
         return nullptr;
     }
-    fonts_[size] = font;
+    cache[size] = font;
     return font;
 }
+
+namespace {
+
+// 只要出现非 ASCII 字节就交给中文字体：这些字符像素字体一定没有
+bool needsFallbackFont(const std::string &text) {
+    for (char c : text) {
+        if (static_cast<unsigned char>(c) >= 0x80) {
+            return true;
+        }
+    }
+    return false;
+}
+
+} // namespace
 
 void Renderer::drawText(const std::string &text, Vec2 position, int fontSize, Rgba color) {
     if (text.empty()) {
         return;
     }
-    TTF_Font *font = fontFor(fontSize);
+    const bool fallback = hasFallbackFont() && needsFallbackFont(text);
+    TTF_Font *font = fontFor(fontSize, fallback);
+    if (font == nullptr && fallback) {
+        font = fontFor(fontSize, false);
+    }
     if (font == nullptr) {
         return;
     }
@@ -330,7 +419,11 @@ int Renderer::measureText(const std::string &text, int fontSize) const {
     if (text.empty()) {
         return 0;
     }
-    TTF_Font *font = fontFor(fontSize);
+    const bool fallback = hasFallbackFont() && needsFallbackFont(text);
+    TTF_Font *font = fontFor(fontSize, fallback);
+    if (font == nullptr && fallback) {
+        font = fontFor(fontSize, false);
+    }
     if (font == nullptr) {
         return 0;
     }

@@ -21,6 +21,13 @@ json fighterJson(const CharacterDef &c) {
             {"name", {{"en", c.name.en}, {"zh", c.name.zh}}},
             {"description", {{"en", c.description.en}, {"zh", c.description.zh}}},
             {"pattern", c.skin.pattern},
+            {"shape", c.skin.shape},
+            {"ghost", c.hitbox.ghost},
+            {"contact", c.hitbox.contact},
+            {"offset", vec(c.hitbox.offset)},
+            {"anchor", vec(c.skin.anchor)},
+            {"massMax", c.stats.massMax},
+            {"massRamp", c.stats.massRamp},
             {"sourceDir", c.sourceDir},
             {"texture", c.skin.texture},
             {"radius", c.hitbox.radius},
@@ -44,6 +51,15 @@ CharacterDef fighterRead(const json &j) {
         c.description.zh = j["description"].value("zh", "");
     }
     c.skin.pattern = j.value("pattern", "");
+    c.skin.shape = j.value("shape", "sprite");
+    c.hitbox.ghost = j.value("ghost", false);
+    c.hitbox.contact = j.value("contact", 0.f);
+    if (j.contains("offset"))
+        c.hitbox.offset = v(j.at("offset"));
+    if (j.contains("anchor"))
+        c.skin.anchor = v(j.at("anchor"));
+    c.stats.massMax = j.value("massMax", 0.f);
+    c.stats.massRamp = j.value("massRamp", 90.f);
     c.sourceDir = j.value("sourceDir", "");
     c.skin.texture = j.value("texture", "");
     c.skin.scale = j.value("scale", 1.f);

@@ -2,6 +2,7 @@
 #include "orbduel/core/Log.hpp"
 #include "orbduel/match/Simulation.hpp"
 #include <chrono>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -54,6 +55,11 @@ int main(int argc, char **argv) {
                               {"armor", c.stats.armor},
                               {"speed", c.stats.startSpeed},
                               {"mass", c.stats.mass},
+                              {"massMax", c.stats.massMax},
+                              {"massRamp", c.stats.massRamp},
+                              {"contact", c.hitbox.contact},
+                              {"ghost", c.hitbox.ghost},
+                              {"shape", c.skin.shape},
                               {"radius", c.hitbox.radius},
                               {"restitution", c.stats.restitution},
                               {"skills", c.skills}});
@@ -79,6 +85,13 @@ int main(int argc, char **argv) {
                                 sim.step();
                             if (sim.match.phase() != MatchPhase::Finished)
                                 throw std::runtime_error("match did not finish");
+                            for (int i = 0; i < 2; ++i) {
+                                const auto *body = sim.world.body(i);
+                                if (!body || !std::isfinite(body->pos.x) || !std::isfinite(body->pos.y) ||
+                                    !std::isfinite(body->vel.x) || !std::isfinite(body->vel.y) ||
+                                    !std::isfinite(sim.match.fighter(i).hp))
+                                    throw std::runtime_error("non-finite match state");
+                            }
                             for (int i = 0; i < 2; ++i) {
                                 int me = i == 0 ? (side ? b : a) : (side ? a : b), other = me == a ? b : a;
                                 auto &f = sim.match.fighter(i);
@@ -132,7 +145,12 @@ int main(int argc, char **argv) {
         result["wallSeconds"] =
             std::chrono::duration<double>(std::chrono::steady_clock::now() - begin).count();
         result["skills"] = json::array();
+        result["skillDefinitions"] = json::array();
         for (const auto &s : pack.skills) {
+            std::ifstream source(fs::u8path(argv[1]) / fs::u8path(s.sourceFile));
+            json definition;
+            source >> definition;
+            result["skillDefinitions"].push_back(definition);
             json mods = json::array();
             for (const auto &m : s.modifiers)
                 mods.push_back({{"op", int(m.op)},

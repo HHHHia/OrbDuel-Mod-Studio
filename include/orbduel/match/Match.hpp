@@ -30,6 +30,29 @@ struct ContentPack;
 
 enum class MatchPhase { Idle = 0, Fighting, Finished };
 
+// 贯穿（被动技能）：撞上不弹开、直接穿过并刮一次伤害；速度不够时退回普通碰撞。
+struct PierceMod {
+    float damage = 0.0f;   // 穿过一次掉多少血
+    float minSpeed = 0.0f; // 自身速度 ≥ 它才贯穿
+    float push = 0.0f;     // 穿过时给对手加的速度（沿碰撞法线）
+};
+
+// 引力井（被动技能）的生效参数：数据在 SkillDef::gravity，这里只放运行时要用的副本。
+struct GravityMod {
+    float range = 0.0f;         // 0 = 没有引力井（起始半径）
+    float rangeMax = 0.0f;      // 长满时的半径
+    float growthSeconds = 0.0f; // 多少秒长满
+    float accel = 0.0f;
+    float coreFactor = 0.0f;
+    float damage = 0.0f;
+    float damageMax = 0.0f;
+    float dpsEdge = 0.0f; // 吸力场里每秒掉血（边缘 / 中心，按距离插值）
+    float dpsCenter = 0.0f;
+    float tickInterval = 0.0f;
+    float teleportGuard = 0.0f;
+    float teleportMinDist = 0.0f;
+};
+
 struct Fighter {
     int bodyId = -1;
     const CharacterDef *def = nullptr;
@@ -43,6 +66,10 @@ struct Fighter {
     int combo = 0;
     float comboTimer = 0.0f;
     bool alive = true;
+    PierceMod pierce{};
+    GravityMod gravity{};
+    float coreTick = 0.0f;
+    float coreGuard = 0.0f;
 };
 
 class Match {
@@ -83,12 +110,17 @@ class Match {
     const MatchResult &result() const;
     float elapsed() const;
     const std::vector<SkillState> &skillStates(int index) const;
+    const SkillSystem &skills(int index) const;
 
     StallGuard &stallGuard();
     ZoneController &zone();
     const StallGuard &stallGuard() const;
 
   private:
+    Rng &rngRef();
+    void finishByHp();
+    void teleportRandom(int victimIndex, Vec2 awayFrom, float minDist);
+    Rng *rng_ = nullptr;
     EventBus &events_;
     World &world_;
     Arena &arena_;

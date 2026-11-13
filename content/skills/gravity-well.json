@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "id": "gravity-well",
+  "name": { "en": "Gravity Well", "zh": "吸引" },
+  "trigger": { "kind": "passive" },
+  "gravity": {
+    "range": 280.0,
+    "rangeMax": 440.0,
+    "accel": 460.0,
+    "coreFactor": 0.72,
+    "damage": 6.0,
+    "damageMax": 24.0,
+    "growthSeconds": 90.0,
+    "dpsEdge": 1.0,
+    "dpsCenter": 8.0,
+    "tickInterval": 0.5,
+    "teleportGuard": 1.5,
+    "teleportMinDist": 240.0
+  },
+  "modifiers": [],
+  "vfx": [],
+  "priority": 40
+}

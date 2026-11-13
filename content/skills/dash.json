@@ -1,26 +1,26 @@
 {
   "format": 1,
   "id": "dash",
-  "name": {
-    "zh": "冲刺",
-    "en": "Dash"
+  "name": { "en": "Dash", "zh": "冲刺" },
+  "trigger": { "kind": "cooldown", "cooldown": 6.0 },
+  "charge": {
+    "duration": 3.0,
+    "durationMin": 0.0,
+    "durationLearningCasts": 10,
+    "releaseSpeed": 500.0,
+    "aimLag": 0.3,
+    "aimJitterDeg": 6.0,
+    "aimLagMin": 0.05,
+    "aimJitterMinDeg": 0.5,
+    "aimLearningCasts": 5,
+    "interruptImmuneCasts": 15,
+    "ramDamageScale": 0.12
   },
-  "description": {
-    "zh": "每6秒沿当前方向加速，快速碰撞造成更高伤害。",
-    "en": "Dash"
-  },
-  "trigger": {
-    "kind": "cooldown",
-    "cooldown": 6
-  },
-  "modifiers": [
-    {
-      "value": 170,
-      "op": "add_speed",
-      "duration": 0
-    }
+  "modifiers": [],
+  "vfx": [
+    { "on": "cast", "type": "trail", "color": [255, 180, 60, 255], "duration": 1.2 },
+    { "on": "cast", "type": "ring", "color": [255, 220, 120, 255], "value": 90.0 }
   ],
-  "vfx": [],
   "stack": "refresh",
   "priority": 10
 }

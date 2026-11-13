@@ -3,8 +3,8 @@
 #include <SDL.h>
 
 #include <algorithm>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -16,13 +16,13 @@ namespace fs = std::filesystem;
 
 namespace {
 
-std::vector<std::string> listDirs(const fs::path& dir) {
+std::vector<std::string> listDirs(const fs::path &dir) {
     std::vector<std::string> names;
     std::error_code ec;
     if (!fs::is_directory(dir, ec)) {
         return names;
     }
-    for (const auto& entry : fs::directory_iterator(dir, ec)) {
+    for (const auto &entry : fs::directory_iterator(dir, ec)) {
         if (entry.is_directory(ec)) {
             names.push_back(entry.path().filename().string());
         }
@@ -31,13 +31,13 @@ std::vector<std::string> listDirs(const fs::path& dir) {
     return names;
 }
 
-std::vector<std::string> listJsonFiles(const fs::path& dir) {
+std::vector<std::string> listJsonFiles(const fs::path &dir) {
     std::vector<std::string> names;
     std::error_code ec;
     if (!fs::is_directory(dir, ec)) {
         return names;
     }
-    for (const auto& entry : fs::directory_iterator(dir, ec)) {
+    for (const auto &entry : fs::directory_iterator(dir, ec)) {
         if (entry.is_regular_file(ec) && entry.path().extension() == ".json") {
             names.push_back(entry.path().stem().string());
         }
@@ -46,16 +46,16 @@ std::vector<std::string> listJsonFiles(const fs::path& dir) {
     return names;
 }
 
-void printIds(const char* label, const std::vector<std::string>& ids) {
+void printIds(const char *label, const std::vector<std::string> &ids) {
     std::printf("%-11s(%zu):", label, ids.size());
-    for (const auto& id : ids) {
+    for (const auto &id : ids) {
         std::printf(" %s", id.c_str());
     }
     std::printf("\n");
 }
 
 // 先看命令行给的路径，再从 exe 所在目录向上找 4 层。
-fs::path resolveContentRoot(const std::string& requested, const char* argv0) {
+fs::path resolveContentRoot(const std::string &requested, const char *argv0) {
     std::error_code ec;
 
     fs::path candidate = fs::absolute(requested, ec);
@@ -86,8 +86,7 @@ int probeWindow() {
         return 2;
     }
 
-    SDL_Window* window = SDL_CreateWindow("orbduel selftest",
-                                          SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    SDL_Window *window = SDL_CreateWindow("orbduel selftest", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                           320, 200, SDL_WINDOW_HIDDEN);
     if (window == nullptr) {
         std::printf("window      FAILED: CreateWindow: %s\n", SDL_GetError());
@@ -95,15 +94,15 @@ int probeWindow() {
         return 2;
     }
 
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_RendererInfo info{};
-    const char* rendererName = "none";
+    const char *rendererName = "none";
     if (renderer != nullptr && SDL_GetRendererInfo(renderer, &info) == 0) {
         rendererName = info.name;
     }
 
-    std::printf("window      OK (hidden 320x200, video=%s, renderer=%s)\n",
-                SDL_GetCurrentVideoDriver(), rendererName);
+    std::printf("window      OK (hidden 320x200, video=%s, renderer=%s)\n", SDL_GetCurrentVideoDriver(),
+                rendererName);
 
     if (renderer != nullptr) {
         SDL_DestroyRenderer(renderer);
@@ -115,7 +114,7 @@ int probeWindow() {
 
 } // namespace
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     orbduel::Options options;
     options.contentRoot = "content";
 
@@ -135,6 +134,13 @@ int main(int argc, char** argv) {
             options.headless = true;
         } else if (arg == "--hidden") {
             options.hidden = true;
+        } else if (arg == "--no-menu") {
+            options.startInMenu = false;
+            options.play = true;
+        } else if (arg == "--lang" && i + 1 < argc) {
+            options.language = argv[++i];
+        } else if (arg == "--shot-at" && i + 1 < argc) {
+            options.shotAtSeconds = static_cast<float>(std::atof(argv[++i]));
         } else if (arg == "--play") {
             options.play = true;
         } else if (arg == "--scene" && i + 1 < argc) {
@@ -174,6 +180,9 @@ int main(int argc, char** argv) {
             std::printf("  orbduel --seconds 5             跑 5 秒后自动退出\n");
             std::printf("  orbduel --scene user/arena.json  读取工作台地图\n");
             std::printf("  orbduel --autotest 600          快速无窗口物理回归\n");
+            std::printf("  orbduel --no-menu               Alias for --play\n");
+            std::printf("  orbduel --lang en|zh            Character and skill names (default en)\n");
+            std::printf("  orbduel --shot-at 11            Screenshot at 11 seconds\n");
             std::printf("  orbduel --play                  直接开始自动对战\n");
             return 0;
         }
