@@ -130,7 +130,7 @@ class Studio {
     std::string root, modRoot, userRoot, message, tool = "select";
     std::vector<SceneDocument> undoStack, redoStack;
     std::vector<std::string> disabled;
-    int page = 0, kind = -1, selected = -1, pairs = 3, groups = 3;
+    int page = 0, kind = -1, selected = -1, pairs = 3, groups = 3, returnPage = 0;
     bool dragRecorded = false, modified = false, dirty = true, dragging = false, transaction = false,
          paused = false, grid = true;
     Vec2 offset{};
@@ -254,12 +254,14 @@ class Studio {
         }
         game = std::make_unique<Simulation>(doc, loader.pack(), plugins);
         paused = false;
+        if (page != 3)
+            returnPage = page;
         page = 3;
         message.clear();
     }
     void stop() {
         game.reset();
-        page = 1;
+        page = returnPage;
         dirty = true;
     }
     void save() {
@@ -1138,7 +1140,10 @@ class Studio {
         if (ImGui::Button("重新测试"))
             start();
         ImGui::SameLine();
-        if (ImGui::Button("返回编辑器")) {
+        const char *backTo = "返回概览";
+        if (returnPage == 1)
+            backTo = "返回编辑器";
+        if (ImGui::Button(backTo)) {
             stop();
             return;
         }
