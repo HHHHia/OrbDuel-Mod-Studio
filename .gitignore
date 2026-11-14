@@ -15,3 +15,5 @@ user/
 *.log
 .DS_Store
 Thumbs.db
+.orbduel-user.json
+.orbduel-cache/

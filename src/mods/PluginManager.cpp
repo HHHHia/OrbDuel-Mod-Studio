@@ -2,6 +2,7 @@
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <algorithm>
+#include <cwctype>
 #include <filesystem>
 #include <fstream>
 #include <windows.h>
@@ -17,6 +18,14 @@ void PluginManager::clear() {
         if (m.library)
             FreeLibrary(static_cast<HMODULE>(m.library));
     mods.clear();
+    // 仅删除本实例创建并记录的文件和空目录，不递归清理用户模组目录。
+    std::error_code ec;
+    for (const auto &file : cacheFiles_)
+        fs::remove(fs::u8path(file), ec);
+    for (auto it = cacheDirectories_.rbegin(); it != cacheDirectories_.rend(); ++it)
+        fs::remove(fs::u8path(*it), ec);
+    cacheFiles_.clear();
+    cacheDirectories_.clear();
 }
 void PluginManager::load(const std::string &root, const std::vector<std::string> &disabled) {
     clear();
@@ -29,7 +38,13 @@ void PluginManager::load(const std::string &root, const std::vector<std::string>
         if (e.is_directory())
             dirs.push_back(e.path());
     std::sort(dirs.begin(), dirs.end());
+    fs::path session;
+    static unsigned long serial = 0;
+    int ordinal = 0;
     for (const auto &dir : dirs) {
+        if (dir.filename() == ".orbduel-cache")
+            continue;
+        ++ordinal;
         auto file = dir / "mod.json";
         if (!fs::exists(file))
             continue;
@@ -49,7 +64,30 @@ void PluginManager::load(const std::string &root, const std::vector<std::string>
                 continue;
             }
             auto dll = fs::absolute(dir / fs::u8path(j.at("library").get<std::string>()));
-            handle = LoadLibraryW(dll.c_str());
+            // 加载副本，原安装目录保持可写；作者可在游戏运行时重新构建安装。
+            if (session.empty()) {
+                const auto base = fs::absolute(path / ".orbduel-cache");
+                fs::create_directories(base);
+                do {
+                    session = base / (std::to_string(GetCurrentProcessId()) + "-" + std::to_string(++serial));
+                } while (!fs::create_directory(session));
+                cacheDirectories_.push_back(session.u8string());
+            }
+            const auto cache = session / std::to_string(ordinal);
+            fs::create_directory(cache);
+            cacheDirectories_.push_back(cache.u8string());
+            for (const auto &peer : fs::directory_iterator(dll.parent_path())) {
+                auto ext = peer.path().extension().wstring();
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
+                if (!peer.is_regular_file() || ext != L".dll")
+                    continue;
+                const auto copy = cache / peer.path().filename();
+                cacheFiles_.push_back(copy.u8string());
+                fs::copy_file(peer.path(), copy, fs::copy_options::overwrite_existing);
+            }
+            const auto loaded = cache / dll.filename();
+            handle = LoadLibraryExW(loaded.c_str(), nullptr,
+                                    LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
             if (!handle)
                 throw std::runtime_error("DLL 无法加载，请重新构建模组或确认 x64 运行库");
             auto entry = reinterpret_cast<orbmod::Entry>(GetProcAddress(handle, "orbduel_register"));
