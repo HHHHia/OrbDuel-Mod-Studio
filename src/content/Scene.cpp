@@ -18,6 +18,7 @@ Vec2 v(const json &j) {
 }
 json fighterJson(const CharacterDef &c) {
     return {{"id", c.id},
+            {"competitive", c.competitive},
             {"name", {{"en", c.name.en}, {"zh", c.name.zh}}},
             {"description", {{"en", c.description.en}, {"zh", c.description.zh}}},
             {"pattern", c.skin.pattern},
@@ -44,6 +45,7 @@ json fighterJson(const CharacterDef &c) {
 CharacterDef fighterRead(const json &j) {
     CharacterDef c;
     c.id = j.at("id").get<std::string>();
+    c.competitive = j.value("competitive", true);
     c.name.en = j.at("name").value("en", c.id);
     c.name.zh = j.at("name").value("zh", "");
     if (j.contains("description")) {
@@ -53,7 +55,7 @@ CharacterDef fighterRead(const json &j) {
     c.skin.pattern = j.value("pattern", "");
     c.skin.shape = j.value("shape", "sprite");
     c.hitbox.ghost = j.value("ghost", false);
-    c.hitbox.contact = j.value("contact", 0.f);
+    c.hitbox.contact = j.value("contact", 1.f);
     if (j.contains("offset"))
         c.hitbox.offset = v(j.at("offset"));
     if (j.contains("anchor"))

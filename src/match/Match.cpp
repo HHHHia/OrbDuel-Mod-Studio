@@ -473,7 +473,8 @@ void Match::onEvent(const Event &event) {
     const float refSpeed = map_ ? std::max(1.f, map_->physics.refSpeed) : 400.f;
     const bool ultRunning = skills_[0].omnipullActive() || skills_[1].omnipullActive();
     float amounts[2]{};
-    // 系数由挨撞者决定；保留相对速度与连击规则，叠加数据驱动的攻击与护甲。
+    // 地图与挨撞者的普通碰撞倍率相乘；角色缺省值不再表示免伤。
+    // 使用攻击方碰撞前的正向速度，避免快速撞上静止目标时双方获得同样的攻击加成。
     for (int i = 0; i < 2; ++i) {
         auto &victim = fighters_[i];
         if (!victim.alive)
@@ -481,10 +482,15 @@ void Match::onEvent(const Event &event) {
         victim.combo = victim.comboTimer > 0 ? victim.combo + 1 : 1;
         victim.comboTimer = 3.f;
         const float combo = std::min(2.5f, 1.f + .15f * (victim.combo - 1));
-        const float scale =
-            ultRunning ? 0.f : std::max(map_ ? map_->physics.damageScale : 1.f, victim.def->hitbox.contact);
-        const float raw = fighters_[1 - i].def->stats.attack * scale * event.value / refSpeed * combo *
-                          skills_[1 - i].damageMultiplier();
+        const float scale = ultRunning ? 0.f
+                                       : std::max(0.f, map_ ? map_->physics.damageScale : 1.f) *
+                                             std::max(0.f, victim.def->hitbox.contact);
+        if (scale <= 0.f)
+            continue;
+        const float incoming = fighters_[1 - i].bodyId == event.a ? event.attackSpeedA : event.attackSpeedB;
+        const float impact = clampf(.5f + incoming / refSpeed, .5f, 2.5f);
+        const float raw =
+            fighters_[1 - i].def->stats.attack * scale * impact * combo * skills_[1 - i].damageMultiplier();
         amounts[i] = std::max(0.f, raw - victim.def->stats.armor);
     }
     for (int i = 0; i < 2; ++i)

@@ -391,6 +391,7 @@ void loadCharacters(const fs::path &dir, ContentPack &pack, std::vector<LoadIssu
         }
 
         CharacterDef def;
+        def.competitive = readBool(root, "competitive", true);
         def.format = readInt(root, "format", 1);
         def.id = readString(root, "id", folder.filename().string());
         def.name = readName(root);
@@ -415,7 +416,7 @@ void loadCharacters(const fs::path &dir, ContentPack &pack, std::vector<LoadIssu
             def.hitbox.radius = readFloat(hitbox, "radius", 18.0f);
             def.hitbox.offset = readVec2(hitbox, "offset", Vec2{0.0f, 0.0f});
             def.hitbox.ghost = readBool(hitbox, "ghost", false);
-            def.hitbox.contact = readFloat(hitbox, "contact", 0.0f);
+            def.hitbox.contact = readFloat(hitbox, "contact", 1.0f);
         }
 
         if (root.contains("stats") && root["stats"].is_object()) {
