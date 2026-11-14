@@ -1,0 +1,2041 @@
+{
+  "byMap": {
+    "mechanisms": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 104.52678896273885,
+        "avgRemainingHp": 0.08326733030738913,
+        "avgSeconds": 31.215371832650685,
+        "draws": 458,
+        "games": 1792,
+        "timeoutRate": 11.941964285714286,
+        "winRate": 41.74107142857143,
+        "wins": 519
+      },
+      "bulwark": {
+        "avgAbsorbed": 21.231463035568595,
+        "avgDamage": 105.39377581008843,
+        "avgRemainingHp": 0.13302901905061454,
+        "avgSeconds": 37.400246660890325,
+        "draws": 358,
+        "games": 1792,
+        "timeoutRate": 20.256696428571427,
+        "winRate": 50.390625,
+        "wins": 724
+      },
+      "glacier": {
+        "avgAbsorbed": 5.0269680353147645,
+        "avgDamage": 109.79569894288268,
+        "avgRemainingHp": 0.10345614242682391,
+        "avgSeconds": 31.58326970366761,
+        "draws": 461,
+        "games": 1792,
+        "timeoutRate": 12.444196428571429,
+        "winRate": 53.822544642857146,
+        "wins": 734
+      },
+      "lancer": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 104.06667395787579,
+        "avgRemainingHp": 0.09061057078086776,
+        "avgSeconds": 33.490806920187815,
+        "draws": 311,
+        "games": 1792,
+        "timeoutRate": 10.323660714285714,
+        "winRate": 40.8203125,
+        "wins": 576
+      },
+      "pulse": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 112.34285917026656,
+        "avgRemainingHp": 0.1011495266995358,
+        "avgSeconds": 30.268834137690387,
+        "draws": 505,
+        "games": 1792,
+        "timeoutRate": 8.928571428571429,
+        "winRate": 58.621651785714285,
+        "wins": 798
+      },
+      "singularity": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 100.86768811089652,
+        "avgRemainingHp": 0.24529122233038184,
+        "avgSeconds": 44.123492910393644,
+        "draws": 119,
+        "games": 1792,
+        "timeoutRate": 30.133928571428573,
+        "winRate": 69.05691964285714,
+        "wins": 1178
+      },
+      "verdant": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 101.28986887846675,
+        "avgRemainingHp": 0.11627359695389064,
+        "avgSeconds": 34.550765918168636,
+        "draws": 412,
+        "games": 1792,
+        "timeoutRate": 18.136160714285715,
+        "winRate": 44.698660714285715,
+        "wins": 595
+      },
+      "zephyr": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 106.72428121949945,
+        "avgRemainingHp": 0.06466957903049726,
+        "avgSeconds": 29.67522138689778,
+        "draws": 522,
+        "games": 1792,
+        "timeoutRate": 9.709821428571429,
+        "winRate": 40.848214285714285,
+        "wins": 471
+      }
+    },
+    "obstacles": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 94.98418467172554,
+        "avgRemainingHp": 0.26840178399350684,
+        "avgSeconds": 52.17628016322851,
+        "draws": 209,
+        "games": 1792,
+        "timeoutRate": 53.627232142857146,
+        "winRate": 62.36049107142857,
+        "wins": 1013
+      },
+      "bulwark": {
+        "avgAbsorbed": 22.829415178458607,
+        "avgDamage": 68.3326642790011,
+        "avgRemainingHp": 0.42066270876049267,
+        "avgSeconds": 57.369365920977934,
+        "draws": 43,
+        "games": 1792,
+        "timeoutRate": 82.31026785714286,
+        "winRate": 41.9921875,
+        "wins": 731
+      },
+      "glacier": {
+        "avgAbsorbed": 1.8268084850694453,
+        "avgDamage": 88.4195788949728,
+        "avgRemainingHp": 0.2669906114244246,
+        "avgSeconds": 53.8563197308353,
+        "draws": 185,
+        "games": 1792,
+        "timeoutRate": 61.997767857142854,
+        "winRate": 41.378348214285715,
+        "wins": 649
+      },
+      "lancer": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 98.4905460796186,
+        "avgRemainingHp": 0.2579951137630912,
+        "avgSeconds": 51.192928454705644,
+        "draws": 136,
+        "games": 1792,
+        "timeoutRate": 47.377232142857146,
+        "winRate": 59.207589285714285,
+        "wins": 993
+      },
+      "pulse": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 88.71215219369957,
+        "avgRemainingHp": 0.26438227394065245,
+        "avgSeconds": 52.92977553925344,
+        "draws": 199,
+        "games": 1792,
+        "timeoutRate": 60.770089285714285,
+        "winRate": 42.82924107142857,
+        "wins": 668
+      },
+      "singularity": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 72.84956442884037,
+        "avgRemainingHp": 0.32442899948422416,
+        "avgSeconds": 56.37884478058134,
+        "draws": 29,
+        "games": 1792,
+        "timeoutRate": 74.38616071428571,
+        "winRate": 37.6953125,
+        "wins": 661
+      },
+      "verdant": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 64.79670723208359,
+        "avgRemainingHp": 0.4531541509060974,
+        "avgSeconds": 56.93965690689428,
+        "draws": 54,
+        "games": 1792,
+        "timeoutRate": 80.41294642857143,
+        "winRate": 53.18080357142857,
+        "wins": 926
+      },
+      "zephyr": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 105.16467905044556,
+        "avgRemainingHp": 0.18409608216086326,
+        "avgSeconds": 48.98437244551523,
+        "draws": 337,
+        "games": 1792,
+        "timeoutRate": 41.015625,
+        "winRate": 61.356026785714285,
+        "wins": 931
+      }
+    },
+    "open": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 104.0112244210073,
+        "avgRemainingHp": 0.20731601478934994,
+        "avgSeconds": 49.49239860475063,
+        "draws": 346,
+        "games": 1792,
+        "timeoutRate": 37.611607142857146,
+        "winRate": 64.73214285714286,
+        "wins": 987
+      },
+      "bulwark": {
+        "avgAbsorbed": 24.9721328964723,
+        "avgDamage": 75.86508749212537,
+        "avgRemainingHp": 0.3497159111378941,
+        "avgSeconds": 56.352902601872174,
+        "draws": 84,
+        "games": 1792,
+        "timeoutRate": 73.4375,
+        "winRate": 38.058035714285715,
+        "wins": 640
+      },
+      "glacier": {
+        "avgAbsorbed": 1.9141492351357425,
+        "avgDamage": 97.59500746641841,
+        "avgRemainingHp": 0.21794808491961248,
+        "avgSeconds": 51.78524887774672,
+        "draws": 240,
+        "games": 1792,
+        "timeoutRate": 50.223214285714285,
+        "winRate": 47.879464285714285,
+        "wins": 738
+      },
+      "lancer": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 101.32035979841437,
+        "avgRemainingHp": 0.24455224241052878,
+        "avgSeconds": 49.956778654030394,
+        "draws": 135,
+        "games": 1792,
+        "timeoutRate": 39.39732142857143,
+        "winRate": 60.909598214285715,
+        "wins": 1024
+      },
+      "pulse": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 95.96994059639317,
+        "avgRemainingHp": 0.22913636376769578,
+        "avgSeconds": 50.89862363572632,
+        "draws": 271,
+        "games": 1792,
+        "timeoutRate": 50.44642857142857,
+        "winRate": 49.135044642857146,
+        "wins": 745
+      },
+      "singularity": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 72.99595076697213,
+        "avgRemainingHp": 0.2584123558465343,
+        "avgSeconds": 53.89778501008238,
+        "draws": 29,
+        "games": 1792,
+        "timeoutRate": 63.560267857142854,
+        "winRate": 26.3671875,
+        "wins": 458
+      },
+      "verdant": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 70.10024767262595,
+        "avgRemainingHp": 0.39117644293427084,
+        "avgSeconds": 55.77518741680043,
+        "draws": 84,
+        "games": 1792,
+        "timeoutRate": 71.76339285714286,
+        "winRate": 48.270089285714285,
+        "wins": 823
+      },
+      "zephyr": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 113.10005412995815,
+        "avgRemainingHp": 0.13801396571534497,
+        "avgSeconds": 45.12327566742897,
+        "draws": 443,
+        "games": 1792,
+        "timeoutRate": 22.488839285714285,
+        "winRate": 64.6484375,
+        "wins": 937
+      }
+    },
+    "shrinking": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 105.9641678588731,
+        "avgRemainingHp": 0.06646820966359103,
+        "avgSeconds": 31.017881852574646,
+        "draws": 444,
+        "games": 1792,
+        "timeoutRate": 8.091517857142858,
+        "winRate": 42.075892857142854,
+        "wins": 532
+      },
+      "bulwark": {
+        "avgAbsorbed": 21.497068347941553,
+        "avgDamage": 108.97831171112401,
+        "avgRemainingHp": 0.10601886999552335,
+        "avgSeconds": 36.163486113372656,
+        "draws": 403,
+        "games": 1792,
+        "timeoutRate": 11.886160714285714,
+        "winRate": 51.646205357142854,
+        "wins": 724
+      },
+      "glacier": {
+        "avgAbsorbed": 5.322468846504178,
+        "avgDamage": 111.78300577827862,
+        "avgRemainingHp": 0.09428279198816979,
+        "avgSeconds": 31.40294728507953,
+        "draws": 471,
+        "games": 1792,
+        "timeoutRate": 8.761160714285714,
+        "winRate": 56.166294642857146,
+        "wins": 771
+      },
+      "lancer": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 105.17455055883953,
+        "avgRemainingHp": 0.07243009577713012,
+        "avgSeconds": 32.48905187100172,
+        "draws": 332,
+        "games": 1792,
+        "timeoutRate": 5.46875,
+        "winRate": 38.72767857142857,
+        "wins": 528
+      },
+      "pulse": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 113.69365262559482,
+        "avgRemainingHp": 0.09366028746381971,
+        "avgSeconds": 29.746484679835184,
+        "draws": 481,
+        "games": 1792,
+        "timeoutRate": 5.078125,
+        "winRate": 59.12388392857143,
+        "wins": 819
+      },
+      "singularity": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 104.61979616326946,
+        "avgRemainingHp": 0.21730371005069823,
+        "avgSeconds": 43.90386972044195,
+        "draws": 144,
+        "games": 1792,
+        "timeoutRate": 22.377232142857142,
+        "winRate": 70.47991071428571,
+        "wins": 1191
+      },
+      "verdant": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 104.7171292837177,
+        "avgRemainingHp": 0.08209202147668293,
+        "avgSeconds": 34.213181153072846,
+        "draws": 476,
+        "games": 1792,
+        "timeoutRate": 11.439732142857142,
+        "winRate": 42.801339285714285,
+        "wins": 529
+      },
+      "zephyr": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 108.74837908148766,
+        "avgRemainingHp": 0.04966010007170293,
+        "avgSeconds": 29.323617448631143,
+        "draws": 551,
+        "games": 1792,
+        "timeoutRate": 5.245535714285714,
+        "winRate": 38.978794642857146,
+        "wins": 423
+      }
+    }
+  },
+  "characters": {
+    "blaze": {
+      "avgAbsorbed": 0.0,
+      "avgDamage": 102.3715914785862,
+      "avgRemainingHp": 0.15636333468845923,
+      "avgSeconds": 40.97548311330112,
+      "draws": 1457,
+      "games": 7168,
+      "timeoutRate": 27.818080357142858,
+      "winRate": 52.72739955357143,
+      "wins": 3051
+    },
+    "bulwark": {
+      "avgAbsorbed": 22.632519864610263,
+      "avgDamage": 89.64245982308474,
+      "avgRemainingHp": 0.25235662723613117,
+      "avgSeconds": 46.82150032427827,
+      "draws": 888,
+      "games": 7168,
+      "timeoutRate": 46.97265625,
+      "winRate": 45.521763392857146,
+      "wins": 2819
+    },
+    "glacier": {
+      "avgAbsorbed": 3.5225986505060325,
+      "avgDamage": 101.89832277063813,
+      "avgRemainingHp": 0.1706694076897577,
+      "avgSeconds": 42.15694639933229,
+      "draws": 1357,
+      "games": 7168,
+      "timeoutRate": 33.35658482142857,
+      "winRate": 49.81166294642857,
+      "wins": 2892
+    },
+    "lancer": {
+      "avgAbsorbed": 0.0,
+      "avgDamage": 102.26303259868708,
+      "avgRemainingHp": 0.16639700568290447,
+      "avgSeconds": 41.782391474981395,
+      "draws": 914,
+      "games": 7168,
+      "timeoutRate": 25.641741071428573,
+      "winRate": 49.916294642857146,
+      "wins": 3121
+    },
+    "pulse": {
+      "avgAbsorbed": 0.0,
+      "avgDamage": 102.67965114648852,
+      "avgRemainingHp": 0.17208211296792594,
+      "avgSeconds": 40.96092949812633,
+      "draws": 1456,
+      "games": 7168,
+      "timeoutRate": 31.305803571428573,
+      "winRate": 52.427455357142854,
+      "wins": 3030
+    },
+    "singularity": {
+      "avgAbsorbed": 0.0,
+      "avgDamage": 87.83324986749462,
+      "avgRemainingHp": 0.26135907192795965,
+      "avgSeconds": 49.57599810537483,
+      "draws": 321,
+      "games": 7168,
+      "timeoutRate": 47.61439732142857,
+      "winRate": 50.899832589285715,
+      "wins": 3488
+    },
+    "verdant": {
+      "avgAbsorbed": 0.0,
+      "avgDamage": 85.22598826672349,
+      "avgRemainingHp": 0.26067405306773545,
+      "avgSeconds": 45.36969784873405,
+      "draws": 1026,
+      "games": 7168,
+      "timeoutRate": 45.438058035714285,
+      "winRate": 47.237723214285715,
+      "wins": 2873
+    },
+    "zephyr": {
+      "avgAbsorbed": 0.0,
+      "avgDamage": 108.4343483703477,
+      "avgRemainingHp": 0.10910993174460211,
+      "avgSeconds": 38.276621737118276,
+      "draws": 1853,
+      "games": 7168,
+      "timeoutRate": 19.614955357142858,
+      "winRate": 51.45786830357143,
+      "wins": 2762
+    }
+  },
+  "excludedCharacters": [
+    "wooden-dummy"
+  ],
+  "firstSeed": 90000,
+  "games": 28672,
+  "leftSideScore": 50.9033203125,
+  "maps": [
+    "open",
+    "obstacles",
+    "mechanisms",
+    "shrinking"
+  ],
+  "matchups": {
+    "blaze": {
+      "bulwark": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 100.89434012398124,
+        "avgRemainingHp": 0.19451907487501785,
+        "avgSeconds": 46.08612331491895,
+        "draws": 152,
+        "games": 1024,
+        "timeoutRate": 42.96875,
+        "winRate": 56.8359375,
+        "wins": 506
+      },
+      "glacier": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 104.33963525295258,
+        "avgRemainingHp": 0.10975730007140783,
+        "avgSeconds": 38.8693034616299,
+        "draws": 231,
+        "games": 1024,
+        "timeoutRate": 20.3125,
+        "winRate": 54.052734375,
+        "wins": 438
+      },
+      "lancer": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 92.55821291357279,
+        "avgRemainingHp": 0.16980731831415596,
+        "avgSeconds": 39.048324005678296,
+        "draws": 172,
+        "games": 1024,
+        "timeoutRate": 17.87109375,
+        "winRate": 59.5703125,
+        "wins": 524
+      },
+      "pulse": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 97.3110657967627,
+        "avgRemainingHp": 0.08348589022020292,
+        "avgSeconds": 36.32872926793061,
+        "draws": 306,
+        "games": 1024,
+        "timeoutRate": 16.9921875,
+        "winRate": 45.3125,
+        "wins": 311
+      },
+      "singularity": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 111.16240831464529,
+        "avgRemainingHp": 0.2646515269560723,
+        "avgSeconds": 50.693565065041184,
+        "draws": 33,
+        "games": 1024,
+        "timeoutRate": 51.46484375,
+        "winRate": 46.728515625,
+        "wins": 462
+      },
+      "verdant": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 115.63346811011434,
+        "avgRemainingHp": 0.21728194260100508,
+        "avgSeconds": 43.020142185967416,
+        "draws": 183,
+        "games": 1024,
+        "timeoutRate": 36.9140625,
+        "winRate": 62.744140625,
+        "wins": 551
+      },
+      "zephyr": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 94.70200983807445,
+        "avgRemainingHp": 0.05504028978135267,
+        "avgSeconds": 32.78219449194148,
+        "draws": 380,
+        "games": 1024,
+        "timeoutRate": 8.203125,
+        "winRate": 43.84765625,
+        "wins": 259
+      }
+    },
+    "bulwark": {
+      "blaze": {
+        "avgAbsorbed": 24.127438093535602,
+        "avgDamage": 100.527945920825,
+        "avgRemainingHp": 0.18631916018443917,
+        "avgSeconds": 46.08612331491895,
+        "draws": 152,
+        "games": 1024,
+        "timeoutRate": 42.96875,
+        "winRate": 43.1640625,
+        "wins": 366
+      },
+      "glacier": {
+        "avgAbsorbed": 22.862993615679443,
+        "avgDamage": 88.59108266979456,
+        "avgRemainingHp": 0.22414604961977602,
+        "avgSeconds": 46.10227995272726,
+        "draws": 145,
+        "games": 1024,
+        "timeoutRate": 50.48828125,
+        "winRate": 46.044921875,
+        "wins": 399
+      },
+      "lancer": {
+        "avgAbsorbed": 22.8755281730555,
+        "avgDamage": 76.86355137452483,
+        "avgRemainingHp": 0.1782365687172387,
+        "avgSeconds": 45.037138348445296,
+        "draws": 88,
+        "games": 1024,
+        "timeoutRate": 34.08203125,
+        "winRate": 36.328125,
+        "wins": 328
+      },
+      "pulse": {
+        "avgAbsorbed": 21.677718898281455,
+        "avgDamage": 81.43060500174761,
+        "avgRemainingHp": 0.23608647965301088,
+        "avgSeconds": 45.67551267892122,
+        "draws": 135,
+        "games": 1024,
+        "timeoutRate": 48.92578125,
+        "winRate": 47.314453125,
+        "wins": 417
+      },
+      "singularity": {
+        "avgAbsorbed": 23.05093395570293,
+        "avgDamage": 105.90809641778469,
+        "avgRemainingHp": 0.37805931680310323,
+        "avgSeconds": 53.13292639516294,
+        "draws": 35,
+        "games": 1024,
+        "timeoutRate": 62.3046875,
+        "winRate": 60.107421875,
+        "wins": 598
+      },
+      "verdant": {
+        "avgAbsorbed": 20.85189613699913,
+        "avgDamage": 84.24413948133588,
+        "avgRemainingHp": 0.4359482661044467,
+        "avgSeconds": 49.060524014988914,
+        "draws": 110,
+        "games": 1024,
+        "timeoutRate": 61.328125,
+        "winRate": 36.5234375,
+        "wins": 319
+      },
+      "zephyr": {
+        "avgAbsorbed": 22.981130179017782,
+        "avgDamage": 89.93179789558053,
+        "avgRemainingHp": 0.12770054957090338,
+        "avgSeconds": 42.65599756478332,
+        "draws": 223,
+        "games": 1024,
+        "timeoutRate": 28.7109375,
+        "winRate": 49.169921875,
+        "wins": 392
+      }
+    },
+    "glacier": {
+      "blaze": {
+        "avgAbsorbed": 3.80814063642174,
+        "avgDamage": 110.0245306827128,
+        "avgRemainingHp": 0.10051224737583198,
+        "avgSeconds": 38.8693034616299,
+        "draws": 231,
+        "games": 1024,
+        "timeoutRate": 20.3125,
+        "winRate": 45.947265625,
+        "wins": 355
+      },
+      "bulwark": {
+        "avgAbsorbed": 3.94940817495808,
+        "avgDamage": 96.20416446775198,
+        "avgRemainingHp": 0.23627787715736304,
+        "avgSeconds": 46.10227995272726,
+        "draws": 145,
+        "games": 1024,
+        "timeoutRate": 50.48828125,
+        "winRate": 53.955078125,
+        "wins": 480
+      },
+      "lancer": {
+        "avgAbsorbed": 2.5674815056845546,
+        "avgDamage": 90.51352686062455,
+        "avgRemainingHp": 0.17271354119327498,
+        "avgSeconds": 41.50605811551213,
+        "draws": 131,
+        "games": 1024,
+        "timeoutRate": 25.87890625,
+        "winRate": 58.056640625,
+        "wins": 529
+      },
+      "pulse": {
+        "avgAbsorbed": 3.6609474942088127,
+        "avgDamage": 95.21248900517821,
+        "avgRemainingHp": 0.10365521170783154,
+        "avgSeconds": 38.68603161768988,
+        "draws": 272,
+        "games": 1024,
+        "timeoutRate": 25.1953125,
+        "winRate": 42.28515625,
+        "wins": 297
+      },
+      "singularity": {
+        "avgAbsorbed": 3.626432766672224,
+        "avgDamage": 119.57924970239401,
+        "avgRemainingHp": 0.27128454308967775,
+        "avgSeconds": 49.91641107201576,
+        "draws": 44,
+        "games": 1024,
+        "timeoutRate": 51.171875,
+        "winRate": 56.54296875,
+        "wins": 557
+      },
+      "verdant": {
+        "avgAbsorbed": 3.014528328087181,
+        "avgDamage": 107.00626211240888,
+        "avgRemainingHp": 0.24223255234647922,
+        "avgSeconds": 44.77623735263478,
+        "draws": 171,
+        "games": 1024,
+        "timeoutRate": 48.2421875,
+        "winRate": 45.556640625,
+        "wins": 381
+      },
+      "zephyr": {
+        "avgAbsorbed": 4.0312516475096345,
+        "avgDamage": 94.74803656339645,
+        "avgRemainingHp": 0.06800988095784533,
+        "avgSeconds": 35.24230322311632,
+        "draws": 363,
+        "games": 1024,
+        "timeoutRate": 12.20703125,
+        "winRate": 46.337890625,
+        "wins": 293
+      }
+    },
+    "lancer": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 101.68339752405882,
+        "avgRemainingHp": 0.10136677579535558,
+        "avgSeconds": 39.048324005678296,
+        "draws": 172,
+        "games": 1024,
+        "timeoutRate": 17.87109375,
+        "winRate": 40.4296875,
+        "wins": 328
+      },
+      "bulwark": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 101.8971679136157,
+        "avgRemainingHp": 0.25374023239805865,
+        "avgSeconds": 45.037138348445296,
+        "draws": 88,
+        "games": 1024,
+        "timeoutRate": 34.08203125,
+        "winRate": 63.671875,
+        "wins": 608
+      },
+      "glacier": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 95.96402460336685,
+        "avgRemainingHp": 0.12121335631996999,
+        "avgSeconds": 41.50605811551213,
+        "draws": 131,
+        "games": 1024,
+        "timeoutRate": 25.87890625,
+        "winRate": 41.943359375,
+        "wins": 364
+      },
+      "pulse": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 89.46401128917933,
+        "avgRemainingHp": 0.15657317950480376,
+        "avgSeconds": 40.851363725960255,
+        "draws": 150,
+        "games": 1024,
+        "timeoutRate": 26.5625,
+        "winRate": 50.29296875,
+        "wins": 440
+      },
+      "singularity": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 125.55972231179476,
+        "avgRemainingHp": 0.1326621725950794,
+        "avgSeconds": 45.32499644905329,
+        "draws": 61,
+        "games": 1024,
+        "timeoutRate": 26.46484375,
+        "winRate": 41.357421875,
+        "wins": 393
+      },
+      "verdant": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 113.78675796464086,
+        "avgRemainingHp": 0.29986729830898184,
+        "avgSeconds": 43.708978928625584,
+        "draws": 100,
+        "games": 1024,
+        "timeoutRate": 34.5703125,
+        "winRate": 68.84765625,
+        "wins": 655
+      },
+      "zephyr": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 87.48614658415318,
+        "avgRemainingHp": 0.09935602485808204,
+        "avgSeconds": 36.9998807515949,
+        "draws": 212,
+        "games": 1024,
+        "timeoutRate": 14.0625,
+        "winRate": 42.87109375,
+        "wins": 333
+      }
+    },
+    "pulse": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 111.45842885226011,
+        "avgRemainingHp": 0.09896739286983802,
+        "avgSeconds": 36.32872926793061,
+        "draws": 306,
+        "games": 1024,
+        "timeoutRate": 16.9921875,
+        "winRate": 54.6875,
+        "wins": 407
+      },
+      "bulwark": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 94.72361616045237,
+        "avgRemainingHp": 0.24599935323786326,
+        "avgSeconds": 45.67551267892122,
+        "draws": 135,
+        "games": 1024,
+        "timeoutRate": 48.92578125,
+        "winRate": 52.685546875,
+        "wins": 472
+      },
+      "glacier": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 103.97550728917122,
+        "avgRemainingHp": 0.11839624835940299,
+        "avgSeconds": 38.68603161768988,
+        "draws": 272,
+        "games": 1024,
+        "timeoutRate": 25.1953125,
+        "winRate": 57.71484375,
+        "wins": 455
+      },
+      "lancer": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 86.87188820168376,
+        "avgRemainingHp": 0.17161385279513297,
+        "avgSeconds": 40.851363725960255,
+        "draws": 150,
+        "games": 1024,
+        "timeoutRate": 26.5625,
+        "winRate": 49.70703125,
+        "wins": 434
+      },
+      "singularity": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 121.21552532166243,
+        "avgRemainingHp": 0.21161571578561222,
+        "avgSeconds": 47.79898489266634,
+        "draws": 63,
+        "games": 1024,
+        "timeoutRate": 42.1875,
+        "winRate": 48.681640625,
+        "wins": 467
+      },
+      "verdant": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 104.468800380826,
+        "avgRemainingHp": 0.28405067889366364,
+        "avgSeconds": 44.29583166143857,
+        "draws": 164,
+        "games": 1024,
+        "timeoutRate": 49.12109375,
+        "winRate": 50.48828125,
+        "wins": 435
+      },
+      "zephyr": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 96.04379181936383,
+        "avgRemainingHp": 0.07393154883396846,
+        "avgSeconds": 33.09005264227744,
+        "draws": 366,
+        "games": 1024,
+        "timeoutRate": 10.15625,
+        "winRate": 53.02734375,
+        "wins": 360
+      }
+    },
+    "singularity": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 94.23488892242312,
+        "avgRemainingHp": 0.28281623970980263,
+        "avgSeconds": 50.693565065041184,
+        "draws": 33,
+        "games": 1024,
+        "timeoutRate": 51.46484375,
+        "winRate": 53.271484375,
+        "wins": 529
+      },
+      "bulwark": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 77.11835825815797,
+        "avgRemainingHp": 0.3167179701842997,
+        "avgSeconds": 53.13292639516294,
+        "draws": 35,
+        "games": 1024,
+        "timeoutRate": 62.3046875,
+        "winRate": 39.892578125,
+        "wins": 391
+      },
+      "glacier": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 84.5289699435234,
+        "avgRemainingHp": 0.22851572105049112,
+        "avgSeconds": 49.91641107201576,
+        "draws": 44,
+        "games": 1024,
+        "timeoutRate": 51.171875,
+        "winRate": 43.45703125,
+        "wins": 423
+      },
+      "lancer": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 89.33474447950721,
+        "avgRemainingHp": 0.18993349516013325,
+        "avgSeconds": 45.32499644905329,
+        "draws": 61,
+        "games": 1024,
+        "timeoutRate": 26.46484375,
+        "winRate": 58.642578125,
+        "wins": 570
+      },
+      "pulse": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 85.14318255335093,
+        "avgRemainingHp": 0.21795826215634406,
+        "avgSeconds": 47.79898489266634,
+        "draws": 63,
+        "games": 1024,
+        "timeoutRate": 42.1875,
+        "winRate": 51.318359375,
+        "wins": 494
+      },
+      "verdant": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 98.47706845402718,
+        "avgRemainingHp": 0.3426331927607862,
+        "avgSeconds": 52.86267508752644,
+        "draws": 37,
+        "games": 1024,
+        "timeoutRate": 61.81640625,
+        "winRate": 47.314453125,
+        "wins": 466
+      },
+      "zephyr": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 85.99553646147251,
+        "avgRemainingHp": 0.25093862247386056,
+        "avgSeconds": 47.302427776157856,
+        "draws": 48,
+        "games": 1024,
+        "timeoutRate": 37.890625,
+        "winRate": 62.40234375,
+        "wins": 615
+      }
+    },
+    "verdant": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 100.23402700573206,
+        "avgRemainingHp": 0.17416394538827262,
+        "avgSeconds": 43.020142185967416,
+        "draws": 183,
+        "games": 1024,
+        "timeoutRate": 36.9140625,
+        "winRate": 37.255859375,
+        "wins": 290
+      },
+      "bulwark": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 69.94059204682708,
+        "avgRemainingHp": 0.4567280356968695,
+        "avgSeconds": 49.060524014988914,
+        "draws": 110,
+        "games": 1024,
+        "timeoutRate": 61.328125,
+        "winRate": 63.4765625,
+        "wins": 595
+      },
+      "glacier": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 87.90011237189174,
+        "avgRemainingHp": 0.25509107730249525,
+        "avgSeconds": 44.77623735263478,
+        "draws": 171,
+        "games": 1024,
+        "timeoutRate": 48.2421875,
+        "winRate": 54.443359375,
+        "wins": 472
+      },
+      "lancer": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 72.11249639466405,
+        "avgRemainingHp": 0.18761614590027875,
+        "avgSeconds": 43.708978928625584,
+        "draws": 100,
+        "games": 1024,
+        "timeoutRate": 34.5703125,
+        "winRate": 31.15234375,
+        "wins": 269
+      },
+      "pulse": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 77.32164772972465,
+        "avgRemainingHp": 0.26941597929271666,
+        "avgSeconds": 44.29583166143857,
+        "draws": 164,
+        "games": 1024,
+        "timeoutRate": 49.12109375,
+        "winRate": 49.51171875,
+        "wins": 425
+      },
+      "singularity": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 101.89100883156061,
+        "avgRemainingHp": 0.35681260923820446,
+        "avgSeconds": 52.86267508752644,
+        "draws": 37,
+        "games": 1024,
+        "timeoutRate": 61.81640625,
+        "winRate": 52.685546875,
+        "wins": 521
+      },
+      "zephyr": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 87.1820334866643,
+        "avgRemainingHp": 0.12489057865531095,
+        "avgSeconds": 39.863495709956624,
+        "draws": 261,
+        "games": 1024,
+        "timeoutRate": 26.07421875,
+        "winRate": 42.138671875,
+        "wins": 301
+      }
+    },
+    "zephyr": {
+      "blaze": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 114.0472759976983,
+        "avgRemainingHp": 0.07154190219361567,
+        "avgSeconds": 32.78219449194148,
+        "draws": 380,
+        "games": 1024,
+        "timeoutRate": 8.203125,
+        "winRate": 56.15234375,
+        "wins": 385
+      },
+      "bulwark": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 108.16402441263199,
+        "avgRemainingHp": 0.11830868408424067,
+        "avgSeconds": 42.65599756478332,
+        "draws": 223,
+        "games": 1024,
+        "timeoutRate": 28.7109375,
+        "winRate": 50.830078125,
+        "wins": 409
+      },
+      "glacier": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 108.11036547273397,
+        "avgRemainingHp": 0.07109448730824397,
+        "avgSeconds": 35.24230322311632,
+        "draws": 363,
+        "games": 1024,
+        "timeoutRate": 12.20703125,
+        "winRate": 53.662109375,
+        "wins": 368
+      },
+      "lancer": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 92.76587352156639,
+        "avgRemainingHp": 0.1422875750498349,
+        "avgSeconds": 36.9998807515949,
+        "draws": 212,
+        "games": 1024,
+        "timeoutRate": 14.0625,
+        "winRate": 57.12890625,
+        "wins": 479
+      },
+      "pulse": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 100.01409063115716,
+        "avgRemainingHp": 0.05838494385642434,
+        "avgSeconds": 33.09005264227744,
+        "draws": 366,
+        "games": 1024,
+        "timeoutRate": 10.15625,
+        "winRate": 46.97265625,
+        "wins": 298
+      },
+      "singularity": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 116.1038302257657,
+        "avgRemainingHp": 0.1568857271262516,
+        "avgSeconds": 47.302427776157856,
+        "draws": 48,
+        "games": 1024,
+        "timeoutRate": 37.890625,
+        "winRate": 37.59765625,
+        "wins": 361
+      },
+      "verdant": {
+        "avgAbsorbed": 0.0,
+        "avgDamage": 119.8349783308804,
+        "avgRemainingHp": 0.14526620259360357,
+        "avgSeconds": 39.863495709956624,
+        "draws": 261,
+        "games": 1024,
+        "timeoutRate": 26.07421875,
+        "winRate": 57.861328125,
+        "wins": 462
+      }
+    }
+  },
+  "roster": [
+    {
+      "armor": 0.0,
+      "attack": 12.5,
+      "contact": 1.0,
+      "ghost": false,
+      "hp": 108.0,
+      "id": "blaze",
+      "mass": 1.0,
+      "massMax": 0.0,
+      "massRamp": 90.0,
+      "name": "烈焰",
+      "radius": 24.0,
+      "restitution": 0.9700000286102295,
+      "shape": "sprite",
+      "skills": [
+        "burst-dash",
+        "lifesteal"
+      ],
+      "speed": 420.0
+    },
+    {
+      "armor": 0.800000011920929,
+      "attack": 11.699999809265137,
+      "contact": 1.0,
+      "ghost": false,
+      "hp": 124.0,
+      "id": "bulwark",
+      "mass": 1.899999976158142,
+      "massMax": 0.0,
+      "massRamp": 90.0,
+      "name": "磐石",
+      "radius": 29.0,
+      "restitution": 0.9700000286102295,
+      "shape": "sprite",
+      "skills": [
+        "shield",
+        "thorns"
+      ],
+      "speed": 340.0
+    },
+    {
+      "armor": 0.5,
+      "attack": 14.699999809265137,
+      "contact": 1.0,
+      "ghost": false,
+      "hp": 116.0,
+      "id": "glacier",
+      "mass": 1.5,
+      "massMax": 0.0,
+      "massRamp": 90.0,
+      "name": "霜棱",
+      "radius": 27.0,
+      "restitution": 0.9700000286102295,
+      "shape": "sprite",
+      "skills": [
+        "slow-field",
+        "ice-guard"
+      ],
+      "speed": 380.0
+    },
+    {
+      "armor": 0.0,
+      "attack": 10.0,
+      "contact": 1.0,
+      "ghost": false,
+      "hp": 103.0,
+      "id": "lancer",
+      "mass": 1.0,
+      "massMax": 0.0,
+      "massRamp": 90.0,
+      "name": "疾锋",
+      "radius": 24.0,
+      "restitution": 0.949999988079071,
+      "shape": "triangle",
+      "skills": [
+        "dash",
+        "pierce"
+      ],
+      "speed": 420.0
+    },
+    {
+      "armor": 0.0,
+      "attack": 15.5,
+      "contact": 1.0,
+      "ghost": false,
+      "hp": 108.0,
+      "id": "pulse",
+      "mass": 1.100000023841858,
+      "massMax": 0.0,
+      "massRamp": 90.0,
+      "name": "雷脉",
+      "radius": 24.0,
+      "restitution": 0.9700000286102295,
+      "shape": "sprite",
+      "skills": [
+        "overcharge",
+        "phase-step"
+      ],
+      "speed": 415.0
+    },
+    {
+      "armor": 0.0,
+      "attack": 7.0,
+      "contact": 0.6000000238418579,
+      "ghost": true,
+      "hp": 155.0,
+      "id": "singularity",
+      "mass": 2.5999999046325684,
+      "massMax": 5.0,
+      "massRamp": 90.0,
+      "name": "黑洞",
+      "radius": 30.0,
+      "restitution": 0.8999999761581421,
+      "shape": "sprite",
+      "skills": [
+        "gravity-well",
+        "omnipull"
+      ],
+      "speed": 300.0
+    },
+    {
+      "armor": 0.0,
+      "attack": 13.0,
+      "contact": 1.0,
+      "ghost": false,
+      "hp": 105.0,
+      "id": "verdant",
+      "mass": 1.149999976158142,
+      "massMax": 0.0,
+      "massRamp": 90.0,
+      "name": "青芽",
+      "radius": 25.0,
+      "restitution": 0.9700000286102295,
+      "shape": "sprite",
+      "skills": [
+        "regeneration",
+        "second-wind"
+      ],
+      "speed": 390.0
+    },
+    {
+      "armor": 0.0,
+      "attack": 13.5,
+      "contact": 1.0,
+      "ghost": false,
+      "hp": 102.0,
+      "id": "zephyr",
+      "mass": 0.800000011920929,
+      "massMax": 0.0,
+      "massRamp": 90.0,
+      "name": "逐风",
+      "radius": 22.0,
+      "restitution": 0.9700000286102295,
+      "shape": "sprite",
+      "skills": [
+        "wall-dash",
+        "ricochet"
+      ],
+      "speed": 460.0
+    }
+  ],
+  "scenarioRules": {
+    "mechanisms": {
+      "animTime": 1.5,
+      "damagePerSec": 4.0,
+      "damageScale": 1.0,
+      "firstAt": 25.0,
+      "interval": 10.0,
+      "jitter": 1.5,
+      "lullTrigger": 60.0,
+      "maxSpeed": 1800.0,
+      "minInset": 1.0,
+      "refSpeed": 400.0,
+      "shrink": false,
+      "stall": true,
+      "step": 0.10000000149011612,
+      "timeLimit": 60,
+      "wallRestitution": 0.9800000190734863,
+      "warnTime": 1.0
+    },
+    "obstacles": {
+      "animTime": 1.5,
+      "damagePerSec": 4.0,
+      "damageScale": 1.0,
+      "firstAt": 25.0,
+      "interval": 10.0,
+      "jitter": 1.5,
+      "lullTrigger": 60.0,
+      "maxSpeed": 1800.0,
+      "minInset": 1.0,
+      "refSpeed": 400.0,
+      "shrink": false,
+      "stall": true,
+      "step": 0.10000000149011612,
+      "timeLimit": 60,
+      "wallRestitution": 0.9800000190734863,
+      "warnTime": 1.0
+    },
+    "open": {
+      "animTime": 1.5,
+      "damagePerSec": 4.0,
+      "damageScale": 1.0,
+      "firstAt": 25.0,
+      "interval": 10.0,
+      "jitter": 1.5,
+      "lullTrigger": 60.0,
+      "maxSpeed": 1800.0,
+      "minInset": 1.0,
+      "refSpeed": 400.0,
+      "shrink": false,
+      "stall": true,
+      "step": 0.10000000149011612,
+      "timeLimit": 60,
+      "wallRestitution": 0.9800000190734863,
+      "warnTime": 1.0
+    },
+    "shrinking": {
+      "animTime": 1.5,
+      "damagePerSec": 4.0,
+      "damageScale": 1.0,
+      "firstAt": 25.0,
+      "interval": 10.0,
+      "jitter": 1.5,
+      "lullTrigger": 60.0,
+      "maxSpeed": 1800.0,
+      "minInset": 1.0,
+      "refSpeed": 400.0,
+      "shrink": true,
+      "stall": true,
+      "step": 0.10000000149011612,
+      "timeLimit": 60,
+      "wallRestitution": 0.9800000190734863,
+      "warnTime": 1.0
+    }
+  },
+  "seedsPerMap": 128,
+  "skillDefinitions": [
+    {
+      "description": {
+        "en": "Dash",
+        "zh": "每6秒沿当前方向加速，快速碰撞造成更高伤害。"
+      },
+      "format": 1,
+      "id": "burst-dash",
+      "modifiers": [
+        {
+          "duration": 0,
+          "op": "add_speed",
+          "value": 170
+        }
+      ],
+      "name": {
+        "en": "Burst Dash",
+        "zh": "疾速脉冲"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 6,
+        "kind": "cooldown"
+      },
+      "vfx": []
+    },
+    {
+      "charge": {
+        "aimJitterDeg": 6,
+        "aimJitterMinDeg": 0.5,
+        "aimLag": 0.3,
+        "aimLagMin": 0.05,
+        "aimLearningCasts": 5,
+        "duration": 3,
+        "durationLearningCasts": 10,
+        "durationMin": 0,
+        "interruptImmuneCasts": 15,
+        "ramDamageScale": 0.04,
+        "releaseSpeed": 500
+      },
+      "format": 1,
+      "id": "dash",
+      "modifiers": [],
+      "name": {
+        "en": "Dash",
+        "zh": "冲刺"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 6,
+        "kind": "cooldown"
+      },
+      "vfx": [
+        {
+          "color": [
+            255,
+            180,
+            60,
+            255
+          ],
+          "duration": 1.2,
+          "on": "cast",
+          "type": "trail"
+        },
+        {
+          "color": [
+            255,
+            220,
+            120,
+            255
+          ],
+          "on": "cast",
+          "type": "ring",
+          "value": 90
+        }
+      ]
+    },
+    {
+      "format": 1,
+      "gravity": {
+        "accel": 460,
+        "coreFactor": 0.72,
+        "damage": 3,
+        "damageMax": 12,
+        "dpsCenter": 1.6,
+        "dpsEdge": 0.2,
+        "growthSeconds": 90,
+        "range": 280,
+        "rangeMax": 440,
+        "teleportGuard": 1.5,
+        "teleportMinDist": 240,
+        "tickInterval": 0.5
+      },
+      "id": "gravity-well",
+      "modifiers": [],
+      "name": {
+        "en": "Gravity Well",
+        "zh": "吸引"
+      },
+      "priority": 40,
+      "trigger": {
+        "kind": "passive"
+      },
+      "vfx": []
+    },
+    {
+      "description": {
+        "en": "Ice Guard",
+        "zh": "每局一次：生命低于35%时获得持续4秒的护盾。"
+      },
+      "format": 1,
+      "id": "ice-guard",
+      "modifiers": [
+        {
+          "duration": 4,
+          "op": "shield",
+          "value": 10
+        }
+      ],
+      "name": {
+        "en": "Ice Guard",
+        "zh": "冰封屏障"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 1,
+        "hpBelow": 0.35,
+        "kind": "on_low_hp"
+      },
+      "vfx": []
+    },
+    {
+      "description": {
+        "en": "Lifesteal",
+        "zh": "碰撞后短时获得吸血，按实际造成的生命伤害恢复。"
+      },
+      "format": 1,
+      "id": "lifesteal",
+      "modifiers": [
+        {
+          "duration": 2,
+          "op": "lifesteal",
+          "value": 0.16
+        }
+      ],
+      "name": {
+        "en": "Lifesteal",
+        "zh": "嗜血"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 3,
+        "kind": "on_hit"
+      },
+      "vfx": []
+    },
+    {
+      "format": 1,
+      "id": "omnipull",
+      "modifiers": [],
+      "name": {
+        "en": "Omnipull",
+        "zh": "万向天引"
+      },
+      "omnipull": {
+        "accel": 1100,
+        "damageFrom": 12,
+        "damageTo": 30,
+        "dpsCenter": 0.6,
+        "dpsEdge": 0,
+        "durationFrom": 2,
+        "durationTo": 5,
+        "growthSeconds": 90,
+        "invincible": true,
+        "rangeFrom": 220,
+        "rangeTo": 420,
+        "suppressPassive": true
+      },
+      "priority": 50,
+      "trigger": {
+        "cooldown": 12,
+        "kind": "cooldown"
+      },
+      "vfx": []
+    },
+    {
+      "description": {
+        "en": "Overcharge",
+        "zh": "每10秒进入5秒过载，碰撞攻击提高25%。"
+      },
+      "format": 1,
+      "id": "overcharge",
+      "modifiers": [
+        {
+          "duration": 5,
+          "op": "damage_boost",
+          "value": 1.25
+        }
+      ],
+      "name": {
+        "en": "Overcharge",
+        "zh": "过载"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 10,
+        "kind": "cooldown"
+      },
+      "vfx": []
+    },
+    {
+      "description": {
+        "en": "Phase Step",
+        "zh": "撞墙后向随机方向短距离跃迁，并获得一次加速。"
+      },
+      "format": 1,
+      "id": "phase-step",
+      "modifiers": [
+        {
+          "duration": 0,
+          "op": "teleport",
+          "radius": 100
+        },
+        {
+          "duration": 0,
+          "op": "add_speed",
+          "value": 60
+        }
+      ],
+      "name": {
+        "en": "Phase Step",
+        "zh": "相位折跃"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 8,
+        "kind": "on_wall_bounce"
+      },
+      "vfx": []
+    },
+    {
+      "format": 1,
+      "id": "pierce",
+      "modifiers": [
+        {
+          "minSpeed": 200,
+          "op": "pierce",
+          "push": 120,
+          "value": 6
+        }
+      ],
+      "name": {
+        "en": "Pierce",
+        "zh": "贯穿"
+      },
+      "priority": 30,
+      "stack": "refresh",
+      "trigger": {
+        "kind": "passive"
+      },
+      "vfx": []
+    },
+    {
+      "description": {
+        "en": "Regeneration",
+        "zh": "每8秒恢复少量生命，满血时不会积攒治疗。"
+      },
+      "format": 1,
+      "id": "regeneration",
+      "modifiers": [
+        {
+          "duration": 0,
+          "op": "heal",
+          "value": 4
+        }
+      ],
+      "name": {
+        "en": "Regeneration",
+        "zh": "自然恢复"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 8,
+        "kind": "cooldown"
+      },
+      "vfx": []
+    },
+    {
+      "description": {
+        "en": "Ricochet",
+        "zh": "周期性提高墙面反弹的速度保留率，维持机动力。"
+      },
+      "format": 1,
+      "id": "ricochet",
+      "modifiers": [
+        {
+          "duration": 3,
+          "op": "bounce_boost",
+          "value": 0.18
+        }
+      ],
+      "name": {
+        "en": "Ricochet",
+        "zh": "弹性强化"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 7,
+        "kind": "cooldown"
+      },
+      "vfx": []
+    },
+    {
+      "description": {
+        "en": "Second Wind",
+        "zh": "每局一次：生命低于35%时恢复12点生命，并获得一次小幅加速。"
+      },
+      "format": 1,
+      "id": "second-wind",
+      "modifiers": [
+        {
+          "duration": 0,
+          "op": "heal",
+          "value": 12
+        },
+        {
+          "duration": 0,
+          "op": "add_speed",
+          "value": 65
+        }
+      ],
+      "name": {
+        "en": "Second Wind",
+        "zh": "复苏"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 1,
+        "hpBelow": 0.35,
+        "kind": "on_low_hp"
+      },
+      "vfx": []
+    },
+    {
+      "description": {
+        "en": "Shield",
+        "zh": "受到碰撞时获得短时护盾，吸收本次及后续伤害。"
+      },
+      "format": 1,
+      "id": "shield",
+      "modifiers": [
+        {
+          "duration": 1.5,
+          "op": "shield",
+          "value": 8
+        }
+      ],
+      "name": {
+        "en": "Shield",
+        "zh": "壁垒"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 10,
+        "kind": "on_hit_by"
+      },
+      "vfx": []
+    },
+    {
+      "description": {
+        "en": "Frost Field",
+        "zh": "周期性展开减速领域，同时加速追击；领域削弱附近对手的速度。"
+      },
+      "format": 1,
+      "id": "slow-field",
+      "modifiers": [
+        {
+          "duration": 2.4,
+          "factor": 0.82,
+          "op": "slow_field",
+          "radius": 220
+        },
+        {
+          "duration": 0,
+          "op": "add_speed",
+          "value": 130
+        }
+      ],
+      "name": {
+        "en": "Frost Field",
+        "zh": "寒霜领域"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 8,
+        "kind": "cooldown"
+      },
+      "vfx": []
+    },
+    {
+      "description": {
+        "en": "Reprisal",
+        "zh": "受到碰撞后短时反弹18%的碰撞伤害；护盾吸收部分也计入，反伤不会再次触发反伤。"
+      },
+      "format": 1,
+      "id": "thorns",
+      "modifiers": [
+        {
+          "duration": 2,
+          "op": "thorns",
+          "value": 0.18
+        }
+      ],
+      "name": {
+        "en": "Reprisal",
+        "zh": "荆棘反击"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 6,
+        "kind": "on_hit_by"
+      },
+      "vfx": []
+    },
+    {
+      "description": {
+        "en": "Wall Dash",
+        "zh": "撞墙后沿反弹方向加速；障碍反弹也能触发。"
+      },
+      "format": 1,
+      "id": "wall-dash",
+      "modifiers": [
+        {
+          "duration": 0,
+          "op": "add_speed",
+          "value": 110
+        }
+      ],
+      "name": {
+        "en": "Wall Dash",
+        "zh": "折返冲刺"
+      },
+      "priority": 10,
+      "stack": "refresh",
+      "trigger": {
+        "cooldown": 3.5,
+        "kind": "on_wall_bounce"
+      },
+      "vfx": []
+    }
+  ],
+  "skills": [
+    {
+      "cooldown": 6.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "burst-dash",
+      "modifiers": [
+        {
+          "duration": 0.0,
+          "factor": 1.0,
+          "op": 0,
+          "radius": 0.0,
+          "value": 170.0
+        }
+      ],
+      "trigger": 0
+    },
+    {
+      "cooldown": 6.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "dash",
+      "modifiers": [],
+      "trigger": 0
+    },
+    {
+      "cooldown": 5.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "gravity-well",
+      "modifiers": [],
+      "trigger": 6
+    },
+    {
+      "cooldown": 1.0,
+      "hpBelow": 0.3499999940395355,
+      "id": "ice-guard",
+      "modifiers": [
+        {
+          "duration": 4.0,
+          "factor": 1.0,
+          "op": 1,
+          "radius": 0.0,
+          "value": 10.0
+        }
+      ],
+      "trigger": 3
+    },
+    {
+      "cooldown": 3.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "lifesteal",
+      "modifiers": [
+        {
+          "duration": 2.0,
+          "factor": 1.0,
+          "op": 2,
+          "radius": 0.0,
+          "value": 0.1599999964237213
+        }
+      ],
+      "trigger": 1
+    },
+    {
+      "cooldown": 12.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "omnipull",
+      "modifiers": [],
+      "trigger": 0
+    },
+    {
+      "cooldown": 10.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "overcharge",
+      "modifiers": [
+        {
+          "duration": 5.0,
+          "factor": 1.0,
+          "op": 8,
+          "radius": 0.0,
+          "value": 1.25
+        }
+      ],
+      "trigger": 0
+    },
+    {
+      "cooldown": 8.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "phase-step",
+      "modifiers": [
+        {
+          "duration": 0.0,
+          "factor": 1.0,
+          "op": 4,
+          "radius": 100.0,
+          "value": 0.0
+        },
+        {
+          "duration": 0.0,
+          "factor": 1.0,
+          "op": 0,
+          "radius": 0.0,
+          "value": 60.0
+        }
+      ],
+      "trigger": 4
+    },
+    {
+      "cooldown": 5.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "pierce",
+      "modifiers": [
+        {
+          "duration": 0.0,
+          "factor": 1.0,
+          "op": 10,
+          "radius": 0.0,
+          "value": 6.0
+        }
+      ],
+      "trigger": 6
+    },
+    {
+      "cooldown": 8.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "regeneration",
+      "modifiers": [
+        {
+          "duration": 0.0,
+          "factor": 1.0,
+          "op": 7,
+          "radius": 0.0,
+          "value": 4.0
+        }
+      ],
+      "trigger": 0
+    },
+    {
+      "cooldown": 7.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "ricochet",
+      "modifiers": [
+        {
+          "duration": 3.0,
+          "factor": 1.0,
+          "op": 6,
+          "radius": 0.0,
+          "value": 0.18000000715255737
+        }
+      ],
+      "trigger": 0
+    },
+    {
+      "cooldown": 1.0,
+      "hpBelow": 0.3499999940395355,
+      "id": "second-wind",
+      "modifiers": [
+        {
+          "duration": 0.0,
+          "factor": 1.0,
+          "op": 7,
+          "radius": 0.0,
+          "value": 12.0
+        },
+        {
+          "duration": 0.0,
+          "factor": 1.0,
+          "op": 0,
+          "radius": 0.0,
+          "value": 65.0
+        }
+      ],
+      "trigger": 3
+    },
+    {
+      "cooldown": 10.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "shield",
+      "modifiers": [
+        {
+          "duration": 1.5,
+          "factor": 1.0,
+          "op": 1,
+          "radius": 0.0,
+          "value": 8.0
+        }
+      ],
+      "trigger": 2
+    },
+    {
+      "cooldown": 8.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "slow-field",
+      "modifiers": [
+        {
+          "duration": 2.4000000953674316,
+          "factor": 0.8199999928474426,
+          "op": 3,
+          "radius": 220.0,
+          "value": 0.0
+        },
+        {
+          "duration": 0.0,
+          "factor": 1.0,
+          "op": 0,
+          "radius": 0.0,
+          "value": 130.0
+        }
+      ],
+      "trigger": 0
+    },
+    {
+      "cooldown": 6.0,
+      "hpBelow": 0.30000001192092896,
+      "id": "thorns",
+      "modifiers": [
+        {
+          "duration": 2.0,
+          "factor": 1.0,
+          "op": 9,
+          "radius": 0.0,
+          "value": 0.18000000715255737
+        }
+      ],
+      "trigger": 2
+    },
+    {
+      "cooldown": 3.5,
+      "hpBelow": 0.30000001192092896,
+      "id": "wall-dash",
+      "modifiers": [
+        {
+          "duration": 0.0,
+          "factor": 1.0,
+          "op": 0,
+          "radius": 0.0,
+          "value": 110.0
+        }
+      ],
+      "trigger": 4
+    }
+  ],
+  "swappedSides": true,
+  "wallSeconds": 40.6662177
+}
