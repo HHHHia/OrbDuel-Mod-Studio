@@ -26,6 +26,7 @@ int main(int argc, char **argv) {
             return 2;
         auto pack = loader.pack();
         PluginManager plugins;
+        plugins.setEntityApi(Simulation::entityApi());
         plugins.load(argv[2]);
         log::setConsole(false);
         const int seeds = std::max(1, std::atoi(argv[4])), firstSeed = std::atoi(argv[5]);

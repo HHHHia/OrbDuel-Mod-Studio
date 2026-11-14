@@ -89,7 +89,9 @@ void SkillSystem::update(float dt, float ratio, Body &self, const Body &enemy, R
                     self.wallBoost += m.value;
                 if (m.op == ModifierOp::SlowField) {
                     for (auto &other : world_->bodies())
-                        if (other.id != bodyId_ && lengthOf(other.pos - self.pos) < m.radius)
+                        if (other.active && other.id != bodyId_ &&
+                            (!match_ || match_->isEnemy(bodyId_, other.id)) &&
+                            lengthOf(other.pos - self.pos) < m.radius)
                             other.vel *= std::pow(clampf(m.factor, .001f, 1.f), dt);
                 }
             }

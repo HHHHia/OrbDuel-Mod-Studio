@@ -3,5 +3,12 @@
 namespace config {
 inline constexpr char typeId[] = "@TYPE_ID@";
 inline constexpr char typeName[] = "@TYPE_NAME@";
+inline constexpr float interval = @interval@f;
+inline constexpr float maxAlive = @maxAlive@f;
+inline constexpr float lifetime = @lifetime@f;
+inline constexpr float hpScale = @hpScale@f;
+inline constexpr float radiusScale = @radiusScale@f;
+inline constexpr float attackScale = @attackScale@f;
+inline constexpr float speed = @speed@f;
 inline constexpr float strength = @STRENGTH@f;
 }

@@ -7,3 +7,5 @@
 - Body::ghost 不分离、不推开；phasePush 允许穿过并推开对手。两类重叠配对每次接触只发布一次 Hit，分开后重置。
 - Arena 允许 inset=1；Match 在边界无法容纳角色时终局，Simulation 停止后续物理。
 - physics 不依赖内容、模组或 SDL；输入为固定 1/120 秒步长。
+
+- World::reserveBodyId 预留编号；addBody 接受预留编号或自动分配。removeBody 仅在固定步边界调用，回收物理存储并清理接触配对。编号在 clear 前不复用，body(id) 按稳定 ID 查询，bodies() 下标与 ID 不再等价。增删后 Body 指针失效。

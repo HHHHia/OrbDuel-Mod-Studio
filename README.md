@@ -15,7 +15,7 @@ Windows x64；开发需要 Visual Studio 2022 / Build Tools 的“使用 C++ 的
 .\build\bin\orbduel.exe
 ```
 
-`build.ps1` 会自动寻找 VS 附带的 CMake。默认构建 Release 游戏与三个独立示例模组。
+`build.ps1` 会自动寻找 VS 附带的 CMake。默认构建 Release 游戏与四个独立示例模组。
 
 手动构建：
 
@@ -96,3 +96,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\mod-sdk\new-mod.ps1 -I
 ## 许可证
 
 项目代码 MIT。SDL2 系列为 zlib，Dear ImGui 为 MIT，内置字体为 SIL OFL。对应许可证随仓库和发布包提供。程序化场景由本项目绘制；素材来源见 `content/ASSETS.md`。
+
+战斗实体与可调参数的分身示例：[使用和制作召唤物](docs/COMBAT_ENTITIES.md)。

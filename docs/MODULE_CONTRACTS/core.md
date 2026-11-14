@@ -6,3 +6,5 @@
 - Clock 只处理固定步长，不用反向 tick 实现 hit-stop。工作台暂停时不推进比赛时钟。
 
 - log::setConsole(bool) 为批量模拟关闭控制台输出，仍保留最近日志缓冲。
+
+- EntitySpawned / EntityRemoved：a 为实体 ID，b 为 owner；移除事件 tag 说明原因。Death 仍仅代表 HP 死亡。
