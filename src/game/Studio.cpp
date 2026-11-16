@@ -1382,7 +1382,9 @@ class Studio {
                 ImGui_ImplSDL2_ProcessEvent(&e);
                 if (e.type == SDL_QUIT)
                     quitConfirm = true;
-                if (e.type == SDL_KEYDOWN && !io.WantTextInput && !ImGui::IsPopupOpen("退出游戏")) {
+                // 帧外不能用字符串版 IsPopupOpen（它读 g.CurrentWindow，帧外为 null 会崩）。
+                if (e.type == SDL_KEYDOWN && !io.WantTextInput &&
+                    !ImGui::IsPopupOpen(0, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel)) {
                     bool ctrl = (e.key.keysym.mod & KMOD_CTRL) != 0;
                     if (ctrl && e.key.keysym.sym == SDLK_s)
                         save();
