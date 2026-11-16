@@ -132,7 +132,7 @@ class Studio {
     std::vector<std::string> disabled;
     int page = 0, kind = -1, selected = -1, pairs = 3, groups = 3, returnPage = 0;
     bool dragRecorded = false, modified = false, dirty = true, dragging = false, transaction = false,
-         paused = false, grid = true;
+         paused = false, grid = true, fullscreen = false;
     Vec2 offset{};
     float elapsed = 0, speed = 1;
     char file[1024]{};
@@ -259,10 +259,17 @@ class Studio {
         page = 3;
         message.clear();
     }
+    // 工作台只有一个 SDL 窗口；ImGui 初始化也用同一个窗口 ID。
+    void setFullscreen(bool on) {
+        fullscreen = on;
+        SDL_SetWindowFullscreen(SDL_GetWindowFromID(1), on ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+    }
     void stop() {
         game.reset();
         page = returnPage;
         dirty = true;
+        if (fullscreen)
+            setFullscreen(false);
     }
     void save() {
         std::string e;
@@ -417,18 +424,20 @@ class Studio {
             game.reset();
             page = 2;
         }
-        section("场景风格");
-        for (int i = 0; i < 5; ++i) {
-            auto p = themePalette(themes[i]);
-            ImGui::PushID(i);
-            ImGui::ColorButton("##color", {p.accent.r / 255.f, p.accent.g / 255.f, p.accent.b / 255.f, 1},
-                               ImGuiColorEditFlags_NoTooltip, {12, 12});
-            ImGui::SameLine();
-            if (ImGui::Selectable(labels[i], doc.theme == themes[i])) {
-                doc.theme = themes[i];
-                change();
+        if (page != 2) {
+            section("场景风格");
+            for (int i = 0; i < 5; ++i) {
+                auto p = themePalette(themes[i]);
+                ImGui::PushID(i);
+                ImGui::ColorButton("##color", {p.accent.r / 255.f, p.accent.g / 255.f, p.accent.b / 255.f, 1},
+                                   ImGuiColorEditFlags_NoTooltip, {12, 12});
+                ImGui::SameLine();
+                if (ImGui::Selectable(labels[i], doc.theme == themes[i])) {
+                    doc.theme = themes[i];
+                    change();
+                }
+                ImGui::PopID();
             }
-            ImGui::PopID();
         }
         if (page == 1) {
             section("放置对象");
@@ -1164,6 +1173,9 @@ class Studio {
         ImGui::SameLine();
         ImGui::SetNextItemWidth(100);
         ImGui::SliderFloat("速度", &speed, .25f, 4, "%.2fx");
+        ImGui::SameLine();
+        if (ImGui::Button(fullscreen ? "退出全屏" : "全屏"))
+            setFullscreen(!fullscreen);
         for (int i = 0; i < 2; ++i) {
             auto &f = game->match.fighter(i);
             ImGui::PushID(i);
@@ -1379,7 +1391,9 @@ class Studio {
                     if (ctrl && e.key.keysym.sym == SDLK_y)
                         restore(true);
                     if (e.key.keysym.sym == SDLK_ESCAPE) {
-                        if (game)
+                        if (fullscreen)
+                            setFullscreen(false);
+                        else if (game)
                             stop();
                         else if (page == 1) {
                             tool = "select";
@@ -1425,8 +1439,10 @@ class Studio {
             ImGui::TextDisabled("%zu 个能力已加载 · 离线就绪", plugins.types.size());
             ImGui::Separator();
             ImGui::BeginChild("workspace", {0, message.empty() ? -12.f : -40.f}, false);
-            nav();
-            ImGui::SameLine();
+            if (page != 3) {
+                nav();
+                ImGui::SameLine();
+            }
             float right = page == 1 ? 300.f : 0;
             ImGui::BeginChild("main-content", {-right, 0}, false);
             if (page == 0)
