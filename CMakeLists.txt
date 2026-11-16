@@ -21,7 +21,7 @@ add_library(imgui STATIC third_party/imgui/imgui.cpp third_party/imgui/imgui_dra
   third_party/imgui/backends/imgui_impl_sdl2.cpp third_party/imgui/backends/imgui_impl_sdlrenderer2.cpp)
 target_include_directories(imgui PUBLIC third_party/imgui PRIVATE "${SDL2_INCLUDE_DIR}")
 add_library(orbduel_engine STATIC src/compile_check.cpp src/render/AssetCache.cpp
-  src/render/Renderer.cpp src/render/Themes.cpp src/game/Studio.cpp)
+  src/render/Renderer.cpp src/render/Themes.cpp src/game/Audio.cpp src/game/Studio.cpp)
 target_include_directories(orbduel_engine PUBLIC include PRIVATE "${SDL2_INCLUDE_DIR}")
 target_link_libraries(orbduel_engine PUBLIC orbduel_logic PRIVATE imgui ${SDL2_LINK_LIBS})
 target_compile_options(orbduel_engine PRIVATE /W3 /utf-8)

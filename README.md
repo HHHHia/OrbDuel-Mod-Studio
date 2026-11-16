@@ -83,9 +83,10 @@ cmake --build build-template --config Release
 .\build\bin\orbduel.exe --autotest 600
 .\build\bin\orbduel.exe --scene user/arena.json --play
 .\build\bin\orbduel.exe --mods path/to/mods
+.\build\bin\orbduel.exe --sfx-test
 ```
 
-`--headless` 真正跳过 SDL 初始化并快速推进逻辑。`--autotest` 连续运行多局，输出碰撞、机关触发和最长静默时间。截图可使用 `--hidden --view editor --theme cosmos --screenshot out.png`。
+`--headless` 真正跳过 SDL 初始化并快速推进逻辑。`--autotest` 连续运行多局，输出碰撞、机关触发和最长静默时间。截图可使用 `--hidden --view editor --theme cosmos --screenshot out.png`。`--sfx-test` 不开窗口，按文件名顺序把 `content/audio/orbduel` 的 WAV 各放一遍，用来确认声卡和素材。
 
 发布包使用 `tools/package.ps1`，包含游戏、模组、资源、SDK 和教程；双击其中的游戏即可运行。
 

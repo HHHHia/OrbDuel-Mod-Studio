@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "Audio.hpp"
 #include "orbduel/game/Options.hpp"
 #include "orbduel/game/Studio.hpp"
 #include "orbduel/version.hpp"
@@ -122,11 +123,14 @@ int main(int argc, char **argv) {
     bool selftest = false;
     bool wantWindow = false;
     bool listOnly = false;
+    bool sfxTest = false;
 
     for (int i = 1; i < argc; ++i) {
         const std::string arg = argv[i];
         if (arg == "--selftest") {
             selftest = true;
+        } else if (arg == "--sfx-test") {
+            sfxTest = true;
         } else if (arg == "--window") {
             wantWindow = true;
         } else if (arg == "--list") {
@@ -176,6 +180,7 @@ int main(int argc, char **argv) {
             std::printf("  orbduel --char blaze --enemy bulwark --map duel-basic\n");
             std::printf("  orbduel --seed 1234             固定随机种子（可复现）\n");
             std::printf("  orbduel --selftest [--window]   环境自检\n");
+            std::printf("  orbduel --sfx-test              依次播放全部音效（试听用）\n");
             std::printf("  orbduel --list                  只列内容包\n");
             std::printf("  orbduel --headless              不开窗口（只做逻辑）\n");
             std::printf("  orbduel --seconds 5             跑 5 秒后自动退出\n");
@@ -191,6 +196,30 @@ int main(int argc, char **argv) {
 
     const fs::path root = resolveContentRoot(options.contentRoot, argc > 0 ? argv[0] : nullptr);
     options.contentRoot = root.string();
+
+    if (sfxTest) {
+        // 试听：把音效目录里的 WAV 按文件名各放一遍，用来确认设备和素材都正常。
+        std::vector<std::string> names;
+        std::error_code ec;
+        for (const auto &entry : fs::directory_iterator(root / "audio" / "orbduel", ec))
+            if (entry.is_regular_file(ec) && entry.path().extension() == ".wav")
+                names.push_back(entry.path().stem().u8string());
+        std::sort(names.begin(), names.end());
+        orbduel::Audio audio;
+        if (!audio.init((root / "audio" / "orbduel").u8string())) {
+            std::printf("audio       FAILED\n");
+            return 4;
+        }
+        std::printf("audio       OK (%zu 个音效)\n", names.size());
+        for (const auto &name : names) {
+            std::printf("  %s\n", name.c_str());
+            audio.play(name.c_str(), .8f);
+            SDL_Delay(450);
+        }
+        SDL_Delay(600);
+        audio.shutdown();
+        return 0;
+    }
 
     if (listOnly || selftest) {
         std::printf("OrbDuel %s\n", orbduel::versionString());

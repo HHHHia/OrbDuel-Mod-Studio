@@ -1,3 +1,4 @@
+#include "Audio.hpp"
 #include "BodyShape.hpp"
 #include "orbduel/content/ContentLoader.hpp"
 #include "orbduel/content/Scene.hpp"
@@ -126,6 +127,7 @@ class Studio {
     SceneDocument doc, before;
     std::unique_ptr<Simulation> preview, game;
     Renderer renderer;
+    Audio audio;
     std::unique_ptr<AssetCache> assets;
     std::string root, modRoot, userRoot, message, tool = "select";
     std::vector<SceneDocument> undoStack, redoStack;
@@ -253,6 +255,7 @@ class Studio {
             return;
         }
         game = std::make_unique<Simulation>(doc, loader.pack(), plugins);
+        hookSounds();
         paused = false;
         if (page != 3)
             returnPage = page;
@@ -271,6 +274,27 @@ class Studio {
         if (fullscreen)
             setFullscreen(false);
     }
+    // 音效只挂最小一组：撞击、撞墙、阵亡、回合结束。音频不可用时这些调用都是空操作。
+    void hookSounds() {
+        if (!game)
+            return;
+        audio.play("round_start", .75f);
+        game->events.subscribe(EventType::Hit, [this](const Event &e) {
+            const bool heavy = e.value >= 420.f;
+            audio.play(heavy ? "hit_heavy" : "hit_light", heavy ? .8f : .5f, 40);
+        });
+        game->events.subscribe(EventType::WallBounce, [this](const Event &e) {
+            if (e.value >= 120.f)
+                audio.play("wall_bounce", .35f, 70);
+        });
+        game->events.subscribe(EventType::Death, [this](const Event &) { audio.play("ko", .8f); });
+        // 观战视角：1 号球（左侧）赢放胜利音，其余（对方赢或平局）放失败音，听声就知道谁赢。
+        game->events.subscribe(EventType::RoundEnd, [this](const Event &e) {
+            const bool leftWon = e.a >= 0 && game->match.fighter(0).bodyId == e.a;
+            audio.play(leftWon ? "round_win" : "round_lose", .8f);
+        });
+    }
+    void click() { audio.play("ui_click", .45f, 30); }
     void save() {
         std::string e;
         if (saveScene(file, doc, e)) {
@@ -367,6 +391,8 @@ class Studio {
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color(.47f, .54f, .86f));
         bool b = ImGui::Button(t, size);
         ImGui::PopStyleColor(2);
+        if (b)
+            click();
         return b;
     }
     bool danger(const char *t, ImVec2 size = {0, 0}) {
@@ -375,6 +401,8 @@ class Studio {
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, color(.52f, .13f, .13f));
         bool b = ImGui::Button(t, size);
         ImGui::PopStyleColor(3);
+        if (b)
+            click();
         return b;
     }
     void style() {
@@ -413,14 +441,17 @@ class Studio {
         ImGui::TextDisabled("WORKSPACE");
         ImGui::Spacing();
         if (ImGui::Selectable("概览", page == 0, 0, {0, 38})) {
+            click();
             game.reset();
             page = 0;
         }
         if (ImGui::Selectable("地图编辑器", page == 1, 0, {0, 38})) {
+            click();
             game.reset();
             page = 1;
         }
         if (ImGui::Selectable("模组工坊", page == 2, 0, {0, 38})) {
+            click();
             game.reset();
             page = 2;
         }
@@ -458,8 +489,10 @@ class Studio {
         ImGui::PushStyleColor(ImGuiCol_HeaderHovered, color(.35f, .12f, .12f, .75f));
         ImGui::PushStyleColor(ImGuiCol_HeaderActive, color(.45f, .15f, .15f, .75f));
         ImGui::PushStyleColor(ImGuiCol_Text, color(.95f, .42f, .42f));
-        if (ImGui::Selectable("退出游戏", false, 0, {0, 32}))
+        if (ImGui::Selectable("退出游戏", false, 0, {0, 32})) {
+            click();
             quitConfirm = true;
+        }
         ImGui::PopStyleColor(3);
         ImGui::TextDisabled("ORBDUEL / STUDIO");
         ImGui::TextDisabled("C++17 / 离线创作");
@@ -1349,6 +1382,8 @@ class Studio {
             return headless();
         if (!renderer.init(1480, 900, "OrbDuel | Mod Studio", options.hidden))
             return 2;
+        // 音效目录跟着内容根走；设备打不开就静音，不挡住工作台。
+        audio.init((fs::u8path(options.contentRoot) / "audio" / "orbduel").u8string());
         assets = std::make_unique<AssetCache>(renderer.backend());
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -1489,6 +1524,7 @@ class Studio {
         }
         game.reset();
         preview.reset();
+        audio.shutdown();
         ImGui_ImplSDLRenderer2_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext();
