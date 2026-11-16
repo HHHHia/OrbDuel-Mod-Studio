@@ -843,6 +843,11 @@ class Studio {
                 d->AddRect(min, max, IM_COL32(pal.accent.r, pal.accent.g, pal.accent.b, 150), 4, 0, 1.4f);
             }
         }
+        for (const auto &f : scene.map.fields) {
+            auto center = view.at(f.pos);
+            d->AddCircleFilled(center, f.radius * scale, IM_COL32(f.color.r, f.color.g, f.color.b, 40), 48);
+            d->AddCircle(center, f.radius * scale, IM_COL32(f.color.r, f.color.g, f.color.b, 190), 64, 1.6f);
+        }
         auto api = view.api();
         sim->draw(api);
         if (editable)

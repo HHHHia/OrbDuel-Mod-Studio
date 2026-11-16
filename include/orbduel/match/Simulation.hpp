@@ -50,9 +50,12 @@ class Simulation {
     std::set<std::pair<int, int>> inside_;
     int nextId_ = 1;
     bool preview_;
+    float fieldClock_ = 0; // 累计到 0.25 秒才结算一次伤害/回血，避免每步刷事件
     void instantiate(const SceneObject &);
     void forward(const orbmod::Event &);
     void onEvent(const Event &);
+    // 地图自带的区域效果（scene.map.fields）：加速每步生效，伤害/回血每 0.25 秒结算一次。
+    void applyFields(float dt);
     SceneObject *object(int);
 };
 } // namespace orbduel

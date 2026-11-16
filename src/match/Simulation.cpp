@@ -221,6 +221,7 @@ void Simulation::step(float dt) {
         events.dispatch();
         return;
     }
+    applyFields(dt);
     world.step(dt);
     for (auto &b : world.bodies())
         if (b.active && arena.resolveOverlaps(b, scene.map.physics.wallRestitution) && scene.shrink)
@@ -272,6 +273,34 @@ void Simulation::step(float dt) {
         f.second -= dt;
     flashes.erase(std::remove_if(flashes.begin(), flashes.end(), [](const auto &f) { return f.second <= 0; }),
                   flashes.end());
+}
+void Simulation::applyFields(float dt) {
+    if (scene.map.fields.empty())
+        return;
+    fieldClock_ += dt;
+    const bool settle = fieldClock_ >= .25f;
+    const float seconds = fieldClock_;
+    for (const FieldDef &field : scene.map.fields) {
+        for (int i = 0; i < 2; ++i) {
+            if (field.affect != 0 && field.affect != i + 1)
+                continue;
+            Body *b = world.body(match.fighter(i).bodyId);
+            if (b == nullptr || !b->active)
+                continue;
+            if (lengthOf(b->pos - field.pos) > field.radius)
+                continue;
+            if (field.accel.x != 0.0f || field.accel.y != 0.0f)
+                b->force += field.accel;
+            if (!settle)
+                continue;
+            if (field.dps > 0.0f)
+                match.damage(-1, b->id, field.dps * seconds, "environment");
+            if (field.heal > 0.0f)
+                match.heal(b->id, field.heal * seconds);
+        }
+    }
+    if (settle)
+        fieldClock_ = 0.0f;
 }
 void Simulation::draw(const orbmod::Draw &d) {
     for (auto &i : instances_)

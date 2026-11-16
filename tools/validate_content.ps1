@@ -357,6 +357,19 @@ if (Test-Path $MapDir) {
         $obstacles = ArrOf $d 'obstacles'
         if ($obstacles.Count -gt 12) { Fail $src "obstacles 最多 12 个" }
 
+        $fields = ArrOf $d 'fields'
+        if ($fields.Count -gt 24) { Fail $src "fields 最多 24 个" }
+        foreach ($f in $fields) {
+            if ($null -eq $f) { continue }
+            InRange $f 'radius' 10 2000 $src
+            InRange $f 'dps' 0 100 $src
+            InRange $f 'heal' 0 100 $src
+            InRange $f 'affect' 0 2 $src
+            $acc = ArrOf $f 'accel'
+            if ($acc.Count -ne 0 -and $acc.Count -ne 2) { Fail $src "fields[].accel 必须是 [x, y]" }
+            CheckColor $f 'color' $src
+        }
+
         $MapCount++
     }
 } else {
