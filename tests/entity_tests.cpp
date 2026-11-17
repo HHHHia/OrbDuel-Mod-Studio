@@ -414,6 +414,35 @@ int main(int argc, char **argv) {
             check(!s.world.body(id) && deaths[id] == 1 && s.match.phase() == MatchPhase::Fighting,
                   "teammate lava DLL kills summons through environment pipeline with ordinary contact off");
         }
+        {
+            auto a = scene;
+            SceneObject entrance;
+            entrance.id = 2;
+            entrance.type = "portal.portal";
+            entrance.pos = {550, 200};
+            entrance.radius = 40;
+            entrance.params = {{"target", 3}};
+            SceneObject exit = entrance;
+            exit.id = 3;
+            exit.pos = {850, 200};
+            exit.params = {{"target", 2}};
+            a.objects.push_back(entrance);
+            a.objects.push_back(exit);
+            Simulation s(a, pack, plugins);
+            auto spec = clone();
+            int previous = -1;
+            for (int i = 0; i < 100; ++i) {
+                int id = api->create(host->user, &spec);
+                s.step();
+                if (id <= previous || !s.world.body(id) || s.world.body(id)->pos.x < 850)
+                    throw std::runtime_error("portal lost dynamic entity across ID holes");
+                previous = id;
+                api->destroy(host->user, id);
+                s.step();
+            }
+            check(s.world.bodies().size() == 2 && s.modActivations >= 100,
+                  "native portals keep working across repeated summon removal and new stable IDs");
+        }
         if (argc > 3) {
             PluginManager legacy;
             legacy.setEntityApi(api);
