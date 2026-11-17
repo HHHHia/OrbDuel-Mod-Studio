@@ -1,0 +1,41 @@
+{
+  "name": { "en": "Midnight", "zh": "深夜" },
+  "font": { "size": 18, "overviewTitleScale": 1.8, "workshopTitleScale": 1.5 },
+  "layout": {
+    "windowPadding": [18, 16],
+    "framePadding": [10, 7],
+    "itemSpacing": [10, 9],
+    "scrollbarSize": 9,
+    "windowBorderSize": 0,
+    "childBorderSize": 1
+  },
+  "rounding": { "window": 12, "child": 12, "frame": 7, "grab": 5, "popup": 10 },
+  "colors": {
+    "windowBg": [0.045, 0.055, 0.085],
+    "childBg": [0.06, 0.075, 0.11],
+    "border": [0.16, 0.18, 0.25, 0.7],
+    "frameBg": [0.1, 0.12, 0.18],
+    "frameBgHovered": [0.16, 0.18, 0.27],
+    "frameBgActive": [0.2, 0.23, 0.34],
+    "button": [0.13, 0.15, 0.23],
+    "buttonHovered": [0.23, 0.27, 0.39],
+    "buttonActive": [0.28, 0.32, 0.47],
+    "header": [0.19, 0.23, 0.36],
+    "headerHovered": [0.24, 0.29, 0.43],
+    "checkMark": [0.65, 0.73, 1],
+    "sliderGrab": [0.56, 0.66, 0.94],
+    "text": [0.89, 0.91, 0.96],
+    "textDisabled": [0.47, 0.52, 0.63],
+    "primaryButton": [0.38, 0.44, 0.73],
+    "primaryHovered": [0.47, 0.54, 0.86],
+    "dangerButton": [0.62, 0.18, 0.18],
+    "dangerHovered": [0.78, 0.24, 0.24],
+    "dangerActive": [0.52, 0.13, 0.13],
+    "exitHovered": [0.35, 0.12, 0.12, 0.75],
+    "exitActive": [0.45, 0.15, 0.15, 0.75],
+    "exitText": [0.95, 0.42, 0.42],
+    "brandText": [0.76, 0.8, 1],
+    "messageText": [0.73, 0.79, 0.94],
+    "clearBg": [0.043, 0.055, 0.086]
+  }
+}

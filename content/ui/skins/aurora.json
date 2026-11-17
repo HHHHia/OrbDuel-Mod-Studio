@@ -1,0 +1,41 @@
+{
+  "name": { "en": "Aurora", "zh": "极光" },
+  "font": { "size": 19, "overviewTitleScale": 1.8, "workshopTitleScale": 1.5 },
+  "layout": {
+    "windowPadding": [20, 17],
+    "framePadding": [11, 8],
+    "itemSpacing": [11, 10],
+    "scrollbarSize": 10,
+    "windowBorderSize": 0,
+    "childBorderSize": 1
+  },
+  "rounding": { "window": 16, "child": 16, "frame": 10, "grab": 7, "popup": 13 },
+  "colors": {
+    "windowBg": [0.035, 0.055, 0.08],
+    "childBg": [0.045, 0.085, 0.105],
+    "border": [0.18, 0.37, 0.39, 0.8],
+    "frameBg": [0.075, 0.15, 0.18],
+    "frameBgHovered": [0.10, 0.23, 0.26],
+    "frameBgActive": [0.13, 0.30, 0.32],
+    "button": [0.08, 0.20, 0.23],
+    "buttonHovered": [0.11, 0.31, 0.34],
+    "buttonActive": [0.12, 0.38, 0.39],
+    "header": [0.08, 0.29, 0.31],
+    "headerHovered": [0.12, 0.40, 0.42],
+    "checkMark": [0.51, 0.91, 0.78],
+    "sliderGrab": [0.36, 0.79, 0.70],
+    "text": [0.91, 0.96, 0.94],
+    "textDisabled": [0.53, 0.68, 0.69],
+    "primaryButton": [0.07, 0.42, 0.43],
+    "primaryHovered": [0.10, 0.53, 0.53],
+    "dangerButton": [0.55, 0.20, 0.27],
+    "dangerHovered": [0.70, 0.26, 0.33],
+    "dangerActive": [0.47, 0.15, 0.22],
+    "exitHovered": [0.37, 0.15, 0.23, 0.8],
+    "exitActive": [0.47, 0.19, 0.27, 0.8],
+    "exitText": [0.99, 0.58, 0.61],
+    "brandText": [0.53, 0.95, 0.83],
+    "messageText": [0.66, 0.86, 0.81],
+    "clearBg": [0.027, 0.047, 0.07]
+  }
+}

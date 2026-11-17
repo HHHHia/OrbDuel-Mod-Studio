@@ -22,6 +22,7 @@ struct Options {
     bool debug = false;           // 打开调试层
     float autotestSeconds = 0.0f; // >0 时无窗口跑物理回归
     std::string sceneFile, modsRoot, theme, view;
+    std::string uiSkin;          // 空 = 用户上次选择，或默认 midnight
     bool play = false;
     bool hidden = false;
     float runSeconds = 0.0f;     // >0 时跑够这么多秒自动退出（自测用）

@@ -2,6 +2,7 @@
 #include "Audio.hpp"
 #include "BodyShape.hpp"
 #include "StudioI18n.hpp"
+#include "UiSkin.hpp"
 #include "orbduel/content/ContentLoader.hpp"
 #include "orbduel/content/Scene.hpp"
 #include "orbduel/core/Time.hpp"
@@ -23,6 +24,7 @@
 namespace orbduel {
 namespace fs = std::filesystem;
 namespace {
+constexpr float kUiFontAtlasSize = 18.f;
 const char *themes[] = {"cosmos", "dungeon", "neon", "lava", "ice"};
 const char *labels[] = {"星空", "地下城", "霓虹都市", "熔岩遗迹", "冰晶圣殿"};
 ImU32 ink(Rgba c) {
@@ -139,6 +141,10 @@ class Studio {
     std::string root, modRoot, userRoot, message, tool = "select";
     std::vector<SceneDocument> undoStack, redoStack;
     std::vector<std::string> disabled;
+    UiSkin uiSkin;
+    std::vector<std::string> skinIds;
+    std::string skinId = "midnight", pendingSkinId;
+    bool skinLoaded = false;
     int page = 0, kind = -1, selected = -1, pairs = 3, groups = 3, returnPage = 0;
     bool dragRecorded = false, modified = false, dirty = true, dragging = false, transaction = false,
          paused = false, grid = true, fullscreen = false;
@@ -183,7 +189,19 @@ class Studio {
                     for (const auto &id : j["disabledMods"])
                         if (id.is_string())
                             disabled.push_back(id.get<std::string>());
+                if (options.uiSkin.empty() && j.is_object() && j.contains("uiSkin") && j["uiSkin"].is_string())
+                    skinId = j["uiSkin"].get<std::string>();
             }
+        }
+        if (!options.uiSkin.empty())
+            skinId = options.uiSkin;
+        skinIds = listUiSkins(fs::u8path(options.contentRoot));
+        std::string skinError;
+        skinLoaded = loadUiSkin(fs::u8path(options.contentRoot), skinId, uiSkin, skinError);
+        if (!skinLoaded) {
+            message = skinError;
+            skinId = "midnight";
+            skinLoaded = loadUiSkin(fs::u8path(options.contentRoot), skinId, uiSkin, skinError);
         }
         plugins.setEntityApi(Simulation::entityApi());
         plugins.load(modRoot, disabled);
@@ -404,8 +422,8 @@ class Studio {
         ImGui::PopID();
     }
     bool primary(const char *t, ImVec2 size = {0, 0}) {
-        ImGui::PushStyleColor(ImGuiCol_Button, color(.38f, .44f, .73f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color(.47f, .54f, .86f));
+        ImGui::PushStyleColor(ImGuiCol_Button, skinColor("primaryButton", ImGuiCol_Button));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, skinColor("primaryHovered", ImGuiCol_ButtonHovered));
         bool b = ImGui::Button(t, size);
         ImGui::PopStyleColor(2);
         if (b)
@@ -413,45 +431,68 @@ class Studio {
         return b;
     }
     bool danger(const char *t, ImVec2 size = {0, 0}) {
-        ImGui::PushStyleColor(ImGuiCol_Button, color(.62f, .18f, .18f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color(.78f, .24f, .24f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, color(.52f, .13f, .13f));
+        ImGui::PushStyleColor(ImGuiCol_Button, skinColor("dangerButton", ImGuiCol_Button));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, skinColor("dangerHovered", ImGuiCol_ButtonHovered));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, skinColor("dangerActive", ImGuiCol_ButtonActive));
         bool b = ImGui::Button(t, size);
         ImGui::PopStyleColor(3);
         if (b)
             click();
         return b;
     }
+    ImVec4 skinColor(const char *key, ImGuiCol fallback) const {
+        if (!skinLoaded)
+            return ImGui::GetStyle().Colors[fallback];
+        const auto &c = uiSkin.color(key);
+        return {c[0], c[1], c[2], c[3]};
+    }
+    bool selectSkin(const std::string &id) {
+        UiSkin candidate;
+        std::string error;
+        if (!loadUiSkin(fs::u8path(options.contentRoot), id, candidate, error)) {
+            message = error;
+            return false;
+        }
+        uiSkin = std::move(candidate);
+        skinId = id;
+        skinLoaded = true;
+        style();
+        message = tr("皮肤已应用");
+        return true;
+    }
     void style() {
         ImGui::StyleColorsDark();
+        ImGui::GetIO().FontGlobalScale = skinLoaded ? uiSkin.fontSize / kUiFontAtlasSize : 1.f;
+        if (!skinLoaded)
+            return;
         auto &s = ImGui::GetStyle();
-        s.WindowPadding = {18, 16};
-        s.FramePadding = {10, 7};
-        s.ItemSpacing = {10, 9};
-        s.WindowRounding = 12;
-        s.ChildRounding = 12;
-        s.FrameRounding = 7;
-        s.GrabRounding = 5;
-        s.PopupRounding = 10;
-        s.ScrollbarSize = 9;
-        s.WindowBorderSize = 0;
-        s.ChildBorderSize = 1;
+        s.WindowPadding = {uiSkin.windowPadding[0], uiSkin.windowPadding[1]};
+        s.FramePadding = {uiSkin.framePadding[0], uiSkin.framePadding[1]};
+        s.ItemSpacing = {uiSkin.itemSpacing[0], uiSkin.itemSpacing[1]};
+        s.WindowRounding = uiSkin.windowRounding;
+        s.ChildRounding = uiSkin.childRounding;
+        s.FrameRounding = uiSkin.frameRounding;
+        s.GrabRounding = uiSkin.grabRounding;
+        s.PopupRounding = uiSkin.popupRounding;
+        s.ScrollbarSize = uiSkin.scrollbarSize;
+        s.WindowBorderSize = uiSkin.windowBorderSize;
+        s.ChildBorderSize = uiSkin.childBorderSize;
         auto *c = s.Colors;
-        c[ImGuiCol_WindowBg] = color(.045f, .055f, .085f);
-        c[ImGuiCol_ChildBg] = color(.06f, .075f, .11f);
-        c[ImGuiCol_Border] = color(.16f, .18f, .25f, .7f);
-        c[ImGuiCol_FrameBg] = color(.1f, .12f, .18f);
-        c[ImGuiCol_FrameBgHovered] = color(.16f, .18f, .27f);
-        c[ImGuiCol_FrameBgActive] = color(.2f, .23f, .34f);
-        c[ImGuiCol_Button] = color(.13f, .15f, .23f);
-        c[ImGuiCol_ButtonHovered] = color(.23f, .27f, .39f);
-        c[ImGuiCol_ButtonActive] = color(.28f, .32f, .47f);
-        c[ImGuiCol_Header] = color(.19f, .23f, .36f);
-        c[ImGuiCol_HeaderHovered] = color(.24f, .29f, .43f);
-        c[ImGuiCol_CheckMark] = color(.65f, .73f, 1);
-        c[ImGuiCol_SliderGrab] = color(.56f, .66f, .94f);
-        c[ImGuiCol_Text] = color(.89f, .91f, .96f);
-        c[ImGuiCol_TextDisabled] = color(.47f, .52f, .63f);
+        c[ImGuiCol_WindowBg] = skinColor("windowBg", ImGuiCol_WindowBg);
+        c[ImGuiCol_ChildBg] = skinColor("childBg", ImGuiCol_ChildBg);
+        c[ImGuiCol_Border] = skinColor("border", ImGuiCol_Border);
+        c[ImGuiCol_FrameBg] = skinColor("frameBg", ImGuiCol_FrameBg);
+        c[ImGuiCol_FrameBgHovered] = skinColor("frameBgHovered", ImGuiCol_FrameBgHovered);
+        c[ImGuiCol_FrameBgActive] = skinColor("frameBgActive", ImGuiCol_FrameBgActive);
+        c[ImGuiCol_Button] = skinColor("button", ImGuiCol_Button);
+        c[ImGuiCol_ButtonHovered] = skinColor("buttonHovered", ImGuiCol_ButtonHovered);
+        c[ImGuiCol_ButtonActive] = skinColor("buttonActive", ImGuiCol_ButtonActive);
+        c[ImGuiCol_Header] = skinColor("header", ImGuiCol_Header);
+        c[ImGuiCol_HeaderHovered] = skinColor("headerHovered", ImGuiCol_HeaderHovered);
+        c[ImGuiCol_CheckMark] = skinColor("checkMark", ImGuiCol_CheckMark);
+        c[ImGuiCol_SliderGrab] = skinColor("sliderGrab", ImGuiCol_SliderGrab);
+        c[ImGuiCol_Text] = skinColor("text", ImGuiCol_Text);
+        c[ImGuiCol_TextDisabled] = skinColor("textDisabled", ImGuiCol_TextDisabled);
     }
     void nav() {
         ImGui::BeginChild("navigation", {184, 0}, true);
@@ -487,6 +528,27 @@ class Studio {
                 ImGui::PopID();
             }
         }
+        section(tr("界面皮肤"));
+        ImGui::SetNextItemWidth(-1);
+        const std::string currentSkinName = skinLoaded ? (chineseNames ? uiSkin.nameZh : uiSkin.nameEn) : skinId;
+        if (ImGui::BeginCombo("##ui-skin", currentSkinName.c_str())) {
+            for (const auto &id : skinIds) {
+                UiSkin candidate;
+                std::string error;
+                const std::string label = loadUiSkin(fs::u8path(options.contentRoot), id, candidate, error)
+                                              ? (chineseNames ? candidate.nameZh : candidate.nameEn)
+                                              : id;
+                ImGui::PushID(id.c_str());
+                if (ImGui::Selectable(label.c_str(), skinId == id))
+                    pendingSkinId = id;
+                ImGui::PopID();
+            }
+            ImGui::EndCombo();
+        }
+        if (ImGui::SmallButton(tr("重新加载皮肤"))) {
+            skinIds = listUiSkins(fs::u8path(options.contentRoot));
+            pendingSkinId = skinId;
+        }
         if (page == 1) {
             section(tr("放置对象"));
             if (ImGui::Selectable(tr("选择 / 拖动"), tool == "select"))
@@ -503,9 +565,9 @@ class Studio {
         }
         ImGui::SetCursorPosY(std::max(ImGui::GetCursorPosY() + 20, ImGui::GetWindowHeight() - 125));
         ImGui::Separator();
-        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, color(.35f, .12f, .12f, .75f));
-        ImGui::PushStyleColor(ImGuiCol_HeaderActive, color(.45f, .15f, .15f, .75f));
-        ImGui::PushStyleColor(ImGuiCol_Text, color(.95f, .42f, .42f));
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, skinColor("exitHovered", ImGuiCol_HeaderHovered));
+        ImGui::PushStyleColor(ImGuiCol_HeaderActive, skinColor("exitActive", ImGuiCol_HeaderActive));
+        ImGui::PushStyleColor(ImGuiCol_Text, skinColor("exitText", ImGuiCol_Text));
         if (ImGui::Selectable(tr("退出游戏"), false, 0, {0, 32})) {
             click();
             quitConfirm = true;
@@ -1088,7 +1150,7 @@ class Studio {
     }
     void overview() {
         ImGui::TextDisabled("CREATE / SIMULATE / SHARE");
-        ImGui::SetWindowFontScale(1.8f);
+        ImGui::SetWindowFontScale(skinLoaded ? uiSkin.overviewTitleScale : 1.8f);
         ImGui::TextUnformatted(tr("让规则，成为你的作品。"));
         ImGui::SetWindowFontScale(1);
         ImGui::TextDisabled("%s", tr("用 C++ 模组创造新能力，在地图里组合它们，再离线分享你的竞技场。"));
@@ -1175,7 +1237,7 @@ class Studio {
                             int(doc.map.size.x), int(doc.map.size.y));
     }
     void modPage() {
-        ImGui::SetWindowFontScale(1.5f);
+        ImGui::SetWindowFontScale(skinLoaded ? uiSkin.workshopTitleScale : 1.5f);
         ImGui::TextUnformatted(tr("模组工坊"));
         ImGui::SetWindowFontScale(1);
         ImGui::TextWrapped("%s", tr("模组可独立增加新能力。导入文件夹后重新加载，参数会自动出现在编辑器中。"));
@@ -1421,10 +1483,13 @@ class Studio {
         if (fs::exists("C:/Windows/Fonts/msyh.ttc")) {
             ImFontConfig cfg;
             cfg.FontNo = 0;
-            io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/msyh.ttc", 18, &cfg,
+            io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/msyh.ttc", kUiFontAtlasSize, &cfg,
                                          io.Fonts->GetGlyphRangesChineseFull());
-        } else
-            io.Fonts->AddFontDefault();
+        } else {
+            ImFontConfig cfg;
+            cfg.SizePixels = kUiFontAtlasSize;
+            io.Fonts->AddFontDefault(&cfg);
+        }
         style();
         ImGui_ImplSDL2_InitForSDLRenderer(SDL_GetWindowFromID(1), renderer.backend());
         ImGui_ImplSDLRenderer2_Init(renderer.backend());
@@ -1486,6 +1551,10 @@ class Studio {
                     game->step();
             } else
                 clock.reset();
+            if (!pendingSkinId.empty()) {
+                selectSkin(pendingSkinId);
+                pendingSkinId.clear();
+            }
             ImGui_ImplSDLRenderer2_NewFrame();
             ImGui_ImplSDL2_NewFrame();
             ImGui::NewFrame();
@@ -1495,7 +1564,7 @@ class Studio {
             ImGui::Begin("OrbDuel", nullptr,
                          ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
                              ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus);
-            ImGui::PushStyleColor(ImGuiCol_Text, color(.76f, .8f, 1));
+            ImGui::PushStyleColor(ImGuiCol_Text, skinColor("brandText", ImGuiCol_Text));
             ImGui::Text("O R B D U E L");
             ImGui::PopStyleColor();
             ImGui::SameLine();
@@ -1525,13 +1594,20 @@ class Studio {
             }
             ImGui::EndChild();
             if (!message.empty())
-                ImGui::TextColored({.73f, .79f, .94f, 1}, "%s", message.c_str());
+                ImGui::TextColored(skinColor("messageText", ImGuiCol_Text), "%s", message.c_str());
             dialogs();
             ImGui::End();
             if (!ImGui::IsAnyItemActive())
                 transaction = false;
             ImGui::Render();
-            renderer.beginFrame({11, 14, 22, 255});
+            if (skinLoaded) {
+                const auto &c = uiSkin.color("clearBg");
+                renderer.beginFrame({static_cast<unsigned char>(std::lround(c[0] * 255)),
+                                     static_cast<unsigned char>(std::lround(c[1] * 255)),
+                                     static_cast<unsigned char>(std::lround(c[2] * 255)),
+                                     static_cast<unsigned char>(std::lround(c[3] * 255))});
+            } else
+                renderer.beginFrame({11, 14, 22, 255});
             ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), renderer.backend());
             bool shot = !options.screenshotPath.empty() && wall >= options.shotAtSeconds;
             if (shot)
@@ -1548,7 +1624,7 @@ class Studio {
             std::string e;
             saveScene(userRoot + "/last-scene.json", doc, e);
             std::ofstream settings(fs::u8path(userRoot + "/settings.json"));
-            settings << nlohmann::json{{"disabledMods", disabled}}.dump(2);
+            settings << nlohmann::json{{"disabledMods", disabled}, {"uiSkin", skinId}}.dump(2);
         }
         game.reset();
         preview.reset();
