@@ -1,10 +1,42 @@
 {
   "format": 1,
   "id": "lancer",
-  "name": { "en": "Lancer", "zh": "疾锋" },
-  "skin": { "texture": "skin.png", "shape": "triangle", "scale": 1.0, "tint": [255, 170, 80, 255] },
-  "hitbox": { "shape": "circle", "radius": 24.0, "offset": [0, 0] },
-  "stats": { "mass": 1.0, "restitution": 0.95, "maxHp": 150.0, "startSpeed": 420.0 },
-  "skills": ["dash", "pierce"]
+  "name": {
+    "en": "Lancer",
+    "zh": "疾锋"
+  },
+  "skin": {
+    "texture": "skin.png",
+    "shape": "triangle",
+    "scale": 1,
+    "tint": [
+      255,
+      170,
+      80,
+      255
+    ]
+  },
+  "hitbox": {
+    "shape": "circle",
+    "radius": 24,
+    "offset": [
+      0,
+      0
+    ]
+  },
+  "stats": {
+    "mass": 1,
+    "restitution": 0.95,
+    "maxHp": 103,
+    "startSpeed": 420,
+    "attack": 10
+  },
+  "skills": [
+    "dash",
+    "pierce"
+  ],
+  "description": {
+    "zh": "蓄力突进：释放次数提升瞄准与抗打断，高速时贯穿对手。",
+    "en": "Charged rams learn to aim faster and resist interruption; pierce while moving quickly."
+  }
 }
-

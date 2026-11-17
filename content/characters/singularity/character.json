@@ -1,16 +1,45 @@
 {
   "format": 1,
   "id": "singularity",
-  "name": { "en": "Singularity", "zh": "黑洞" },
-  "skin": { "texture": "skin.png", "scale": 1.0, "tint": [255, 255, 255, 255] },
-  "hitbox": { "shape": "circle", "radius": 30.0, "offset": [0, 0], "ghost": true, "contact": 0.6 },
+  "name": {
+    "en": "Singularity",
+    "zh": "黑洞"
+  },
+  "skin": {
+    "texture": "skin.png",
+    "scale": 1,
+    "tint": [
+      255,
+      255,
+      255,
+      255
+    ]
+  },
+  "hitbox": {
+    "shape": "circle",
+    "radius": 30,
+    "offset": [
+      0,
+      0
+    ],
+    "ghost": true,
+    "contact": 0.6
+  },
   "stats": {
     "mass": 2.6,
-    "massMax": 5.0,
-    "massRamp": 90.0,
+    "massMax": 5,
+    "massRamp": 90,
     "restitution": 0.9,
-    "maxHp": 250.0,
-    "startSpeed": 300.0
+    "maxHp": 155,
+    "startSpeed": 300,
+    "attack": 7
   },
-  "skills": ["gravity-well", "omnipull"]
+  "skills": [
+    "gravity-well",
+    "omnipull"
+  ],
+  "description": {
+    "zh": "成长控场：质量与引力随时间增强，核心传送对手；大招期间无敌并压制被动。",
+    "en": "A growing gravity controller: teleport foes from the core and become invulnerable during Omnipull."
+  }
 }

@@ -1,9 +1,9 @@
+#include "orbduel/game/Studio.hpp"
 #include "Audio.hpp"
 #include "BodyShape.hpp"
 #include "orbduel/content/ContentLoader.hpp"
 #include "orbduel/content/Scene.hpp"
 #include "orbduel/core/Time.hpp"
-#include "orbduel/game/Studio.hpp"
 #include "orbduel/match/Simulation.hpp"
 #include "orbduel/render/AssetCache.hpp"
 #include "orbduel/render/Renderer.hpp"
@@ -376,11 +376,16 @@ class Studio {
         if (!f.description.zh.empty())
             ImGui::TextWrapped("%s", f.description.zh.c_str());
         ImGui::TextDisabled("生命 %.0f  攻击 %.1f  护甲 %.1f", f.stats.maxHp, f.stats.attack, f.stats.armor);
+        if (!f.competitive)
+            ImGui::TextDisabled("训练角色：不参与竞技平衡统计");
         for (const auto &id : f.skills)
             if (auto *s = loader.pack().findSkill(id)) {
                 ImGui::Text("%s", displayName(s->name));
                 ImGui::SameLine();
-                ImGui::TextDisabled("%.1f 秒冷却", s->trigger.cooldown);
+                if (s->trigger.kind == TriggerKind::Passive)
+                    ImGui::TextDisabled("被动");
+                else
+                    ImGui::TextDisabled("%.1f 秒冷却", s->trigger.cooldown);
                 if (ImGui::IsItemHovered() && !s->description.zh.empty())
                     ImGui::SetTooltip("%s", s->description.zh.c_str());
             }
@@ -706,8 +711,10 @@ class Studio {
         section("对战规则");
         if (ImGui::DragFloat("时间上限", &doc.timeLimit, 1, 1, 600, "%.0f 秒"))
             change();
-        if (ImGui::SliderFloat("伤害倍率", &doc.map.physics.damageScale, 0, 5))
+        if (ImGui::SliderFloat("普通碰撞倍率", &doc.map.physics.damageScale, 0, 5))
             change();
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("只影响普通碰撞；技能和模组主动伤害另行结算。");
         if (ImGui::Checkbox("缩圈", &doc.shrink))
             change();
         if (doc.shrink) {
@@ -755,7 +762,7 @@ class Studio {
                     if (ImGui::DragFloat("挨撞系数", &f.hitbox.contact, .02f, 0, 10))
                         change();
                     if (ImGui::IsItemHovered())
-                        ImGui::SetTooltip("与地图碰撞倍率取较大值；由挨撞角色决定。");
+                        ImGui::SetTooltip("与地图伤害倍率相乘；1 为正常受伤，0 为显式免疫普通碰撞。");
                     if (ImGui::DragFloat("质量上限", &f.stats.massMax, .05f, 0, 20))
                         change();
                     if (ImGui::DragFloat("成长秒数", &f.stats.massRamp, 1, .1f, 600))
