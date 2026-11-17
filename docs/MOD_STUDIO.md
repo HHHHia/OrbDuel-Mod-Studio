@@ -62,6 +62,8 @@ DLL 使用简单结构与函数表，创建者销毁自己的实例；不跨 DLL
 - `examples/gravity.cpp`：持续力场、吸引/排斥、作用对象和范围。
 - `examples/launch.cpp`：区域进入后弹射，并可附带护盾。
 - `template/my_mod.cpp`：旋风模板；`examples/summon.cpp`：创建战斗实体并绑定追踪能力，可用 `-Kind summon` 复制。
+- `examples/lava.cpp`：范围环境伤害，每 0.25 秒结算；示例地图 content/studio/lava-pool.json。
+
 
 技能式能力可把对象附着在角色上，再根据事件与自己的冷却逻辑施放。需要引擎尚未开放的物理量或绘制能力时，扩展 SDK；不要求所有可能机制都塞进预设效果枚举。
 

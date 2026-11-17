@@ -323,6 +323,97 @@ int main(int argc, char **argv) {
             }
             check(true, "seed reproduces summon movement, damage and death");
         }
+        {
+            auto a = scene;
+            a.map.physics.damageScale = .5f;
+            a.map.physics.refSpeed = 400;
+            for (auto &f : a.fighters) {
+                f.stats.maxHp = 100;
+                f.stats.attack = 12;
+                f.stats.armor = 0;
+            }
+            Simulation s(a, pack, plugins);
+            auto spec = clone();
+            spec.hpScale = 1;
+            int cancelled = api->create(host->user, &spec);
+            api->destroy(host->user, cancelled);
+            int left = api->create(host->user, &spec);
+            spec.owner = 1;
+            spec.pos = {750, 200};
+            int right = api->create(host->user, &spec);
+            s.step();
+            Event hit;
+            hit.type = EventType::Hit;
+            hit.a = left;
+            hit.b = right;
+            hit.attackSpeedA = 800;
+            hit.attackSpeedB = 0;
+            hit.value = 800;
+            s.match.onEvent(hit);
+            check(std::abs(s.match.fighterById(left)->hp - 97) < .001f &&
+                      std::abs(s.match.fighterById(right)->hp - 85) < .001f && s.match.fighter(0).hp == 100 &&
+                      s.match.fighter(1).hp == 100,
+                  "summon contact preserves bounded per-attacker balance formula across ID holes");
+            s.scene.map.physics.damageScale = 0;
+            s.match.onEvent(hit);
+            check(s.match.fighterById(left)->hp == 97 && s.match.fighterById(right)->hp == 85,
+                  "zero map scale disables summon ordinary contact");
+            host->damage(host->user, left, right, 7, "mod-test");
+            check(s.match.fighterById(right)->hp == 78,
+                  "zero contact scale keeps explicit summon ability damage usable");
+        }
+        {
+            auto a = scene;
+            a.map.physics.damageScale = 0;
+            FieldDef field;
+            field.pos = {640, 360};
+            field.radius = 2000;
+            field.affect = 1;
+            field.dps = 12;
+            field.accel = {80, 0};
+            a.map.fields = {field};
+            Simulation s(a, pack, plugins);
+            auto spec = clone();
+            int ally = api->create(host->user, &spec);
+            spec.owner = 1;
+            spec.pos = {750, 200};
+            int enemy = api->create(host->user, &spec);
+            s.step();
+            float hp = s.match.fighterById(ally)->hp, enemyHp = s.match.fighterById(enemy)->hp;
+            for (int i = 0; i < 35; ++i)
+                s.step();
+            check(s.match.fighterById(ally)->hp < hp && s.match.fighterById(enemy)->hp == enemyHp &&
+                      s.world.body(ally)->vel.x > 10 && s.world.body(enemy)->vel.x == 0,
+                  "map fields damage and accelerate selected team including summons");
+            float injured = s.match.fighterById(ally)->hp;
+            s.scene.map.fields[0].dps = 0;
+            s.scene.map.fields[0].heal = 6;
+            for (int i = 0; i < 35; ++i)
+                s.step();
+            check(s.match.fighterById(ally)->hp > injured && s.match.fighterById(enemy)->hp == enemyHp,
+                  "map field healing preserves summon ownership filter");
+        }
+        {
+            resetTrace();
+            auto a = scene;
+            a.map.physics.damageScale = 0;
+            SceneObject lava;
+            lava.id = 2;
+            lava.type = "lava.pool";
+            lava.pos = {550, 200};
+            lava.radius = 70;
+            lava.params = {{"dps", 60}};
+            a.objects.push_back(lava);
+            Simulation s(a, pack, plugins);
+            auto spec = clone();
+            spec.hpScale = .01f;
+            int id = api->create(host->user, &spec);
+            s.step();
+            for (int i = 0; i < 40; ++i)
+                s.step();
+            check(!s.world.body(id) && deaths[id] == 1 && s.match.phase() == MatchPhase::Fighting,
+                  "teammate lava DLL kills summons through environment pipeline with ordinary contact off");
+        }
         if (argc > 3) {
             PluginManager legacy;
             legacy.setEntityApi(api);

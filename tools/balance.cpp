@@ -1,6 +1,7 @@
 #include "orbduel/content/ContentLoader.hpp"
 #include "orbduel/core/Log.hpp"
 #include "orbduel/match/Simulation.hpp"
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <filesystem>
@@ -25,6 +26,15 @@ int main(int argc, char **argv) {
         if (!loader.loadAll())
             return 2;
         auto pack = loader.pack();
+        json excluded = json::array();
+        for (const auto &c : pack.characters)
+            if (!c.competitive)
+                excluded.push_back(c.id);
+        pack.characters.erase(std::remove_if(pack.characters.begin(), pack.characters.end(),
+                                             [](const CharacterDef &c) { return !c.competitive; }),
+                              pack.characters.end());
+        if (pack.characters.size() < 2)
+            throw std::runtime_error("competitive balance needs at least two eligible characters");
         PluginManager plugins;
         plugins.setEntityApi(Simulation::entityApi());
         plugins.load(argv[2]);
@@ -127,12 +137,29 @@ int main(int argc, char **argv) {
                         {"avgDamage", s.games ? s.damage / s.games : 0},
                         {"avgAbsorbed", s.games ? s.absorbed / s.games : 0}};
         };
-        json result = {
-            {"seedsPerMap", seeds},       {"firstSeed", firstSeed},
-            {"swappedSides", true},       {"maps", maps},
-            {"games", totalGames},        {"leftSideScore", 100. * (leftWins + .5 * draws) / totalGames},
-            {"roster", roster},           {"characters", json::object()},
-            {"matchups", json::object()}, {"byMap", json::object()}};
+        json result = {{"seedsPerMap", seeds},
+                       {"firstSeed", firstSeed},
+                       {"swappedSides", true},
+                       {"maps", maps},
+                       {"games", totalGames},
+                       {"leftSideScore", 100. * (leftWins + .5 * draws) / totalGames},
+                       {"roster", roster},
+                       {"characters", json::object()},
+                       {"excludedCharacters", excluded},
+                       {"matchups", json::object()},
+                       {"byMap", json::object()}};
+        result["generationTypes"] = json::array();
+        for (const auto &type : plugins.generationTypes())
+            result["generationTypes"].push_back(
+                {{"id", type.id}, {"placement", type.placement}, {"defaults", type.defaults}});
+        auto rules = sceneJson(SceneDocument::fromPack(pack)).at("rules");
+        rules["timeLimit"] = 60;
+        rules["stall"] = true;
+        result["scenarioRules"] = json::object();
+        for (int m = 0; m < 4; ++m) {
+            rules["shrink"] = m == 3;
+            result["scenarioRules"][maps[m]] = rules;
+        }
         for (int i = 0; i < n; ++i) {
             const auto &id = pack.characters[i].id;
             result["characters"][id] = toJson(totals[i]);

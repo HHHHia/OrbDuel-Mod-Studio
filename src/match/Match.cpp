@@ -474,9 +474,15 @@ void Match::onEvent(const Event &event) {
         victim.combo = victim.comboTimer > 0 ? victim.combo + 1 : 1;
         victim.comboTimer = 3;
         float combo = std::min(2.5f, 1.f + .15f * (victim.combo - 1));
-        float scale =
-            ultRunning ? 0 : std::max(map_ ? map_->physics.damageScale : 1.f, victim.def->hitbox.contact);
-        float raw = fighters_[pair[1 - k]].def->stats.attack * scale * event.value / refSpeed * combo *
+        float scale = ultRunning ? 0
+                                 : std::max(0.f, map_ ? map_->physics.damageScale : 1.f) *
+                                       std::max(0.f, victim.def->hitbox.contact);
+        if (scale <= 0)
+            continue;
+        const auto &attacker = fighters_[pair[1 - k]];
+        const float incoming = attacker.bodyId == event.a ? event.attackSpeedA : event.attackSpeedB;
+        const float impact = clampf(.5f + incoming / refSpeed, .5f, 2.5f);
+        float raw = fighters_[pair[1 - k]].def->stats.attack * scale * impact * combo *
                     skills_[pair[1 - k]].damageMultiplier();
         amounts[k] = std::max(0.f, raw - victim.def->stats.armor);
     }

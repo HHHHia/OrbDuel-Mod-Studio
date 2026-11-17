@@ -16,7 +16,7 @@ $sdkOut=Join-Path $Dest 'mod-sdk'
 $templateOut=Join-Path $sdkOut 'template'
 New-Item -ItemType Directory -Path (Join-Path $sdkOut 'include'),$templateOut -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $sdkOut 'examples') -Force | Out-Null
-foreach($file in @('portal.cpp','gravity.cpp','launch.cpp','summon.cpp')){
+foreach($file in @('portal.cpp','gravity.cpp','launch.cpp','lava.cpp','summon.cpp')){
     Copy-Item -LiteralPath (Join-Path (Join-Path $ProjectRoot 'mod-sdk\examples') $file) -Destination (Join-Path $sdkOut 'examples') -Force
 }
 foreach($file in @('orbduel_mod.hpp','orbduel_entities.hpp')){Copy-Item -LiteralPath (Join-Path $ProjectRoot ('mod-sdk\include\'+$file)) -Destination (Join-Path $sdkOut 'include') -Force}

@@ -30,7 +30,21 @@
       },
       "texture": "skin.png",
       "armor": 0.8,
-      "pattern": "hex"
+      "pattern": "hex",
+      "competitive": true,
+      "shape": "sprite",
+      "ghost": false,
+      "contact": 1,
+      "massMax": 0,
+      "massRamp": 90,
+      "offset": [
+        0,
+        0
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ]
     },
     {
       "mass": 1.15,
@@ -62,7 +76,21 @@
       },
       "texture": "skin.png",
       "armor": 0,
-      "pattern": "leaf"
+      "pattern": "leaf",
+      "competitive": true,
+      "shape": "sprite",
+      "ghost": false,
+      "contact": 1,
+      "massMax": 0,
+      "massRamp": 90,
+      "offset": [
+        0,
+        0
+      ],
+      "anchor": [
+        0.5,
+        0.5
+      ]
     }
   ],
   "mods": [

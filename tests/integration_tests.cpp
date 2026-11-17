@@ -32,10 +32,10 @@ int main(int argc, char **argv) {
         const auto *dummy = pack.findCharacter("wooden-dummy");
         require(lancer && singularity && dummy && pack.characters.size() == 9,
                 "preserve teammate characters alongside the studio roster");
-        require(lancer->stats.maxHp == 150 && lancer->skin.shape == "triangle" &&
-                    singularity->stats.maxHp == 250 && singularity->hitbox.ghost &&
+        require(lancer->competitive && singularity->competitive && !dummy->competitive &&
+                    lancer->skin.shape == "triangle" && singularity->hitbox.ghost &&
                     near(singularity->hitbox.contact, .6f) && dummy->stats.maxHp == 1000,
-                "preserve teammate character values and body types");
+                "preserve distinctive body types and separate the training dummy");
         const auto *dash = pack.findSkill("dash");
         require(dash && dash->charge.enabled && pack.findSkill("burst-dash") &&
                     !pack.findSkill("burst-dash")->charge.enabled && pack.skills.size() == 16,
@@ -54,10 +54,11 @@ int main(int argc, char **argv) {
         require(importCode(shareCode(scene), restored, error) && sceneJson(restored) == sceneJson(scene),
                 "offline share preserves triangle, ghost, contact and mass growth");
         Simulation roundtrip(restored, pack, plugins);
-        require(roundtrip.world.body(1)->ghost && roundtrip.match.fighter(0).maxHp == 150,
+        require(roundtrip.world.body(1)->ghost && roundtrip.match.fighter(0).maxHp == lancer->stats.maxHp,
                 "shared teammate roles retain runtime properties");
         {
             auto a = scene;
+            a.map.physics.damageScale = 0;
             for (auto &f : a.fighters)
                 f.skills.clear();
             Simulation s(a, pack, plugins);
@@ -67,8 +68,9 @@ int main(int argc, char **argv) {
             hit.b = 1;
             hit.value = 400;
             s.match.onEvent(hit);
-            require(near(s.match.fighter(0).hp, 150) && near(s.match.fighter(1).hp, 242.8f),
-                    "contact coefficient belongs to the victim on zero-damage maps");
+            require(s.match.fighter(0).hp == a.fighters[0].stats.maxHp &&
+                        s.match.fighter(1).hp == a.fighters[1].stats.maxHp,
+                    "zero map scale disables contact even for a resistant ghost");
         }
         {
             auto a = scene;
@@ -91,7 +93,8 @@ int main(int argc, char **argv) {
             require(skill.states()[0].casts == 1 && near(lengthOf(self.vel), 500),
                     "charge releases at configured speed and counts once");
             float scale = 0;
-            require(skill.consumeRam(scale) && near(scale, .12f) && !skill.consumeRam(scale),
+            require(skill.consumeRam(scale) && near(scale, dash->charge.ramDamageScale) &&
+                        !skill.consumeRam(scale),
                     "charged ram damage is consumed only once");
             for (int cast = 1; cast < 15; ++cast) {
                 skill.update(6.01f, 1, self, enemy, s.rng, events);
@@ -220,6 +223,7 @@ int main(int argc, char **argv) {
                 f.stats.startSpeed = 0;
             }
             a.shrink = true;
+            a.fighters[0].stats.maxHp = 150;
             auto &sh = a.map.shrink;
             sh.firstAt = 0;
             sh.interval = .01f;

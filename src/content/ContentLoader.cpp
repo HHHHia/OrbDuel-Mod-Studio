@@ -391,6 +391,7 @@ void loadCharacters(const fs::path &dir, ContentPack &pack, std::vector<LoadIssu
         }
 
         CharacterDef def;
+        def.competitive = readBool(root, "competitive", true);
         def.format = readInt(root, "format", 1);
         def.id = readString(root, "id", folder.filename().string());
         def.name = readName(root);
@@ -415,7 +416,7 @@ void loadCharacters(const fs::path &dir, ContentPack &pack, std::vector<LoadIssu
             def.hitbox.radius = readFloat(hitbox, "radius", 18.0f);
             def.hitbox.offset = readVec2(hitbox, "offset", Vec2{0.0f, 0.0f});
             def.hitbox.ghost = readBool(hitbox, "ghost", false);
-            def.hitbox.contact = readFloat(hitbox, "contact", 0.0f);
+            def.hitbox.contact = readFloat(hitbox, "contact", 1.0f);
         }
 
         if (root.contains("stats") && root["stats"].is_object()) {
@@ -520,6 +521,31 @@ void loadMaps(const fs::path &dir, ContentPack &pack, std::vector<LoadIssue> &is
                 obstacle.radius = readFloat(item, "radius", 0.0f);
                 obstacle.restitution = readFloat(item, "restitution", 1.0f);
                 def.obstacles.push_back(obstacle);
+            }
+        }
+
+        if (root.contains("fields") && root["fields"].is_array()) {
+            for (const json &item : root["fields"]) {
+                if (!item.is_object()) {
+                    continue;
+                }
+                FieldDef field;
+                field.pos = readVec2(item, "pos", Vec2{0.0f, 0.0f});
+                field.radius = readFloat(item, "radius", 120.0f);
+                field.dps = readFloat(item, "dps", 0.0f);
+                field.heal = readFloat(item, "heal", 0.0f);
+                field.accel = readVec2(item, "accel", Vec2{0.0f, 0.0f});
+                field.affect = readInt(item, "affect", 0);
+                field.color = readRgba(item, "color", field.color);
+                if (field.radius < 8.0f) {
+                    addIssue(issues, IssueSeverity::Warning, source, "fields[].radius 太小，已忽略这一条");
+                    continue;
+                }
+                def.fields.push_back(field);
+            }
+            if (def.fields.size() > 24) {
+                addIssue(issues, IssueSeverity::Warning, source, "fields 超过 24 个，多出的不加载");
+                def.fields.resize(24);
             }
         }
 
