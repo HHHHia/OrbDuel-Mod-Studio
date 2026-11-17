@@ -1,11 +1,11 @@
 # 素材登记 / Asset register
 
-> 公开仓库，**只收 CC0、公有领域或自制素材**。每加一个文件就在这里登记一行。
+> 公开仓库：图片与音效只收 CC0、公有领域或自制素材；字体沿用已采用的 SIL OFL 许可，附许可证全文。每加一个文件就在这里登记一行。
 > 从游戏里抠的图、来源不明的网图一律不许进仓库。
 
 ## 当前素材
 
-工作台新增的星空、地下城、霓虹都市、熔岩遗迹、冰晶圣殿背景和装饰由本项目 C++ 程序化绘制，无外部场景图片。参数控件由 Dear ImGui（MIT）提供。中文界面使用系统已安装的 Microsoft YaHei 字体，不在发布包中复制或分发该系统字体。
+工作台新增的星空、地下城、霓虹都市、熔岩遗迹、冰晶圣殿背景和装饰由本项目 C++ 程序化绘制，无外部场景图片。参数控件由 Dear ImGui（MIT）提供。中文界面使用随仓库和发布包提供的 Noto Sans SC，不复制或分发系统字体。
 
 | 文件 | 类型 | 来源 | 许可证 | 备注 |
 |---|---|---|---|---|
@@ -15,6 +15,7 @@
 | `characters/singularity/skin.png` | 球体贴图 | 本项目生成（Pillow 脚本，未入库） | CC0（自制） | 黑洞：黑核 + 紫红吸积环，正式美术替换后删除本行 |
 | `characters/wooden-dummy/skin.png` | 球体贴图 | 本项目生成（同上） | CC0（自制） | 木人桩：木色圆盘 + 红靶心，同上 |
 | `fonts/PressStart2P-Regular.ttf` | 字体 | https://github.com/google/fonts/tree/main/ofl/pressstart2p | SIL OFL 1.1 | HUD 文字；许可证全文见 `fonts/OFL.txt` |
+| `fonts/NotoSansSC-wght.ttf` | 字体 | Google Fonts Noto Sans SC：https://github.com/google/fonts/tree/main/ofl/notosanssc | SIL OFL 1.1 | 工作台中英文；原始文件 `NotoSansSC[wght].ttf`，SHA-256 `a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da`；许可证全文见 `fonts/NotoSansSC-OFL.txt` |
 | `audio/orbduel/*.wav` | 音效 | 本项目 `tools/make_sfx.py` 波形合成 | CC0（自制） | 16-bit 44.1 kHz 单声道；SDL2 原生播放，不需 SDL_mixer |
 | `audio/kenney/**` | 音效素材库 | Kenney（https://kenney.nl/assets） | CC0 | OGG Vorbis，暂未接入播放；**本地素材库，不进 git**，不随仓库分发 |
 

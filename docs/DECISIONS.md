@@ -232,3 +232,9 @@ FATAL: PLATFORM: Failed to initialize graphics device
 生成器复制模板与 SDK，模组标识、显示名和初始参数集中在 mod.json；一键入口自动发现工具链、构建并安装到选定游戏，安装位置只保存在本地私有配置。公开分享目录只包含运行文件、配置、许可证与作者明确放入的 assets。
 
 Windows 会锁住已加载的 DLL。宿主因此加载独立副本，保留原目录作为素材根，并在卸载后删除自己记录的缓存文件与空目录。作者可在游戏运行时重新安装，再由菜单显式重新加载；不引入内容哈希、签名或版本锁。旧地图的实例参数不因新默认值而改写。
+
+## ADR-021 随发布包提供中文字体
+
+工作台原先读取 Windows 系统的 `msyh.ttc`；新机器或发布包可能没有该字体，中文会缺字。改为从 `content/fonts/NotoSansSC-wght.ttf` 加载，并让发布包复制字体及其 SIL OFL 许可证。字体从 Google Fonts 官方 Noto Sans SC 文件原样取得，不改字形；与仓库现有的 Press Start 2P 一样，作为字体的 OFL 许可例外登记在 `content/ASSETS.md`。
+
+代价是仓库增加约 17 MB，完整中文 ImGui 字形图集也占用更多内存。若发布包漏掉字体，工作台回退到内置英文字体并显示提示；不复制系统的微软雅黑。
