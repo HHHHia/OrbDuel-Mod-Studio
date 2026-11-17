@@ -2,6 +2,7 @@
 #include "Audio.hpp"
 #include "BodyShape.hpp"
 #include "StudioI18n.hpp"
+#include "UiFont.hpp"
 #include "UiSkin.hpp"
 #include "orbduel/content/ContentLoader.hpp"
 #include "orbduel/content/Scene.hpp"
@@ -1480,15 +1481,14 @@ class Studio {
         auto &io = ImGui::GetIO();
         io.IniFilename = nullptr;
         io.LogFilename = nullptr;
-        if (fs::exists("C:/Windows/Fonts/msyh.ttc")) {
-            ImFontConfig cfg;
-            cfg.FontNo = 0;
-            io.Fonts->AddFontFromFileTTF("C:/Windows/Fonts/msyh.ttc", kUiFontAtlasSize, &cfg,
-                                         io.Fonts->GetGlyphRangesChineseFull());
-        } else {
+        std::string fontError;
+        if (!loadBundledUiFont(*io.Fonts, fs::u8path(options.contentRoot), kUiFontAtlasSize, fontError)) {
             ImFontConfig cfg;
             cfg.SizePixels = kUiFontAtlasSize;
             io.Fonts->AddFontDefault(&cfg);
+            if (!message.empty())
+                message += '\n';
+            message += fontError;
         }
         style();
         ImGui_ImplSDL2_InitForSDLRenderer(SDL_GetWindowFromID(1), renderer.backend());
