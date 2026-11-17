@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
             std::printf("  orbduel --scene user/arena.json  读取工作台地图\n");
             std::printf("  orbduel --autotest 600          快速无窗口物理回归\n");
             std::printf("  orbduel --no-menu               Alias for --play\n");
-            std::printf("  orbduel --lang en|zh            Character and skill names (default en)\n");
+            std::printf("  orbduel --lang en|zh            UI, fighter and skill language (default en)\n");
             std::printf("  orbduel --shot-at 11            Screenshot at 11 seconds\n");
             std::printf("  orbduel --play                  直接开始自动对战\n");
             return 0;
