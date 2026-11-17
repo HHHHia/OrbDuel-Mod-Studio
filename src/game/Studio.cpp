@@ -200,8 +200,8 @@ class Studio {
                 message = error;
                 return false;
             }
-        } else if (fs::exists(fs::u8path(userRoot + "/last-scene.json")) && !options.headless &&
-                   options.screenshotPath.empty())
+        } else if (options.mapId.empty() && !options.headless && options.screenshotPath.empty() &&
+                   fs::exists(fs::u8path(userRoot + "/last-scene.json")))
             openScene(userRoot + "/last-scene.json", doc, error);
         if (options.seed)
             doc.map.seed = options.seed;
