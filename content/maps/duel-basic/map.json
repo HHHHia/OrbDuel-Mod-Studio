@@ -20,7 +20,7 @@
     "wallRestitution": 0.98,
     "bounceJitterDeg": 1.5,
     "maxSpeed": 1800,
-    "damageScale": 0.0,
+    "damageScale": 1.0,
     "refSpeed": 400
   },
   "shrink": {

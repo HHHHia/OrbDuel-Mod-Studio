@@ -33,9 +33,41 @@
 
 分享码将完整地图 JSON 编码为 Base64URL 并加 `OD1:` 前缀，不压缩、不加密、不添加哈希和签名。包含实际对象列表，因此手工位置不会丢失；DLL 和外部贴图不嵌入其中。
 
+## 地图自带区域效果（fields）
+
+地图可以带任意个圆形「区域效果」，纯数据，不用写 C++、不用编译模组。写在 `map.json` 的 `fields` 里：
+
+```json
+"fields": [
+  { "pos": [640, 360], "radius": 150, "dps": 8, "color": [255, 90, 40, 90] },
+  { "pos": [300, 200], "radius": 220, "accel": [0, 260], "color": [120, 200, 255, 90] },
+  { "pos": [980, 520], "radius": 120, "heal": 6, "affect": 1 }
+]
+```
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `pos` | `[x, y]` | 圆心 |
+| `radius` | float 10–2000 | 半径；小于 8 的这一条会被忽略 |
+| `dps` | float 0–100 | 每秒伤害，记为 `environment`（不吃连击、不触发反伤） |
+| `heal` | float 0–100 | 每秒回血 |
+| `accel` | `[ax, ay]` | 每个物理步加的加速度（px/s²）；风向、水流、传送带都用它 |
+| `affect` | 0 / 1 / 2 | 0 两个球都吃；1 只作用左方球；2 只作用右方球 |
+| `color` | `[r,g,b,a]` | 编辑器画布和对局里圈的颜色 |
+
+- 加速每一步都生效；伤害和回血每 0.25 秒结算一次，战斗记录不会被刷屏。
+- 一张图最多 24 个，超出部分不加载。
+- 和模组的分工：要「有冷却、要对象引用、能 spawn 机关」写 C++ 模组；只是「站进去掉血 / 被吹 / 回血」就用 `fields`，改 JSON 重启就生效。
+
 ## 角色与内置技能
 
 原角色 JSON 保持格式 1，在 stats 中新增可选 `attack`（默认 12）和 `armor`（默认 0）。技能字段仍为 trigger、modifiers；支持 cooldown、on_hit、on_hit_by、on_low_hp、on_wall_bounce，manual 仅保留数据定义，没有手动输入界面。
+
+角色根级可选 `competitive`（默认 true）标记是否参与竞技平衡统计；木人桩设为 false，游戏与地图编辑器仍允许选择。该字段与角色快照一起保存。
+
+普通碰撞使用 `地图 damageScale × 挨撞者 hitbox.contact`。contact 缺省为 1，0 为显式免疫普通碰撞；地图倍率为 0 则全局关闭普通碰撞。攻击加成使用攻击方碰撞前朝向对手的速度，倍率 `clamp(0.5+speed/refSpeed,0.5,2.5)`，再计连击、攻击增益、护甲和护盾。ghost 不代表免伤；蓄力重击、贯穿、引力和模组显式伤害独立结算。
+
+旧地图若未保存 contact，将使用新的中性默认值 1；显式保存的 0 和其他自定义数值不会被修改。要采用当前默认角色数值，可在主页或属性面板点击“应用预设”。
 
 角色和技能新增可选的中英 description；skin.pattern 可使用 flame、hex、chevron、crystal、spark、leaf 徽记，留空沿用贴图。这些字段也保存到地图与分享码中。
 
@@ -51,7 +83,7 @@ VFX 描述仍可读取，但工作台当前不解释任意旧 VFX 配置；命�
 
 ## 主分支身体与特殊技能
 
-`skin.shape` 支持 sprite/triangle；`hitbox.ghost` 决定是否允许穿入，contact 是挨撞系数。`stats.massMax` 与 massRamp 控制质量随时间成长。地图快照使用 shape/ghost/contact/massMax/massRamp 同名字段，并保存 offset 和 anchor。未提供时保持旧文档默认值。
+`skin.shape` 支持 sprite/triangle；`hitbox.ghost` 决定是否允许穿入，contact 是挨撞倍率。`stats.massMax` 与 massRamp 控制质量随时间成长。地图快照使用 shape/ghost/contact/massMax/massRamp 同名字段，并保存 offset 和 anchor。缺少字段时采用模型默认值，其中 contact=1。
 
 `dash` 保留原蓄力冲刺；瞬时加速使用 `burst-dash`。早期工作台自定义存档若要保留瞬时效果，需要将其技能引用从 dash 改为 burst-dash；内置示例已同步。
 

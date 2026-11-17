@@ -61,6 +61,7 @@ DLL 使用简单结构与函数表，创建者销毁自己的实例；不跨 DLL
 - `examples/portal.cpp`：区域进入、对象引用、传送、速度方向、冷却、颜色与自定义事件。
 - `examples/gravity.cpp`：持续力场、吸引/排斥、作用对象和范围。
 - `examples/launch.cpp`：区域进入后弹射，并可附带护盾。
+- `examples/lava.cpp`：范围环境伤害，每 0.25 秒结算；示例地图 content/studio/lava-pool.json。
 - `template/my_mod.cpp`：用相同接口增加第四种能力——旋风。
 
 技能式能力可把对象附着在角色上，再根据事件与自己的冷却逻辑施放。需要引擎尚未开放的物理量或绘制能力时，扩展 SDK；不要求所有可能机制都塞进预设效果枚举。

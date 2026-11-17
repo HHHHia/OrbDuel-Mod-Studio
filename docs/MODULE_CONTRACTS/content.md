@@ -13,3 +13,7 @@
 - 同时保留 skin.shape、hitbox.ghost/contact、stats.massMax/massRamp、Passive/Pierce、ChargeDef/GravityDef/OmnipullDef；加载器读取上述字段，hitbox.shape 只由内容校验脚本检查（运行时仅支持 circle）。
 - 地图快照完整保存程序化形状、身体属性、成长值、offset 与 anchor；旧快照缺少字段时使用模型默认值。
 - dash 保持蓄力定义；原工作台瞬时技能更名为 burst-dash，所有内置工作台引用同步更新。
+- CharacterDef::competitive 缺省为 true；角色根级 JSON 与地图快照保存该字段。木人桩为 false，只从竞技统计中排除，仍可在游戏中选用。
+- hitbox.contact 的构造、内容加载和旧地图缺省值均为 1；显式 0 仍原样保留。平衡名单读取安装内容包的 competitive 字段，不从玩家存档推断身份。
+
+- MapDef.fields 保存圆形区域的位置、半径、伤害/治疗、加速度、作用对象与颜色；地图文件和 OD1 分享码完整往返这些字段。

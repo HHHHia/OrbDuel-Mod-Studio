@@ -95,6 +95,23 @@ int main(int argc, char **argv) {
             check(s.match.fighter(0).hp == hp - 7, "heal respects actual hit points");
         }
         {
+            // 地图自带的 fields：纯数据区域效果，不需要模组。
+            auto a = scene;
+            FieldDef fire;
+            fire.pos = {640, 360};
+            fire.radius = 2000; // 覆盖全图
+            fire.dps = 10;
+            a.map.fields = {fire};
+            a.fighters[0].stats.startSpeed = 0; // 停住，只留区域伤害
+            a.fighters[1].stats.startSpeed = 0;
+            Simulation s(a, loader.pack(), plugins);
+            const float before = s.match.fighter(0).hp;
+            for (int i = 0; i < 240; ++i) // 2 秒
+                s.step();
+            check(s.match.fighter(0).hp < before && s.match.fighter(0).hp > before - 40,
+                  "map fields apply environment damage");
+        }
+        {
             auto a = scene;
             a.timeLimit = .1f;
             Simulation s(a, loader.pack(), plugins);
