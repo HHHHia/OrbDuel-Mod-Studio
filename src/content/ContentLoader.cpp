@@ -524,6 +524,31 @@ void loadMaps(const fs::path &dir, ContentPack &pack, std::vector<LoadIssue> &is
             }
         }
 
+        if (root.contains("fields") && root["fields"].is_array()) {
+            for (const json &item : root["fields"]) {
+                if (!item.is_object()) {
+                    continue;
+                }
+                FieldDef field;
+                field.pos = readVec2(item, "pos", Vec2{0.0f, 0.0f});
+                field.radius = readFloat(item, "radius", 120.0f);
+                field.dps = readFloat(item, "dps", 0.0f);
+                field.heal = readFloat(item, "heal", 0.0f);
+                field.accel = readVec2(item, "accel", Vec2{0.0f, 0.0f});
+                field.affect = readInt(item, "affect", 0);
+                field.color = readRgba(item, "color", field.color);
+                if (field.radius < 8.0f) {
+                    addIssue(issues, IssueSeverity::Warning, source, "fields[].radius 太小，已忽略这一条");
+                    continue;
+                }
+                def.fields.push_back(field);
+            }
+            if (def.fields.size() > 24) {
+                addIssue(issues, IssueSeverity::Warning, source, "fields 超过 24 个，多出的不加载");
+                def.fields.resize(24);
+            }
+        }
+
         if (root.contains("physics") && root["physics"].is_object()) {
             const json &physics = root["physics"];
             def.physics.wallRestitution = readFloat(physics, "wallRestitution", 0.98f);

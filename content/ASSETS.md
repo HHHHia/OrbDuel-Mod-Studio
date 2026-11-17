@@ -15,6 +15,8 @@
 | `characters/singularity/skin.png` | 球体贴图 | 本项目生成（Pillow 脚本，未入库） | CC0（自制） | 黑洞：黑核 + 紫红吸积环，正式美术替换后删除本行 |
 | `characters/wooden-dummy/skin.png` | 球体贴图 | 本项目生成（同上） | CC0（自制） | 木人桩：木色圆盘 + 红靶心，同上 |
 | `fonts/PressStart2P-Regular.ttf` | 字体 | https://github.com/google/fonts/tree/main/ofl/pressstart2p | SIL OFL 1.1 | HUD 文字；许可证全文见 `fonts/OFL.txt` |
+| `audio/orbduel/*.wav` | 音效 | 本项目 `tools/make_sfx.py` 波形合成 | CC0（自制） | 16-bit 44.1 kHz 单声道；SDL2 原生播放，不需 SDL_mixer |
+| `audio/kenney/**` | 音效素材库 | Kenney（https://kenney.nl/assets） | CC0 | OGG Vorbis，暂未接入播放；**本地素材库，不进 git**，不随仓库分发 |
 
 ## 推荐素材站（都是 CC0 / 免费商用）
 

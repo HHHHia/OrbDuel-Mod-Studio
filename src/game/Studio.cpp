@@ -1,4 +1,5 @@
 #include "orbduel/game/Studio.hpp"
+#include "Audio.hpp"
 #include "BodyShape.hpp"
 #include "orbduel/content/ContentLoader.hpp"
 #include "orbduel/content/Scene.hpp"
@@ -126,13 +127,14 @@ class Studio {
     SceneDocument doc, before;
     std::unique_ptr<Simulation> preview, game;
     Renderer renderer;
+    Audio audio;
     std::unique_ptr<AssetCache> assets;
     std::string root, modRoot, userRoot, message, tool = "select";
     std::vector<SceneDocument> undoStack, redoStack;
     std::vector<std::string> disabled;
     int page = 0, kind = -1, selected = -1, pairs = 3, groups = 3, returnPage = 0;
     bool dragRecorded = false, modified = false, dirty = true, dragging = false, transaction = false,
-         paused = false, grid = true;
+         paused = false, grid = true, fullscreen = false;
     Vec2 offset{};
     float elapsed = 0, speed = 1;
     char file[1024]{};
@@ -253,17 +255,46 @@ class Studio {
             return;
         }
         game = std::make_unique<Simulation>(doc, loader.pack(), plugins);
+        hookSounds();
         paused = false;
         if (page != 3)
             returnPage = page;
         page = 3;
         message.clear();
     }
+    // 工作台只有一个 SDL 窗口；ImGui 初始化也用同一个窗口 ID。
+    void setFullscreen(bool on) {
+        fullscreen = on;
+        SDL_SetWindowFullscreen(SDL_GetWindowFromID(1), on ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+    }
     void stop() {
         game.reset();
         page = returnPage;
         dirty = true;
+        if (fullscreen)
+            setFullscreen(false);
     }
+    // 音效只挂最小一组：撞击、撞墙、阵亡、回合结束。音频不可用时这些调用都是空操作。
+    void hookSounds() {
+        if (!game)
+            return;
+        audio.play("round_start", .75f);
+        game->events.subscribe(EventType::Hit, [this](const Event &e) {
+            const bool heavy = e.value >= 420.f;
+            audio.play(heavy ? "hit_heavy" : "hit_light", heavy ? .8f : .5f, 40);
+        });
+        game->events.subscribe(EventType::WallBounce, [this](const Event &e) {
+            if (e.value >= 120.f)
+                audio.play("wall_bounce", .35f, 70);
+        });
+        game->events.subscribe(EventType::Death, [this](const Event &) { audio.play("ko", .8f); });
+        // 观战视角：1 号球（左侧）赢放胜利音，其余（对方赢或平局）放失败音，听声就知道谁赢。
+        game->events.subscribe(EventType::RoundEnd, [this](const Event &e) {
+            const bool leftWon = e.a >= 0 && game->match.fighter(0).bodyId == e.a;
+            audio.play(leftWon ? "round_win" : "round_lose", .8f);
+        });
+    }
+    void click() { audio.play("ui_click", .45f, 30); }
     void save() {
         std::string e;
         if (saveScene(file, doc, e)) {
@@ -365,6 +396,8 @@ class Studio {
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, color(.47f, .54f, .86f));
         bool b = ImGui::Button(t, size);
         ImGui::PopStyleColor(2);
+        if (b)
+            click();
         return b;
     }
     bool danger(const char *t, ImVec2 size = {0, 0}) {
@@ -373,6 +406,8 @@ class Studio {
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, color(.52f, .13f, .13f));
         bool b = ImGui::Button(t, size);
         ImGui::PopStyleColor(3);
+        if (b)
+            click();
         return b;
     }
     void style() {
@@ -411,29 +446,34 @@ class Studio {
         ImGui::TextDisabled("WORKSPACE");
         ImGui::Spacing();
         if (ImGui::Selectable("概览", page == 0, 0, {0, 38})) {
+            click();
             game.reset();
             page = 0;
         }
         if (ImGui::Selectable("地图编辑器", page == 1, 0, {0, 38})) {
+            click();
             game.reset();
             page = 1;
         }
         if (ImGui::Selectable("模组工坊", page == 2, 0, {0, 38})) {
+            click();
             game.reset();
             page = 2;
         }
-        section("场景风格");
-        for (int i = 0; i < 5; ++i) {
-            auto p = themePalette(themes[i]);
-            ImGui::PushID(i);
-            ImGui::ColorButton("##color", {p.accent.r / 255.f, p.accent.g / 255.f, p.accent.b / 255.f, 1},
-                               ImGuiColorEditFlags_NoTooltip, {12, 12});
-            ImGui::SameLine();
-            if (ImGui::Selectable(labels[i], doc.theme == themes[i])) {
-                doc.theme = themes[i];
-                change();
+        if (page != 2) {
+            section("场景风格");
+            for (int i = 0; i < 5; ++i) {
+                auto p = themePalette(themes[i]);
+                ImGui::PushID(i);
+                ImGui::ColorButton("##color", {p.accent.r / 255.f, p.accent.g / 255.f, p.accent.b / 255.f, 1},
+                                   ImGuiColorEditFlags_NoTooltip, {12, 12});
+                ImGui::SameLine();
+                if (ImGui::Selectable(labels[i], doc.theme == themes[i])) {
+                    doc.theme = themes[i];
+                    change();
+                }
+                ImGui::PopID();
             }
-            ImGui::PopID();
         }
         if (page == 1) {
             section("放置对象");
@@ -454,8 +494,10 @@ class Studio {
         ImGui::PushStyleColor(ImGuiCol_HeaderHovered, color(.35f, .12f, .12f, .75f));
         ImGui::PushStyleColor(ImGuiCol_HeaderActive, color(.45f, .15f, .15f, .75f));
         ImGui::PushStyleColor(ImGuiCol_Text, color(.95f, .42f, .42f));
-        if (ImGui::Selectable("退出游戏", false, 0, {0, 32}))
+        if (ImGui::Selectable("退出游戏", false, 0, {0, 32})) {
+            click();
             quitConfirm = true;
+        }
         ImGui::PopStyleColor(3);
         ImGui::TextDisabled("ORBDUEL / STUDIO");
         ImGui::TextDisabled("C++17 / 离线创作");
@@ -807,6 +849,11 @@ class Studio {
                 d->AddRectFilled(min, max, ink(pal.stone), 4);
                 d->AddRect(min, max, IM_COL32(pal.accent.r, pal.accent.g, pal.accent.b, 150), 4, 0, 1.4f);
             }
+        }
+        for (const auto &f : scene.map.fields) {
+            auto center = view.at(f.pos);
+            d->AddCircleFilled(center, f.radius * scale, IM_COL32(f.color.r, f.color.g, f.color.b, 40), 48);
+            d->AddCircle(center, f.radius * scale, IM_COL32(f.color.r, f.color.g, f.color.b, 190), 64, 1.6f);
         }
         auto api = view.api();
         sim->draw(api);
@@ -1171,6 +1218,9 @@ class Studio {
         ImGui::SameLine();
         ImGui::SetNextItemWidth(100);
         ImGui::SliderFloat("速度", &speed, .25f, 4, "%.2fx");
+        ImGui::SameLine();
+        if (ImGui::Button(fullscreen ? "退出全屏" : "全屏"))
+            setFullscreen(!fullscreen);
         for (int i = 0; i < 2; ++i) {
             auto &f = game->match.fighter(i);
             ImGui::PushID(i);
@@ -1344,6 +1394,8 @@ class Studio {
             return headless();
         if (!renderer.init(1480, 900, "OrbDuel | Mod Studio", options.hidden))
             return 2;
+        // 音效目录跟着内容根走；设备打不开就静音，不挡住工作台。
+        audio.init((fs::u8path(options.contentRoot) / "audio" / "orbduel").u8string());
         assets = std::make_unique<AssetCache>(renderer.backend());
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -1377,7 +1429,9 @@ class Studio {
                 ImGui_ImplSDL2_ProcessEvent(&e);
                 if (e.type == SDL_QUIT)
                     quitConfirm = true;
-                if (e.type == SDL_KEYDOWN && !io.WantTextInput && !ImGui::IsPopupOpen("退出游戏")) {
+                // 帧外不能用字符串版 IsPopupOpen（它读 g.CurrentWindow，帧外为 null 会崩）。
+                if (e.type == SDL_KEYDOWN && !io.WantTextInput &&
+                    !ImGui::IsPopupOpen(0, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel)) {
                     bool ctrl = (e.key.keysym.mod & KMOD_CTRL) != 0;
                     if (ctrl && e.key.keysym.sym == SDLK_s)
                         save();
@@ -1386,7 +1440,9 @@ class Studio {
                     if (ctrl && e.key.keysym.sym == SDLK_y)
                         restore(true);
                     if (e.key.keysym.sym == SDLK_ESCAPE) {
-                        if (game)
+                        if (fullscreen)
+                            setFullscreen(false);
+                        else if (game)
                             stop();
                         else if (page == 1) {
                             tool = "select";
@@ -1432,8 +1488,10 @@ class Studio {
             ImGui::TextDisabled("%zu 个能力已加载 · 离线就绪", plugins.types.size());
             ImGui::Separator();
             ImGui::BeginChild("workspace", {0, message.empty() ? -12.f : -40.f}, false);
-            nav();
-            ImGui::SameLine();
+            if (page != 3) {
+                nav();
+                ImGui::SameLine();
+            }
             float right = page == 1 ? 300.f : 0;
             ImGui::BeginChild("main-content", {-right, 0}, false);
             if (page == 0)
@@ -1478,6 +1536,7 @@ class Studio {
         }
         game.reset();
         preview.reset();
+        audio.shutdown();
         ImGui_ImplSDLRenderer2_Shutdown();
         ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext();

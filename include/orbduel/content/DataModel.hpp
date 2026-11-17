@@ -196,6 +196,18 @@ struct SpawnDef {
     std::string character; // 可选：指定该出生点固定角色
 };
 
+// 地图自带的范围效果：球在圆圈里会被持续加速、扣血或回血。
+// 纯数据（写在地图 JSON 的 fields 里），不需要编译模组。
+struct FieldDef {
+    Vec2 pos{};
+    float radius = 120.0f;
+    float dps = 0.0f;   // 每秒环境伤害（走 environment：不吃连击、不触发反伤）
+    float heal = 0.0f;  // 每秒回血
+    Vec2 accel{};       // 持续加速度（px/s²），每一物理步都加
+    int affect = 0;     // 0 所有球 | 1 左方球 | 2 右方球
+    Rgba color{120, 200, 255, 90};
+};
+
 struct ThemeDef {
     std::string bgTexture; // 可为空
     Rgba bgColor{16, 17, 24, 255};
@@ -230,6 +242,7 @@ struct MapDef {
     ThemeDef theme;
     std::vector<SpawnDef> spawns;
     std::vector<ObstacleDef> obstacles;
+    std::vector<FieldDef> fields;
     PhysicsDef physics;
     ShrinkDef shrink;
     std::uint32_t seed = 0;

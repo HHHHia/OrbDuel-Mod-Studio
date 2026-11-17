@@ -83,15 +83,43 @@ cmake --build build-template --config Release
 .\build\bin\orbduel.exe --autotest 600
 .\build\bin\orbduel.exe --scene user/arena.json --play
 .\build\bin\orbduel.exe --mods path/to/mods
+.\build\bin\orbduel.exe --sfx-test
 ```
 
-`--headless` 真正跳过 SDL 初始化并快速推进逻辑。`--autotest` 连续运行多局，输出碰撞、机关触发和最长静默时间。截图可使用 `--hidden --view editor --theme cosmos --screenshot out.png`。
+`--headless` 真正跳过 SDL 初始化并快速推进逻辑。`--autotest` 连续运行多局，输出碰撞、机关触发和最长静默时间。截图可使用 `--hidden --view editor --theme cosmos --screenshot out.png`。`--sfx-test` 不开窗口，按文件名顺序把 `content/audio/orbduel` 的 WAV 各放一遍，用来确认声卡和素材。
 
 发布包使用 `tools/package.ps1`，包含游戏、模组、资源、SDK 和教程；双击其中的游戏即可运行。
 
 ## 团队 / Team
 
 团队协作可通过 Git 提交历史和共同演示查看；公开工程文档不登记个人学号等身份信息。
+
+## 可以接着做 / Next tasks
+
+当前版本可构建、可运行。下面是尚未完成、适合分工认领的部分；做完一条在 commit 里说明即可。
+
+**不用写代码（改内容或跑测试）**
+
+| 任务         | 说明                                                                                      |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| 加地图       | 编辑器里摆好后存进 `content/studio/`；仓库目前只有 `content/maps/duel-basic` 一张内置地图 |
+| 加角色或技能 | 复制 `content/characters/blaze/` 改 JSON，再跑 `tools/validate_content.ps1`               |
+| 手动验收     | 逐页检查概览、编辑器、模组工坊、对战、保存/读档、分享码导入，记下卡住的地方               |
+| 补演示脚本   | [DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) 目前 5 步，可扩成能照着念的完整稿                   |
+| 更新预览图   | 五套风格与蓄力、黑洞的截图是旧的，内容改动后需要重截                                      |
+
+**要动代码**
+
+| 任务            | 说明                                                                                 | 难度 |
+| --------------- | ------------------------------------------------------------------------------------ | ---- |
+| 界面中英文      | 界面文字目前写死在 `src/game/Studio.cpp`；`--lang en` 只换角色与技能名，界面仍是中文 | 中   |
+| 界面美化        | 菜单配色、圆角、字号写在 `style()` 里，改为读取 `content/` 下的配置后可做皮肤        | 中   |
+| 自带中文字体    | 目前依赖系统的 `msyh.ttc`，换机器可能缺字                                            | 低   |
+| 平衡调参        | 八个竞技角色的测量与规则边界见 [BALANCE.md](docs/BALANCE.md)                 | 中   |
+| 发布包自检      | 跑 `tools/package.ps1`，在仓库外双击运行，确认 DLL、字体、模组齐全                   | 低   |
+
+建议的认领顺序：手动验收 → 界面中英文 → 发布包自检。
+
 
 ## 许可证
 

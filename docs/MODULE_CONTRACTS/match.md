@@ -16,3 +16,5 @@
 - Match::skills(index) 暴露只读技能查询。PullField、consumeBlast、invulnerable 与 suppressesPassive 保留引力大招规则；所有伤害转入 damage 以保留来源和统计。
 - Fighter 保留 PierceMod、GravityMod 与核心伤害/传送间隔；质量每步从角色的 mass/massMax/massRamp 重算，再应用 resize。
 - finishStep 在伤害派发后判胜负；完全缩圈比较原始 HP，时间上限比较 HP 比例。Simulation 在退化场地继续运行物理前调用 finishStep。
+
+- Simulation 解释地图 fields：加速度每个固定步应用，伤害和治疗以 0.25 秒为间隔结算，环境伤害独立于普通碰撞开关。

@@ -149,6 +149,7 @@ json sceneJson(const SceneDocument &s) {
               {"fighters", json::array({fighterJson(s.fighters[0]), fighterJson(s.fighters[1])})},
               {"spawns", json::array()},
               {"obstacles", json::array()},
+              {"fields", json::array()},
               {"objects", json::array()},
               {"mods", s.mods}};
     for (const auto &p : m.spawns)
@@ -159,6 +160,14 @@ json sceneJson(const SceneDocument &s) {
                                   {"size", vec(o.size)},
                                   {"radius", o.radius},
                                   {"restitution", o.restitution}});
+    for (const auto &f : m.fields)
+        j["fields"].push_back({{"pos", vec(f.pos)},
+                               {"radius", f.radius},
+                               {"dps", f.dps},
+                               {"heal", f.heal},
+                               {"accel", vec(f.accel)},
+                               {"affect", f.affect},
+                               {"color", {f.color.r, f.color.g, f.color.b, f.color.a}}});
     for (const auto &o : s.objects)
         j["objects"].push_back({{"id", o.id},
                                 {"type", o.type},
@@ -224,6 +233,22 @@ bool readScene(const json &j, SceneDocument &out, std::string &error) {
             o.radius = a.at("radius").get<float>();
             o.restitution = a.value("restitution", .9f);
             s.map.obstacles.push_back(o);
+        }
+        for (const auto &a : j.value("fields", json::array())) {
+            FieldDef f;
+            f.pos = v(a.at("pos"));
+            f.radius = a.value("radius", 120.f);
+            f.dps = a.value("dps", 0.f);
+            f.heal = a.value("heal", 0.f);
+            if (a.contains("accel"))
+                f.accel = v(a.at("accel"));
+            f.affect = a.value("affect", 0);
+            if (a.contains("color")) {
+                auto c = a.at("color");
+                f.color = {c.at(0).get<unsigned char>(), c.at(1).get<unsigned char>(),
+                           c.at(2).get<unsigned char>(), c.at(3).get<unsigned char>()};
+            }
+            s.map.fields.push_back(f);
         }
         std::set<int> ids;
         for (const auto &a : j.at("objects")) {
