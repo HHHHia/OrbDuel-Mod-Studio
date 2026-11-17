@@ -177,6 +177,7 @@ class Studio {
                             disabled.push_back(id.get<std::string>());
             }
         }
+        plugins.setEntityApi(Simulation::entityApi());
         plugins.load(modRoot, disabled);
         doc = SceneDocument::fromPack(loader.pack());
         if (!options.mapId.empty()) {
@@ -294,7 +295,9 @@ class Studio {
             audio.play(leftWon ? "round_win" : "round_lose", .8f);
         });
     }
-    void click() { audio.play("ui_click", .45f, 30); }
+    void click() {
+        audio.play("ui_click", .45f, 30);
+    }
     void save() {
         std::string e;
         if (saveScene(file, doc, e)) {
@@ -306,6 +309,7 @@ class Studio {
     void reload() {
         game.reset();
         preview.reset();
+        plugins.setEntityApi(Simulation::entityApi());
         plugins.load(modRoot, disabled);
         loader.loadAll();
         assets->clear();
@@ -868,20 +872,20 @@ class Studio {
                             d->AddLine(view.at(o.pos), view.at(other.pos), IM_COL32(150, 150, 235, 75), 1.2f);
                 }
             }
-        for (int i = 0; i < 2; ++i) {
+        for (int i = 0; i < (game ? sim->match.fighterCount() : 2); ++i) {
             auto &f = sim->match.fighter(i);
+            const auto &ch = *f.def;
             auto *b = sim->world.body(f.bodyId);
             Vec2 p = game && b ? b->pos : doc.map.spawns[i].pos;
-            float radius = game && b ? b->radius : scene.fighters[i].hitbox.radius;
+            float radius = game && b ? b->radius : ch.hitbox.radius;
             auto center = view.at(p);
             if (game && !f.alive)
                 continue;
-            Rgba c = scene.fighters[i].skin.pattern.empty()
-                         ? (i == 0 ? Rgba{255, 174, 104, 255} : Rgba{119, 198, 255, 255})
-                         : scene.fighters[i].skin.tint;
+            Rgba c = ch.skin.pattern.empty()
+                         ? (f.team == 0 ? Rgba{255, 174, 104, 255} : Rgba{119, 198, 255, 255})
+                         : ch.skin.tint;
             for (int k = 3; k > 0; --k)
                 d->AddCircleFilled(center, (radius + 5 * k) * scale, IM_COL32(c.r, c.g, c.b, 6), 40);
-            auto &ch = scene.fighters[i];
             auto *texture = assets->get(root + "/content/" + ch.sourceDir + "/" + ch.skin.texture);
             d->AddCircleFilled(center, radius * scale, IM_COL32(c.r, c.g, c.b, 60), 40);
             float facing = b && game ? angleOf(b->vel) : angleOf(scene.map.spawns[i].dir);
@@ -928,6 +932,12 @@ class Studio {
                         break;
                     }
             d->AddCircle(center, radius * scale, ink(c), 40, 1.8f);
+            if (game && !f.primary) {
+                float width = radius * scale * 2;
+                ImVec2 start{center.x - width / 2, center.y - radius * scale - 9};
+                d->AddRectFilled(start, {start.x + width, start.y + 4}, IM_COL32(35, 40, 55, 220));
+                d->AddRectFilled(start, {start.x + width * f.hp / f.maxHp, start.y + 4}, ink(c));
+            }
             if (game && f.shield > 0)
                 d->AddCircle(center, (radius + 7) * scale, IM_COL32(130, 230, 255, 210), 40, 2.5f);
             if (editable) {

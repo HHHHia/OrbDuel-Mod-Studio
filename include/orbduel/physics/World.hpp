@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include "orbduel/core/Types.hpp"
@@ -28,8 +29,11 @@ class World {
     void setRng(Rng &rng);
     void setWallParams(float restitution, float jitterDeg);
 
-    // 返回新 body 的 id（当前实现里 id == 下标，不支持中途移除）。
+    // ID 在本局内不复用；指定已预留 ID 或使用默认 -1 自动分配。
     int addBody(const Body &body);
+    int reserveBodyId();
+    // 仅在固定步边界调用；指针/枚举下标在增删后失效，ID 保持稳定。
+    void removeBody(int id);
 
     // 清空所有 body（重开一局用）。
     void clear();
@@ -48,6 +52,8 @@ class World {
     EventBus &events_;
     Arena &arena_;
     std::vector<Body> bodies_;
+    std::unordered_map<int, std::size_t> slots_;
+    int nextId_ = 0;
     Rng *rng_ = nullptr;
     float wallRestitution_ = 0.98f;
     float jitterDeg_ = 1.5f;

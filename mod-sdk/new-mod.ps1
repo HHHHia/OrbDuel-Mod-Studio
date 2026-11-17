@@ -3,6 +3,7 @@
 param(
     [Parameter(Mandatory=$true)][ValidatePattern('^[a-z][a-z0-9_-]*$')][string]$Id,
     [string]$Name='我的旋风',
+    [ValidateSet('vortex','summon')][string]$Kind='vortex',
     [string]$Destination
 )
 $ErrorActionPreference='Stop'
@@ -19,9 +20,15 @@ foreach($file in @('CMakeLists.txt','mod.json','my_mod.cpp','mod_config.hpp.in',
 $include=Join-Path $Destination 'include'
 New-Item -ItemType Directory -Path $include | Out-Null
 Copy-Item -LiteralPath $sdkHeader -Destination $include
+Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'include\orbduel_entities.hpp') -Destination $include
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'LICENSE.txt') -Destination (Join-Path $Destination 'SDK_LICENSE.txt')
 $manifestPath=Join-Path $Destination 'mod.json'
 $manifest=Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if($Kind -eq 'summon'){
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'examples\summon.cpp') -Destination (Join-Path $Destination 'my_mod.cpp') -Force
+    $manifest.typeId='echo'
+    $manifest.defaults=[pscustomobject]@{interval=2;maxAlive=2;lifetime=8;hpScale=0.35;radiusScale=0.65;attackScale=0.5;speed=280}
+}
 $manifest.id=$Id
 $manifest.name=$Name
 $manifest.typeName=$Name

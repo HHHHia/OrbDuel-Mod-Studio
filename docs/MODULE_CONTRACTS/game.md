@@ -13,3 +13,5 @@
 - 音效走 `src/game/Audio.cpp`（SDL2 原生音频，不引入 SDL_mixer），素材是 `content/audio/orbduel/*.wav`：挂事件总线上的 Hit / WallBounce / Death / RoundEnd，外加主要按钮的点击声。设备打不开或素材缺失时静音继续，不影响对局；`--sfx-test` 依次试听。
 - 保存路径默认 user/arena.json；正常退出保留 last-scene.json，截图运行不写最近草稿。
 - 绘制在 SDL_Renderer 后端上调用 Dear ImGui；界面数据来自注册类型，不按具体机关名称分派。
+
+- 游戏初始化/重新加载时注入可选实体函数表。画布枚举运行中的所有 Fighter，使用其角色快照绘制皮肤/特殊技能，额外实体显示小血条；HUD 与终局仍显示两名主角色。编辑器预览不推进召唤。

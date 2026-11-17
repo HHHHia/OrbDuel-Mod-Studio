@@ -94,6 +94,9 @@ void PluginManager::load(const std::string &root, const std::vector<std::string>
             if (!entry)
                 throw std::runtime_error("找不到 orbduel_register 入口");
             registeringId_ = m.id;
+            if (auto receive = reinterpret_cast<orbmod::EntityApiReceiver>(
+                    GetProcAddress(handle, "orbduel_set_entity_api")))
+                receive(entityApi_);
             registeringRoot_ = dir.u8string();
             orbmod::Registrar reg{this, [](void *p, const orbmod::Type *t) {
                                       auto &self = *static_cast<PluginManager *>(p);

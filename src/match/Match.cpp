@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #include "orbduel/content/DataModel.hpp"
 #include "orbduel/core/Event.hpp"
@@ -45,8 +46,10 @@ void Match::setRule(std::unique_ptr<IMatchRule> rule) {
 void Match::setup(const CharacterDef &left, const CharacterDef &right, const MapDef &map,
                   const ContentPack &pack, Rng &rng) {
     world_.clear();
-    skills_[0].reset();
-    skills_[1].reset();
+    fighters_.assign(2, Fighter{});
+    skills_.assign(2, SkillSystem{});
+    ownedDefs_.clear();
+    pack_ = &pack;
     stall_.reset();
     zone_.configure(map.shrink);
 
@@ -115,50 +118,14 @@ void Match::setup(const CharacterDef &left, const CharacterDef &right, const Map
         Fighter &fighter = fighters_[i];
         fighter = Fighter{};
         fighter.bodyId = bodyId;
+        fighter.team = i;
+        fighter.primary = true;
         fighter.def = &def;
         fighter.hp = def.stats.maxHp;
         fighter.maxHp = def.stats.maxHp;
         fighter.alive = true;
 
-        std::vector<const SkillDef *> skillDefs;
-        for (const std::string &skillId : def.skills) {
-            const SkillDef *skill = pack.findSkill(skillId);
-            if (skill != nullptr) {
-                skillDefs.push_back(skill);
-            } else {
-                log::warn("角色 '" + def.id + "' 引用了不存在的技能: " + skillId);
-            }
-        }
-        skills_[i].attach(bodyId, skillDefs, this, &world_, &rng);
-
-        // 被动技能在开局读一次：贯穿、引力井都靠这几个数，之后每步只看状态
-        for (const SkillDef *skill : skillDefs) {
-            if (skill == nullptr || skill->trigger.kind != TriggerKind::Passive) {
-                continue;
-            }
-            for (const ModifierDef &modifier : skill->modifiers) {
-                if (modifier.op != ModifierOp::Pierce) {
-                    continue;
-                }
-                fighter.pierce.damage = modifier.value;
-                fighter.pierce.minSpeed = modifier.minSpeed;
-                fighter.pierce.push = modifier.push;
-            }
-            if (skill->gravity.enabled) {
-                fighter.gravity.range = skill->gravity.range;
-                fighter.gravity.rangeMax = skill->gravity.rangeMax;
-                fighter.gravity.growthSeconds = skill->gravity.growthSeconds;
-                fighter.gravity.accel = skill->gravity.accel;
-                fighter.gravity.coreFactor = skill->gravity.coreFactor;
-                fighter.gravity.damage = skill->gravity.damage;
-                fighter.gravity.damageMax = skill->gravity.damageMax;
-                fighter.gravity.dpsEdge = skill->gravity.dpsEdge;
-                fighter.gravity.dpsCenter = skill->gravity.dpsCenter;
-                fighter.gravity.tickInterval = skill->gravity.tickInterval;
-                fighter.gravity.teleportGuard = skill->gravity.teleportGuard;
-                fighter.gravity.teleportMinDist = skill->gravity.teleportMinDist;
-            }
-        }
+        attachSkills(i);
     }
 
     elapsed_ = 0.0f;
@@ -171,6 +138,105 @@ void Match::setup(const CharacterDef &left, const CharacterDef &right, const Map
     }
 }
 
+void Match::attachSkills(int i) {
+    Fighter &fighter = fighters_[i];
+    const CharacterDef &def = *fighter.def;
+    std::vector<const SkillDef *> skillDefs;
+    for (const std::string &skillId : def.skills) {
+        const SkillDef *skill = pack_->findSkill(skillId);
+        if (skill != nullptr) {
+            skillDefs.push_back(skill);
+        } else {
+            log::warn("角色 '" + def.id + "' 引用了不存在的技能: " + skillId);
+        }
+    }
+    skills_[i].attach(fighter.bodyId, skillDefs, this, &world_, rng_);
+
+    // 被动技能在开局读一次：贯穿、引力井都靠这几个数，之后每步只看状态
+    for (const SkillDef *skill : skillDefs) {
+        if (skill == nullptr || skill->trigger.kind != TriggerKind::Passive) {
+            continue;
+        }
+        for (const ModifierDef &modifier : skill->modifiers) {
+            if (modifier.op != ModifierOp::Pierce) {
+                continue;
+            }
+            fighter.pierce.damage = modifier.value;
+            fighter.pierce.minSpeed = modifier.minSpeed;
+            fighter.pierce.push = modifier.push;
+        }
+        if (skill->gravity.enabled) {
+            fighter.gravity.range = skill->gravity.range;
+            fighter.gravity.rangeMax = skill->gravity.rangeMax;
+            fighter.gravity.growthSeconds = skill->gravity.growthSeconds;
+            fighter.gravity.accel = skill->gravity.accel;
+            fighter.gravity.coreFactor = skill->gravity.coreFactor;
+            fighter.gravity.damage = skill->gravity.damage;
+            fighter.gravity.damageMax = skill->gravity.damageMax;
+            fighter.gravity.dpsEdge = skill->gravity.dpsEdge;
+            fighter.gravity.dpsCenter = skill->gravity.dpsCenter;
+            fighter.gravity.tickInterval = skill->gravity.tickInterval;
+            fighter.gravity.teleportGuard = skill->gravity.teleportGuard;
+            fighter.gravity.teleportMinDist = skill->gravity.teleportMinDist;
+        }
+    }
+}
+
+int Match::fighterCount() const {
+    return static_cast<int>(fighters_.size());
+}
+const Fighter *Match::fighterById(int id) const {
+    for (const auto &f : fighters_)
+        if (f.bodyId == id)
+            return &f;
+    return nullptr;
+}
+bool Match::isEnemy(int a, int b) const {
+    const auto *left = fighterById(a), *right = fighterById(b);
+    return left && right && a != b && (left->team < 0 || right->team < 0 || left->team != right->team);
+}
+int Match::addCombatant(int id, const CharacterDef &def, Vec2 pos, Vec2 velocity, int team, int owner,
+                        float lifetime) {
+    if (phase_ != MatchPhase::Fighting || fighterById(id))
+        return -1;
+    auto &stored = ownedDefs_.emplace(id, def).first->second;
+    Body body;
+    body.id = id;
+    body.pos = pos;
+    body.vel = velocity;
+    body.radius = stored.hitbox.radius;
+    body.mass = stored.stats.mass;
+    body.restitution = stored.stats.restitution;
+    body.ghost = stored.hitbox.ghost;
+    if (world_.addBody(body) < 0) {
+        ownedDefs_.erase(id);
+        return -1;
+    }
+    arena_.resolveOverlaps(*world_.body(id), 1.f);
+    Fighter f;
+    f.bodyId = id;
+    f.def = &stored;
+    f.hp = f.maxHp = stored.stats.maxHp;
+    f.team = team;
+    f.owner = owner;
+    f.lifetime = lifetime;
+    f.expires = lifetime > 0;
+    fighters_.push_back(f);
+    skills_.emplace_back();
+    attachSkills(fighterCount() - 1);
+    return id;
+}
+void Match::removeCombatant(int id) {
+    for (int i = 2; i < fighterCount(); ++i)
+        if (fighters_[i].bodyId == id) {
+            skills_.erase(skills_.begin() + i);
+            fighters_.erase(fighters_.begin() + i);
+            world_.removeBody(id);
+            ownedDefs_.erase(id);
+            return;
+        }
+}
+
 void Match::start() {
     if (phase_ != MatchPhase::Fighting) {
         phase_ = MatchPhase::Fighting;
@@ -180,8 +246,9 @@ void Match::start() {
 
 void Match::reset() {
     world_.clear();
-    skills_[0].reset();
-    skills_[1].reset();
+    skills_.assign(2, SkillSystem{});
+    fighters_.assign(2, Fighter{});
+    ownedDefs_.clear();
     stall_.reset();
     elapsed_ = 0.0f;
     phase_ = MatchPhase::Idle;
@@ -195,171 +262,119 @@ void Match::reset() {
 }
 
 void Match::update(float dt) {
-    if (phase_ != MatchPhase::Fighting) {
+    if (phase_ != MatchPhase::Fighting)
         return;
-    }
-
     elapsed_ += dt;
-
-    Body *bodies[2] = {world_.body(fighters_[0].bodyId), world_.body(fighters_[1].bodyId)};
-    if (bodies[0] == nullptr || bodies[1] == nullptr) {
+    Body *left = world_.body(fighters_[0].bodyId), *right = world_.body(fighters_[1].bodyId);
+    if (!left || !right)
         return;
-    }
-
     stall_.update(dt);
-
     if (stallEnabled_ && stall_.lullSeconds() > stall_.params().lullStart) {
-        bodies[0]->force += stall_.attraction(*bodies[0], *bodies[1]);
-        bodies[1]->force += stall_.attraction(*bodies[1], *bodies[0]);
+        left->force += stall_.attraction(*left, *right);
+        right->force += stall_.attraction(*right, *left);
     }
-
-    // 质量随时间成长：黑洞会越吃越重，吸力也按 mass / 起始质量 放大
-    for (int i = 0; i < 2; ++i) {
-        Fighter &fighter = fighters_[i];
-        if (!fighter.alive || fighter.def == nullptr) {
+    // 所有战斗实体共享质量成长、护盾、连击与技能计时。
+    for (int i = 0; i < fighterCount(); ++i) {
+        auto &f = fighters_[i];
+        auto *body = world_.body(f.bodyId);
+        if (!body || !f.alive || !f.def)
             continue;
-        }
-        const StatsDef &stats = fighter.def->stats;
-        bodies[i]->mass = stats.mass;
-        if (stats.massMax <= stats.mass) {
-            continue;
-        }
-        const float t = stats.massRamp > 0.01f ? clampf(elapsed_ / stats.massRamp, 0.0f, 1.0f) : 1.0f;
-        Body &body = *bodies[i];
-        body.mass = stats.mass + (stats.massMax - stats.mass) * t;
-        body.invMass = body.mass > 0.0f ? 1.0f / body.mass : 0.0f;
-    }
-
-    for (int i = 0; i < 2; ++i) {
-        Fighter &fighter = fighters_[i];
-        fighter.coreTick = std::max(0.f, fighter.coreTick - dt);
-        fighter.coreGuard = std::max(0.f, fighter.coreGuard - dt);
-        if (fighter.shieldTime > 0) {
-            fighter.shieldTime -= dt;
-            if (fighter.shieldTime <= 0)
-                fighter.shield = 0;
-        }
-        if (fighter.alive) {
-            const float ratio = fighter.maxHp > 0.0f ? fighter.hp / fighter.maxHp : 0.0f;
-            skills_[i].update(dt, ratio, *bodies[i], *bodies[1 - i], rngRef(), events_);
-        }
-        if (fighter.comboTimer > 0.0f) {
-            fighter.comboTimer -= dt;
-            if (fighter.comboTimer <= 0.0f) {
-                fighter.comboTimer = 0.0f;
-                fighter.combo = 0;
+        if (f.expires)
+            f.lifetime = std::max(0.f, f.lifetime - dt);
+        const auto &stats = f.def->stats;
+        body->mass = stats.mass;
+        if (stats.massMax > stats.mass)
+            body->mass += (stats.massMax - stats.mass) * growthOf(elapsed_, stats.massRamp);
+        body->invMass = body->mass > 0 ? 1.f / body->mass : 0;
+        f.coreTick = std::max(0.f, f.coreTick - dt);
+        f.coreGuard = std::max(0.f, f.coreGuard - dt);
+        if (f.shieldTime > 0 && (f.shieldTime -= dt) <= 0)
+            f.shield = 0;
+        if (f.comboTimer > 0 && (f.comboTimer -= dt) <= 0)
+            f.combo = 0;
+        // 单目标技能选择最近的存活敌人；范围技能在下方遍历所有敌人。
+        Body *enemy = nullptr;
+        float nearest = std::numeric_limits<float>::infinity();
+        for (const auto &other : fighters_) {
+            const auto *b = world_.body(other.bodyId);
+            if (other.alive && b && isEnemy(f.bodyId, other.bodyId)) {
+                float d = lengthSq(b->pos - body->pos);
+                if (d < nearest) {
+                    nearest = d;
+                    enemy = world_.body(other.bodyId);
+                }
             }
         }
+        skills_[i].update(dt, f.maxHp > 0 ? f.hp / f.maxHp : 0, *body, enemy ? *enemy : *body, rngRef(),
+                          events_);
     }
-
-    // 万向天引：范围内持续吸力 + 场内掉血 + 到点爆炸。爆炸之后才进冷却（冷却在 SkillSystem 里设）。
-    for (int i = 0; i < 2; ++i) {
-        Body &self = *bodies[i];
-        Body &enemy = *bodies[1 - i];
-
+    // 万向天引与引力井保留原有成长、免伤、核心传送和冷却规则。
+    for (int i = 0; i < fighterCount(); ++i) {
+        auto &me = fighters_[i];
+        auto *self = world_.body(me.bodyId);
+        if (!me.alive || !self)
+            continue;
         PullField field;
-        if (fighters_[i].alive && skills_[i].pullField(field)) {
-            const Vec2 delta = self.pos - enemy.pos;
-            const float dist = lengthOf(delta);
-            if (dist > 1e-3f && dist <= field.radius) {
-                // 质量越大吸得越狠
-                float massScale = 1.0f;
-                if (fighters_[i].def != nullptr && fighters_[i].def->stats.mass > 0.0f) {
-                    massScale = self.mass / fighters_[i].def->stats.mass;
-                }
-                enemy.force += delta * (field.accel * massScale / dist);
-
-                const float ratio = 1.0f - dist / field.radius;
-                const float dps = field.dpsEdge + (field.dpsCenter - field.dpsEdge) * ratio;
-                if (dps > 0.0f) {
-                    damage(fighters_[i].bodyId, fighters_[1 - i].bodyId, dps * dt, "omnipull");
-                }
+        bool pulling = skills_[i].pullField(field);
+        float blastRadius = 0, blastDamage = 0;
+        bool blast = skills_[i].consumeBlast(blastRadius, blastDamage);
+        for (int j = 0; j < fighterCount(); ++j) {
+            auto &foe = fighters_[j];
+            auto *enemy = world_.body(foe.bodyId);
+            if (!foe.alive || !enemy || !isEnemy(me.bodyId, foe.bodyId))
+                continue;
+            Vec2 delta = self->pos - enemy->pos;
+            float dist = lengthOf(delta);
+            float massScale = me.def->stats.mass > 0 ? self->mass / me.def->stats.mass : 1;
+            if (pulling && dist > 1e-3f && dist <= field.radius) {
+                enemy->force += delta * (field.accel * massScale / dist);
+                float dps = field.dpsEdge + (field.dpsCenter - field.dpsEdge) * (1 - dist / field.radius);
+                if (dps > 0)
+                    damage(me.bodyId, foe.bodyId, dps * dt, "omnipull");
+            }
+            if (blast && dist <= blastRadius)
+                damage(me.bodyId, foe.bodyId, blastDamage, "omnipull");
+            if (!foe.alive || me.gravity.range <= 0 || skills_[i].suppressesPassive() || dist <= 1e-3f)
+                continue;
+            float growth = growthOf(elapsed_, me.gravity.growthSeconds);
+            float range = me.gravity.range + (me.gravity.rangeMax - me.gravity.range) * growth;
+            if (dist > range)
+                continue;
+            enemy->force += delta * (me.gravity.accel * massScale / dist);
+            float dps = me.gravity.dpsEdge + (me.gravity.dpsCenter - me.gravity.dpsEdge) * (1 - dist / range);
+            if (dps > 0)
+                damage(me.bodyId, foe.bodyId, dps * dt, "gravity");
+            if (!foe.alive || dist > me.gravity.coreFactor * self->radius || me.coreTick > 0 ||
+                foe.coreGuard > 0)
+                continue;
+            me.coreTick = me.gravity.tickInterval;
+            foe.coreGuard = me.gravity.teleportGuard;
+            Vec2 victimPos = enemy->pos;
+            damage(me.bodyId, foe.bodyId,
+                   me.gravity.damage + (me.gravity.damageMax - me.gravity.damage) * growth, "gravity-core");
+            if (foe.alive) {
+                teleportRandom(j, self->pos, me.gravity.teleportMinDist);
+                Event event;
+                event.type = EventType::SkillExpire;
+                event.a = me.bodyId;
+                event.pos = victimPos;
+                event.value = 44;
+                events_.publish(event);
             }
         }
-
-        float blastRadius = 0.0f;
-        float blastDamage = 0.0f;
-        if (skills_[i].consumeBlast(blastRadius, blastDamage)) {
-            if (fighters_[1 - i].alive && lengthOf(enemy.pos - self.pos) <= blastRadius) {
-                damage(fighters_[i].bodyId, fighters_[1 - i].bodyId, blastDamage, "omnipull");
-            }
+        if (blast) {
             Event event;
             event.type = EventType::SkillExpire;
-            event.a = fighters_[i].bodyId;
-            event.pos = self.pos;
+            event.a = me.bodyId;
+            event.pos = self->pos;
             event.value = blastRadius;
             events_.publish(event);
         }
     }
-
-    // 引力井（被动）：把范围内的敌人往中心拉（保留切向速度 → 会绕着转），
-    // 进到核心圈就掉血并把对方随机传走。大招期间被动失效。
-    for (int i = 0; i < 2; ++i) {
-        Fighter &me = fighters_[i];
-        Fighter &foe = fighters_[1 - i];
-        if (!me.alive || !foe.alive || me.gravity.range <= 0.0f || skills_[i].suppressesPassive()) {
-            continue;
-        }
-
-        Body &self = *bodies[i];
-        Body &enemy = *bodies[1 - i];
-        const Vec2 delta = self.pos - enemy.pos;
-        const float dist = lengthOf(delta);
-        if (dist <= 1e-3f) {
-            continue;
-        }
-
-        // 范围和伤害都按对局时间成长（同一个 growthSeconds）
-        const float growth = growthOf(elapsed_, me.gravity.growthSeconds);
-        const float range = me.gravity.range + (me.gravity.rangeMax - me.gravity.range) * growth;
-        if (dist > range) {
-            continue;
-        }
-
-        // 质量越大吸得越狠（body.mass 每步已经按时间更新过）
-        float massScale = 1.0f;
-        if (me.def != nullptr && me.def->stats.mass > 0.0f) {
-            massScale = self.mass / me.def->stats.mass;
-        }
-        enemy.force += delta * (me.gravity.accel * massScale / dist);
-
-        // 吸力场持续伤害：边缘少、中心多，按距离线性插值
-        const float fieldDps =
-            me.gravity.dpsEdge + (me.gravity.dpsCenter - me.gravity.dpsEdge) * (1.0f - dist / range);
-        if (fieldDps > 0.0f) {
-            damage(me.bodyId, foe.bodyId, fieldDps * dt, "gravity");
-        }
-
-        const float core = me.gravity.coreFactor * self.radius;
-        if (dist > core || me.coreTick > 0.0f || foe.coreGuard > 0.0f) {
-            continue;
-        }
-
-        const float damage = me.gravity.damage + (me.gravity.damageMax - me.gravity.damage) * growth;
-        me.coreTick = me.gravity.tickInterval;
-        foe.coreGuard = me.gravity.teleportGuard;
-
-        const Vec2 victimPos = enemy.pos;
-        this->damage(me.bodyId, foe.bodyId, damage, "gravity-core");
-        if (foe.alive) {
-            teleportRandom(1 - i, self.pos, me.gravity.teleportMinDist);
-            Event event;
-            event.type = EventType::SkillExpire;
-            event.a = me.bodyId;
-            event.pos = victimPos;
-            event.value = 44.0f;
-            events_.publish(event);
-        }
-    }
-
-    // 贯穿是「被动」：速度够快才生效。原地蓄力时速度是 0，照常被弹开、照常被打断。
-    for (int i = 0; i < 2; ++i) {
-        const Fighter &fighter = fighters_[i];
-        const bool phase = fighter.alive && fighter.pierce.push > 0.0f &&
-                           lengthOf(bodies[i]->vel) >= fighter.pierce.minSpeed;
-        bodies[i]->phasePush = phase ? fighter.pierce.push : 0.0f;
-    }
-
+    for (const auto &f : fighters_)
+        if (auto *b = world_.body(f.bodyId))
+            b->phasePush =
+                f.alive && f.pierce.push > 0 && lengthOf(b->vel) >= f.pierce.minSpeed ? f.pierce.push : 0;
     if (shrinkEnabled_)
         zone_.update(dt, stall_.lullSeconds());
 }
@@ -418,83 +433,61 @@ void Match::evaluate() {
 void Match::onEvent(const Event &event) {
     if (phase_ != MatchPhase::Fighting)
         return;
-    // 内置技能也接收命中、受击和撞墙事件，参数均来自内容。
-    for (int i = 0; i < 2; ++i) {
-        if (auto *b = world_.body(fighters_[i].bodyId))
-            skills_[i].onEvent(event, *b);
-    }
-    if (event.type != EventType::Hit || phase_ != MatchPhase::Fighting) {
+    // 友方仍产生物理接触，但不消耗重击、打断蓄力或触发命中技能。
+    if (event.type == EventType::Hit && !isEnemy(event.a, event.b))
         return;
-    }
-
-    int attackerIndex = -1;
-    int victimIndex = -1;
-    for (int i = 0; i < 2; ++i) {
-        if (fighters_[i].bodyId == event.a) {
-            attackerIndex = i;
-        }
-        if (fighters_[i].bodyId == event.b) {
-            victimIndex = i;
-        }
-    }
-    if (attackerIndex < 0 || victimIndex < 0 || attackerIndex == victimIndex) {
+    for (int i = 0; i < fighterCount(); ++i)
+        if (fighters_[i].alive)
+            if (auto *b = world_.body(fighters_[i].bodyId))
+                skills_[i].onEvent(event, *b);
+    if (event.type != EventType::Hit)
         return;
+    int pair[2] = {-1, -1};
+    for (int i = 0; i < fighterCount(); ++i) {
+        if (fighters_[i].bodyId == event.a)
+            pair[0] = i;
+        if (fighters_[i].bodyId == event.b)
+            pair[1] = i;
     }
-
-    Fighter &victim = fighters_[victimIndex];
-    if (!victim.alive) {
+    if (pair[0] < 0 || pair[1] < 0 || !fighters_[pair[0]].alive || !fighters_[pair[1]].alive)
         return;
-    }
-
     stall_.onHit();
-    hitCount_ += 1;
-
-    // 冲刺撞击：冲出去的那一方只让对手吃一次额外伤害（与碰撞伤害的倍率无关）
-    for (int i = 0; i < 2; ++i) {
-        float ramScale = 0.0f;
-        if (skills_[i].consumeRam(ramScale)) {
-            damage(fighters_[i].bodyId, fighters_[1 - i].bodyId, ramScale * event.value, "ram");
-        }
+    ++hitCount_;
+    for (int k = 0; k < 2; ++k) {
+        int i = pair[k], j = pair[1 - k];
+        float ramScale = 0;
+        if (skills_[i].consumeRam(ramScale))
+            damage(fighters_[i].bodyId, fighters_[j].bodyId, ramScale * event.value, "ram");
+        const auto *b = world_.body(fighters_[i].bodyId);
+        if (b && b->phasePush > 0 && fighters_[i].pierce.damage > 0)
+            damage(fighters_[i].bodyId, fighters_[j].bodyId, fighters_[i].pierce.damage, "pierce");
+        skills_[i].interruptCharge();
     }
-
-    // 贯穿伤害：物理层保证「刚撞上」那一步只发一次 Hit，所以一次穿过只刮一次
-    for (int i = 0; i < 2; ++i) {
-        const Body *body = world_.body(fighters_[i].bodyId);
-        if (body == nullptr || body->phasePush <= 0.0f || fighters_[i].pierce.damage <= 0.0f) {
-            continue;
-        }
-        damage(fighters_[i].bodyId, fighters_[1 - i].bodyId, fighters_[i].pierce.damage, "pierce");
-    }
-
-    // 撞上就算打断蓄力：不看这一下掉了多少血（碰撞伤害可能被数据关成 0）
-    skills_[0].interruptCharge();
-    skills_[1].interruptCharge();
-
     const float refSpeed = map_ ? std::max(1.f, map_->physics.refSpeed) : 400.f;
-    const bool ultRunning = skills_[0].omnipullActive() || skills_[1].omnipullActive();
+    bool ultRunning = skills_[pair[0]].omnipullActive() || skills_[pair[1]].omnipullActive();
     float amounts[2]{};
-    // 地图与挨撞者的普通碰撞倍率相乘；角色缺省值不再表示免伤。
-    // 使用攻击方碰撞前的正向速度，避免快速撞上静止目标时双方获得同样的攻击加成。
-    for (int i = 0; i < 2; ++i) {
-        auto &victim = fighters_[i];
+    // 仅计算本次接触的两名实体；双方数额先算好再结算。
+    for (int k = 0; k < 2; ++k) {
+        auto &victim = fighters_[pair[k]];
         if (!victim.alive)
             continue;
         victim.combo = victim.comboTimer > 0 ? victim.combo + 1 : 1;
-        victim.comboTimer = 3.f;
-        const float combo = std::min(2.5f, 1.f + .15f * (victim.combo - 1));
-        const float scale = ultRunning ? 0.f
-                                       : std::max(0.f, map_ ? map_->physics.damageScale : 1.f) *
-                                             std::max(0.f, victim.def->hitbox.contact);
-        if (scale <= 0.f)
+        victim.comboTimer = 3;
+        float combo = std::min(2.5f, 1.f + .15f * (victim.combo - 1));
+        float scale = ultRunning ? 0
+                                 : std::max(0.f, map_ ? map_->physics.damageScale : 1.f) *
+                                       std::max(0.f, victim.def->hitbox.contact);
+        if (scale <= 0)
             continue;
-        const float incoming = fighters_[1 - i].bodyId == event.a ? event.attackSpeedA : event.attackSpeedB;
+        const auto &attacker = fighters_[pair[1 - k]];
+        const float incoming = attacker.bodyId == event.a ? event.attackSpeedA : event.attackSpeedB;
         const float impact = clampf(.5f + incoming / refSpeed, .5f, 2.5f);
-        const float raw =
-            fighters_[1 - i].def->stats.attack * scale * impact * combo * skills_[1 - i].damageMultiplier();
-        amounts[i] = std::max(0.f, raw - victim.def->stats.armor);
+        float raw = fighters_[pair[1 - k]].def->stats.attack * scale * impact * combo *
+                    skills_[pair[1 - k]].damageMultiplier();
+        amounts[k] = std::max(0.f, raw - victim.def->stats.armor);
     }
-    for (int i = 0; i < 2; ++i)
-        damage(fighters_[1 - i].bodyId, fighters_[i].bodyId, amounts[i], "contact");
+    for (int k = 0; k < 2; ++k)
+        damage(fighters_[pair[1 - k]].bodyId, fighters_[pair[k]].bodyId, amounts[k], "contact");
 }
 
 void Match::damage(int source, int target, float amount, const std::string &cause) {
@@ -553,7 +546,7 @@ void Match::applyDamage(int victimBodyId, float amount, bool countsForCombo) {
         return;
     }
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < fighterCount(); ++i) {
         Fighter &fighter = fighters_[i];
         if (fighter.bodyId != victimBodyId || !fighter.alive) {
             continue;
@@ -588,7 +581,7 @@ void Match::applyDamage(int victimBodyId, float amount, bool countsForCombo) {
             event.value = elapsed_;
             events_.publish(event);
 
-            log::info("fighter " + std::to_string(i) + " died at " +
+            log::info("fighter " + std::to_string(fighter.bodyId) + " died at " +
                       std::to_string(static_cast<int>(elapsed_)) + "s");
         }
         return;
@@ -596,7 +589,7 @@ void Match::applyDamage(int victimBodyId, float amount, bool countsForCombo) {
 }
 
 void Match::teleportRandom(int victimIndex, Vec2 awayFrom, float minDist) {
-    if (victimIndex < 0 || victimIndex > 1) {
+    if (victimIndex < 0 || victimIndex >= fighterCount()) {
         return;
     }
     Fighter &victim = fighters_[victimIndex];
@@ -678,7 +671,7 @@ int Match::hitCount() const {
 
 const Fighter &Match::fighter(int index) const {
     static const Fighter kEmpty{};
-    if (index < 0 || index > 1) {
+    if (index < 0 || index >= fighterCount()) {
         return kEmpty;
     }
     return fighters_[index];
@@ -693,7 +686,7 @@ float Match::elapsed() const {
 }
 const std::vector<SkillState> &Match::skillStates(int index) const {
     static const std::vector<SkillState> empty;
-    return index >= 0 && index < 2 ? skills_[index].states() : empty;
+    return index >= 0 && index < fighterCount() ? skills_[index].states() : empty;
 }
 
 StallGuard &Match::stallGuard() {
@@ -708,7 +701,7 @@ ZoneController &Match::zone() {
 
 const SkillSystem &Match::skills(int index) const {
     static const SkillSystem kEmpty{};
-    if (index < 0 || index > 1) {
+    if (index < 0 || index >= fighterCount()) {
         return kEmpty;
     }
     return skills_[index];

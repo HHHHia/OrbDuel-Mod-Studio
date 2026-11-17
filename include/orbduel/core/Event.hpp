@@ -26,6 +26,8 @@ enum class EventType {
     Death,           // a 死亡者 id
     RoundEnd,        // a 胜者 id（-1 平局）
     Damage,          // a 来源；b 目标；value 实际伤害；tag 伤害原因
+    EntitySpawned,   // a 实体；b 所有者；pos 出生位置
+    EntityRemoved,   // a 实体；b 所有者；tag 清理原因
     Count
 };
 

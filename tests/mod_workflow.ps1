@@ -45,6 +45,14 @@ function Build-Install([string]$Source,[bool]$First=$false,[bool]$ExpectFailure=
     if($failed -ne $ExpectFailure){throw '一键入口结果不符，请查看测试工程 build-test.log'}
 }
 Build-Install $project $true
+$summon=Join-Path $run '分身 [summon project]'
+& $newScript -Id rookie-summon -Kind summon -Name '新手分身' -Destination $summon | Out-Null
+$summonManifest=Join-Path $summon 'mod.json'
+$summonJson=Get-Content -LiteralPath $summonManifest -Raw -Encoding UTF8 | ConvertFrom-Json
+$summonJson.defaults.speed=345
+$summonJson.defaults.maxAlive=1
+[IO.File]::WriteAllText($summonManifest,($summonJson|ConvertTo-Json -Depth 10),[Text.UTF8Encoding]::new($false))
+Build-Install $summon $true
 if(-not (Test-Path -LiteralPath (Join-Path $game 'mods\rookie-vortex\rookie-vortex.dll'))){throw '未安装 DLL'}
 if(Test-Path -LiteralPath (Join-Path $game 'mods\rookie-vortex\.orbduel-user.json')){throw '本地安装路径混入分享文件'}
 if(-not (Test-Path -LiteralPath (Join-Path $game 'mods\rookie-vortex\SDK_LICENSE.txt'))){throw '遗漏 SDK 许可证'}
@@ -72,6 +80,9 @@ try {
     $j.defaults.strength=-600
     [IO.File]::WriteAllText($manifest,($j|ConvertTo-Json -Depth 10),[Text.UTF8Encoding]::new($false))
     Build-Install $project
+    $summonJson.defaults.speed=690
+    [IO.File]::WriteAllText($summonManifest,($summonJson|ConvertTo-Json -Depth 10),[Text.UTF8Encoding]::new($false))
+    Build-Install $summon
     & $newScript -Id other-vortex -Name '另一份旋风' -Destination $other | Out-Null
     Build-Install $other $true
     $live.StandardInput.WriteLine('reload')

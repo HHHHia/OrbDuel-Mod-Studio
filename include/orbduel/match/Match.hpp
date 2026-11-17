@@ -9,6 +9,9 @@
 //   3. 环境伤害不计连击
 //   4. 对局结束后不再结算伤害
 
+#include "orbduel/content/DataModel.hpp"
+#include <deque>
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -54,6 +57,10 @@ struct GravityMod {
 };
 
 struct Fighter {
+    int team = -1, owner = -1;
+    bool primary = false;
+    float lifetime = 0;
+    bool expires = false;
     int bodyId = -1;
     const CharacterDef *def = nullptr;
     float hp = 100.0f;
@@ -107,6 +114,13 @@ class Match {
     MatchPhase phase() const;
     int hitCount() const;
     const Fighter &fighter(int index) const;
+    int fighterCount() const;
+    const Fighter *fighterById(int bodyId) const;
+    bool isEnemy(int a, int b) const;
+    // 固定步边界使用，额外实体不参与主角色胜负判断。
+    int addCombatant(int id, const CharacterDef &, Vec2 pos, Vec2 velocity, int team, int owner,
+                     float lifetime);
+    void removeCombatant(int id);
     const MatchResult &result() const;
     float elapsed() const;
     const std::vector<SkillState> &skillStates(int index) const;
@@ -126,8 +140,11 @@ class Match {
     Arena &arena_;
 
     std::unique_ptr<IMatchRule> rule_;
-    Fighter fighters_[2];
-    SkillSystem skills_[2];
+    std::deque<Fighter> fighters_{2};
+    std::deque<SkillSystem> skills_{2};
+    std::map<int, CharacterDef> ownedDefs_;
+    const ContentPack *pack_ = nullptr;
+    void attachSkills(int index);
     StallGuard stall_;
     ZoneController zone_;
 

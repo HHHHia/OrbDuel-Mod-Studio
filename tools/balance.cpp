@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
         if (pack.characters.size() < 2)
             throw std::runtime_error("competitive balance needs at least two eligible characters");
         PluginManager plugins;
+        plugins.setEntityApi(Simulation::entityApi());
         plugins.load(argv[2]);
         log::setConsole(false);
         const int seeds = std::max(1, std::atoi(argv[4])), firstSeed = std::atoi(argv[5]);
@@ -147,6 +148,10 @@ int main(int argc, char **argv) {
                        {"excludedCharacters", excluded},
                        {"matchups", json::object()},
                        {"byMap", json::object()}};
+        result["generationTypes"] = json::array();
+        for (const auto &type : plugins.generationTypes())
+            result["generationTypes"].push_back(
+                {{"id", type.id}, {"placement", type.placement}, {"defaults", type.defaults}});
         auto rules = sceneJson(SceneDocument::fromPack(pack)).at("rules");
         rules["timeLimit"] = 60;
         rules["stall"] = true;

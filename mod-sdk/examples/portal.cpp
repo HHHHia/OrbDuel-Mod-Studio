@@ -6,6 +6,11 @@ struct Portal : Behavior {
     using Behavior::Behavior;
     std::unordered_map<int, float> ready;
     void event(const Event &e) {
+        // 动态实体的编号不复用，离场后释放对应冷却，避免长局召唤持续积累条目。
+        if (!std::strcmp(e.name, "entity_removed") || !std::strcmp(e.name, "death")) {
+            ready.erase(e.a);
+            return;
+        }
         if (std::strcmp(e.name, "enter") || e.object != id)
             return;
         int filter = int(number("affect"));

@@ -42,3 +42,7 @@ ContentLoader ──角色/技能──> SceneDocument ←┴─ 编辑器 / 种
 ## 早期设计变更
 
 ADR-016 将扩展机制从纯 JSON 固定效果扩展为独立 C++ DLL。内容与 DLL 使用菜单显式重新加载，删除原先没有实现的自动 poll 接口。新增接口、文件格式、验收结果以 MOD_STUDIO、CONTENT_FORMAT 和 STATUS 为准。
+
+## 战斗实体扩展
+
+World 使用稳定 ID 与可回收存储，Match 持有动态 Fighter/SkillSystem 和额外角色定义快照；Simulation 在步首/步末统一提交实体与能力增删。原 SDK 布局不变，独立 EntityApi 通过可选 DLL 入口注入。实体仍以 Body 参与物理，HP 留在 Match；召唤与 AI 逻辑由模组实现。详细生命周期和示例见 [战斗实体与分身模组](COMBAT_ENTITIES.md)。

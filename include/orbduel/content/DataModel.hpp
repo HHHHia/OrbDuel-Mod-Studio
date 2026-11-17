@@ -201,10 +201,10 @@ struct SpawnDef {
 struct FieldDef {
     Vec2 pos{};
     float radius = 120.0f;
-    float dps = 0.0f;   // 每秒环境伤害（走 environment：不吃连击、不触发反伤）
-    float heal = 0.0f;  // 每秒回血
-    Vec2 accel{};       // 持续加速度（px/s²），每一物理步都加
-    int affect = 0;     // 0 所有球 | 1 左方球 | 2 右方球
+    float dps = 0.0f;  // 每秒环境伤害（走 environment：不吃连击、不触发反伤）
+    float heal = 0.0f; // 每秒回血
+    Vec2 accel{};      // 持续加速度（px/s²），每一物理步都加
+    int affect = 0;    // 0 所有实体 | 1 左队（含召唤物） | 2 右队（含召唤物）
     Rgba color{120, 200, 255, 90};
 };
 

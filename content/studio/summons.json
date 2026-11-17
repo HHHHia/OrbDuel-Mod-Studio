@@ -1,0 +1,185 @@
+{
+  "fighters": [
+    {
+      "mass": 1,
+      "description": {
+        "zh": "冲锋吸血：靠冲刺和碰撞恢复维持进攻，速度是伤害来源。",
+        "en": "Blaze"
+      },
+      "radius": 24,
+      "scale": 1,
+      "hp": 108,
+      "skills": [
+        "burst-dash",
+        "lifesteal"
+      ],
+      "speed": 420,
+      "attack": 12.5,
+      "id": "blaze",
+      "tint": [
+        255,
+        155,
+        85,
+        255
+      ],
+      "sourceDir": "characters/blaze",
+      "restitution": 0.97,
+      "name": {
+        "zh": "烈焰",
+        "en": "Blaze"
+      },
+      "texture": "skin.png",
+      "armor": 0,
+      "pattern": "flame"
+    },
+    {
+      "mass": 1.9,
+      "description": {
+        "zh": "防守反击：短时护盾配合荆棘反击，抵御高速冲撞。",
+        "en": "Bulwark"
+      },
+      "radius": 29,
+      "scale": 1,
+      "hp": 124,
+      "skills": [
+        "shield",
+        "thorns"
+      ],
+      "speed": 340,
+      "attack": 11.7,
+      "id": "bulwark",
+      "tint": [
+        244,
+        199,
+        110,
+        255
+      ],
+      "sourceDir": "characters/bulwark",
+      "restitution": 0.97,
+      "name": {
+        "zh": "磐石",
+        "en": "Bulwark"
+      },
+      "texture": "skin.png",
+      "armor": 0.8,
+      "pattern": "hex"
+    }
+  ],
+  "mods": [
+    "summon"
+  ],
+  "name": "回声分身试验场 / Echo Arena",
+  "nextObjectId": 3,
+  "objects": [
+    {
+      "id": 1,
+      "type": "summon.echo",
+      "owner": 0,
+      "pos": [
+        380,
+        360
+      ],
+      "size": [
+        80,
+        80
+      ],
+      "radius": 24,
+      "angle": 0,
+      "params": {
+        "interval": 2,
+        "maxAlive": 2,
+        "lifetime": 8,
+        "hpScale": 0.35,
+        "radiusScale": 0.65,
+        "attackScale": 0.5,
+        "speed": 280
+      }
+    },
+    {
+      "id": 2,
+      "type": "summon.echo",
+      "owner": 1,
+      "pos": [
+        900,
+        360
+      ],
+      "size": [
+        80,
+        80
+      ],
+      "radius": 24,
+      "angle": 0,
+      "params": {
+        "interval": 2,
+        "maxAlive": 2,
+        "lifetime": 8,
+        "hpScale": 0.35,
+        "radiusScale": 0.65,
+        "attackScale": 0.5,
+        "speed": 280
+      }
+    }
+  ],
+  "obstacles": [],
+  "rules": {
+    "animTime": 1.5,
+    "damagePerSec": 4,
+    "damageScale": 1,
+    "firstAt": 25,
+    "interval": 12,
+    "jitter": 1.5,
+    "lullTrigger": 8,
+    "maxSpeed": 1800,
+    "minInset": 0.4000000059604645,
+    "refSpeed": 400,
+    "shrink": false,
+    "stall": true,
+    "step": 0.07999999821186066,
+    "timeLimit": 60,
+    "wallRestitution": 0.9800000190734863,
+    "warnTime": 1
+  },
+  "seed": 42,
+  "size": [
+    1280,
+    720
+  ],
+  "spawns": [
+    {
+      "dir": [
+        1,
+        0
+      ],
+      "pos": [
+        380,
+        360
+      ]
+    },
+    {
+      "dir": [
+        -1,
+        0
+      ],
+      "pos": [
+        900,
+        360
+      ]
+    }
+  ],
+  "style": {
+    "accent": [
+      0.6299999952316284,
+      0.6600000262260437,
+      1
+    ],
+    "animate": true,
+    "background": [
+      0.05000000074505806,
+      0.07000000029802322,
+      0.15000000596046448
+    ],
+    "customColors": false,
+    "decoration": 0.699999988079071,
+    "preset": "cosmos"
+  }
+}

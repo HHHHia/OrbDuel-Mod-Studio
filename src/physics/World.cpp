@@ -35,29 +35,50 @@ void World::setWallParams(float restitution, float jitterDeg) {
 
 int World::addBody(const Body &body) {
     Body copy = body;
-    copy.id = static_cast<int>(bodies_.size());
+    copy.id = body.id >= 0 ? body.id : reserveBodyId();
+    nextId_ = std::max(nextId_, copy.id + 1);
+    if (slots_.count(copy.id))
+        return -1;
     copy.invMass = copy.mass > 0.0f ? 1.0f / copy.mass : 0.0f;
+    slots_[copy.id] = bodies_.size();
     bodies_.push_back(copy);
     return copy.id;
 }
 
+int World::reserveBodyId() {
+    return nextId_++;
+}
+
+void World::removeBody(int id) {
+    auto it = slots_.find(id);
+    if (it == slots_.end())
+        return;
+    bodies_.erase(bodies_.begin() + it->second);
+    slots_.erase(it);
+    for (std::size_t i = 0; i < bodies_.size(); ++i)
+        slots_[bodies_[i].id] = i;
+    for (auto contact = phaseContacts_.begin(); contact != phaseContacts_.end();)
+        if (int(*contact >> 32) == id || int(*contact & 0xffffffffu) == id)
+            contact = phaseContacts_.erase(contact);
+        else
+            ++contact;
+}
+
 void World::clear() {
     bodies_.clear();
+    slots_.clear();
+    nextId_ = 0;
     phaseContacts_.clear();
 }
 
 Body *World::body(int id) {
-    if (id < 0 || id >= static_cast<int>(bodies_.size())) {
-        return nullptr;
-    }
-    return &bodies_[static_cast<std::size_t>(id)];
+    auto it = slots_.find(id);
+    return it == slots_.end() ? nullptr : &bodies_[it->second];
 }
 
 const Body *World::body(int id) const {
-    if (id < 0 || id >= static_cast<int>(bodies_.size())) {
-        return nullptr;
-    }
-    return &bodies_[static_cast<std::size_t>(id)];
+    auto it = slots_.find(id);
+    return it == slots_.end() ? nullptr : &bodies_[it->second];
 }
 
 std::vector<Body> &World::bodies() {

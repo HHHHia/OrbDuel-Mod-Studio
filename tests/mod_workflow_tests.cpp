@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
         check(loader.loadAll(), "content failed");
         const auto &pack = loader.pack();
         PluginManager plugins;
+        plugins.setEntityApi(Simulation::entityApi());
         plugins.load(argv[2]);
         check(plugins.issues.empty(), "initial plugin load failed");
         auto *type = plugins.find("rookie-vortex.vortex");
@@ -53,6 +54,25 @@ int main(int argc, char **argv) {
         vortex.params = plugins.defaults(*type);
         scene.objects = {vortex};
         scene.mods = {"rookie-vortex"};
+        auto testSummon = [&](float speed) {
+            auto *summon = plugins.find("rookie-summon.echo");
+            check(summon && plugins.defaults(*summon).at("speed") == speed,
+                  "configured summon default missing after install/reload");
+            auto a = scene;
+            SceneObject root;
+            root.id = 1;
+            root.type = summon->api.id;
+            root.params = plugins.defaults(*summon);
+            a.objects = {root};
+            a.mods = {"rookie-summon"};
+            Simulation s(a, pack, plugins);
+            s.step();
+            s.step();
+            check(s.match.fighterCount() == 3, "copied summon template failed to create entity");
+            check(std::abs(lengthOf(s.world.body(s.match.fighter(2).bodyId)->vel) - speed) < .02f,
+                  "copied summon template ignored configured controller speed");
+        };
+        testSummon(345);
         auto live = std::make_unique<Simulation>(scene, pack, plugins);
         for (int i = 0; i < 12; ++i)
             live->step();
@@ -67,6 +87,7 @@ int main(int argc, char **argv) {
         type = plugins.find("rookie-vortex.vortex");
         check(type && plugins.defaults(*type).at("strength") == -600, "updated DLL default not loaded");
         check(plugins.find("other-vortex.vortex") != nullptr, "second project collides with first");
+        testSummon(690);
         check(scene.objects[0].params.at("strength") == 300, "reload changed an edited scene");
         {
             Simulation old(scene, pack, plugins);
@@ -93,6 +114,13 @@ int main(int argc, char **argv) {
         for (int i = 0; i < 12; ++i)
             live->step();
         check(live->world.body(0)->vel.y < -40, "installed behavior was damaged");
+        SceneObject root;
+        root.id = scene.nextId();
+        root.type = "rookie-summon.echo";
+        root.params = plugins.defaults(*plugins.find(root.type));
+        scene.objects.push_back(root);
+        scene.mods.push_back("rookie-summon");
+        check(saveScene(argv[3], scene, error), "cannot save installed summon scene");
         std::cout << "DONE" << std::endl;
         return 0;
     } catch (const std::exception &e) {

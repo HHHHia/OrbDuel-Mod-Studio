@@ -16,6 +16,8 @@ class Simulation {
     ~Simulation();
     void step(float dt = 1.f / 120);
     void draw(const orbmod::Draw &);
+    // 函数表可跨 Simulation 复用；每次调用传 Host::user。
+    static const orbmod::EntityApi *entityApi();
     SceneDocument scene;
     ContentPack pack;
     EventBus events;
@@ -47,6 +49,14 @@ class Simulation {
     std::vector<SceneObject> pendingSpawn_;
     std::vector<int> pendingRemove_;
     std::vector<OwnedEvent> pendingEvents_;
+    struct PendingEntity {
+        int id, team, owner;
+        CharacterDef def;
+        Vec2 pos, velocity;
+        float lifetime;
+    };
+    std::vector<PendingEntity> pendingEntities_;
+    std::map<int, std::string> removingEntities_;
     std::set<std::pair<int, int>> inside_;
     int nextId_ = 1;
     bool preview_;
@@ -57,5 +67,11 @@ class Simulation {
     // 地图自带的区域效果（scene.map.fields）：加速每步生效，伤害/回血每 0.25 秒结算一次。
     void applyFields(float dt);
     SceneObject *object(int);
+    int createEntity(const orbmod::EntitySpec &);
+    int bindAbility(int entity, const char *type, const char *params);
+    bool getEntity(int, orbmod::Entity *) const;
+    bool entityKnown(int) const;
+    void flushChanges();
+    void followOwners();
 };
 } // namespace orbduel
