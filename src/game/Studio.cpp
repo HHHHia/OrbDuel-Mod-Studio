@@ -1,6 +1,7 @@
 #include "orbduel/game/Studio.hpp"
 #include "Audio.hpp"
 #include "BodyShape.hpp"
+#include "StudioI18n.hpp"
 #include "orbduel/content/ContentLoader.hpp"
 #include "orbduel/content/Scene.hpp"
 #include "orbduel/core/Time.hpp"
@@ -31,6 +32,12 @@ ImVec4 color(float r, float g, float b, float a = 1) {
     return {r, g, b, a};
 }
 bool chineseNames = false;
+const char *tr(const char *zh) {
+    return studioText(zh, chineseNames);
+}
+const std::string &displayDescription(const LocalizedText &text) {
+    return chineseNames && !text.zh.empty() ? text.zh : (!text.en.empty() ? text.en : text.zh);
+}
 const char *displayName(const LocalizedText &name) {
     return chineseNames && !name.zh.empty() ? name.zh.c_str() : name.en.c_str();
 }
@@ -162,6 +169,7 @@ class Studio {
                     doc.mods.push_back(t->modId);
     }
     bool init() {
+        chineseNames = options.language == "zh";
         if (!loader.loadAll()) {
             for (auto &i : loader.issues())
                 message += i.source + ": " + i.message + "\n";
@@ -186,7 +194,7 @@ class Studio {
                 doc.shrink = true;
                 doc.timeLimit = 0;
             } else {
-                message = "找不到地图: " + options.mapId;
+                message = tr("找不到地图: ") + options.mapId;
                 return false;
             }
         } else if (options.sceneFile.empty()) {
@@ -302,7 +310,7 @@ class Studio {
         std::string e;
         if (saveScene(file, doc, e)) {
             modified = false;
-            message = "地图已保存";
+            message = tr("地图已保存");
         } else
             message = e;
     }
@@ -314,7 +322,7 @@ class Studio {
         loader.loadAll();
         assets->clear();
         dirty = true;
-        message = plugins.issues.empty() ? "模组与内容已重新加载" : plugins.issues.front();
+        message = plugins.issues.empty() ? tr("模组与内容已重新加载") : plugins.issues.front();
     }
     int headless() {
         std::string e;
@@ -360,38 +368,38 @@ class Studio {
         ImGui::PushID(i);
         auto &f = doc.fighters[i];
         ImGui::SetNextItemWidth(180);
-        if (ImGui::BeginCombo(i == 0 ? "左方角色" : "右方角色", displayName(f.name))) {
+        if (ImGui::BeginCombo(i == 0 ? tr("左方角色") : tr("右方角色"), displayName(f.name))) {
             for (const auto &c : loader.pack().characters) {
                 if (ImGui::Selectable(displayName(c.name), f.id == c.id)) {
                     f = c;
                     change();
                 }
-                if (ImGui::IsItemHovered() && !c.description.zh.empty())
-                    ImGui::SetTooltip("%s", c.description.zh.c_str());
+                if (ImGui::IsItemHovered() && !displayDescription(c.description).empty())
+                    ImGui::SetTooltip("%s", displayDescription(c.description).c_str());
             }
             ImGui::EndCombo();
         }
         ImGui::SameLine();
-        if (ImGui::SmallButton("应用预设"))
+        if (ImGui::SmallButton(tr("应用预设")))
             if (auto *c = loader.pack().findCharacter(f.id)) {
                 f = *c;
                 change();
             }
-        if (!f.description.zh.empty())
-            ImGui::TextWrapped("%s", f.description.zh.c_str());
-        ImGui::TextDisabled("生命 %.0f  攻击 %.1f  护甲 %.1f", f.stats.maxHp, f.stats.attack, f.stats.armor);
+        if (!displayDescription(f.description).empty())
+            ImGui::TextWrapped("%s", displayDescription(f.description).c_str());
+        ImGui::TextDisabled(tr("生命 %.0f  攻击 %.1f  护甲 %.1f"), f.stats.maxHp, f.stats.attack, f.stats.armor);
         if (!f.competitive)
-            ImGui::TextDisabled("训练角色：不参与竞技平衡统计");
+            ImGui::TextDisabled("%s", tr("训练角色：不参与竞技平衡统计"));
         for (const auto &id : f.skills)
             if (auto *s = loader.pack().findSkill(id)) {
                 ImGui::Text("%s", displayName(s->name));
                 ImGui::SameLine();
                 if (s->trigger.kind == TriggerKind::Passive)
-                    ImGui::TextDisabled("被动");
+                    ImGui::TextDisabled("%s", tr("被动"));
                 else
-                    ImGui::TextDisabled("%.1f 秒冷却", s->trigger.cooldown);
-                if (ImGui::IsItemHovered() && !s->description.zh.empty())
-                    ImGui::SetTooltip("%s", s->description.zh.c_str());
+                    ImGui::TextDisabled(tr("%.1f 秒冷却"), s->trigger.cooldown);
+                if (ImGui::IsItemHovered() && !displayDescription(s->description).empty())
+                    ImGui::SetTooltip("%s", displayDescription(s->description).c_str());
             }
         ImGui::PopID();
     }
@@ -447,32 +455,32 @@ class Studio {
     }
     void nav() {
         ImGui::BeginChild("navigation", {184, 0}, true);
-        ImGui::TextDisabled("WORKSPACE");
+        ImGui::TextDisabled("%s", chineseNames ? "工作区" : "WORKSPACE");
         ImGui::Spacing();
-        if (ImGui::Selectable("概览", page == 0, 0, {0, 38})) {
+        if (ImGui::Selectable(tr("概览"), page == 0, 0, {0, 38})) {
             click();
             game.reset();
             page = 0;
         }
-        if (ImGui::Selectable("地图编辑器", page == 1, 0, {0, 38})) {
+        if (ImGui::Selectable(tr("地图编辑器"), page == 1, 0, {0, 38})) {
             click();
             game.reset();
             page = 1;
         }
-        if (ImGui::Selectable("模组工坊", page == 2, 0, {0, 38})) {
+        if (ImGui::Selectable(tr("模组工坊"), page == 2, 0, {0, 38})) {
             click();
             game.reset();
             page = 2;
         }
         if (page != 2) {
-            section("场景风格");
+            section(tr("场景风格"));
             for (int i = 0; i < 5; ++i) {
                 auto p = themePalette(themes[i]);
                 ImGui::PushID(i);
                 ImGui::ColorButton("##color", {p.accent.r / 255.f, p.accent.g / 255.f, p.accent.b / 255.f, 1},
                                    ImGuiColorEditFlags_NoTooltip, {12, 12});
                 ImGui::SameLine();
-                if (ImGui::Selectable(labels[i], doc.theme == themes[i])) {
+                if (ImGui::Selectable(tr(labels[i]), doc.theme == themes[i])) {
                     doc.theme = themes[i];
                     change();
                 }
@@ -480,61 +488,61 @@ class Studio {
             }
         }
         if (page == 1) {
-            section("放置对象");
-            if (ImGui::Selectable("选择 / 拖动", tool == "select"))
+            section(tr("放置对象"));
+            if (ImGui::Selectable(tr("选择 / 拖动"), tool == "select"))
                 tool = "select";
-            if (ImGui::Selectable("矩形障碍", tool == "rect"))
+            if (ImGui::Selectable(tr("矩形障碍"), tool == "rect"))
                 tool = "rect";
-            if (ImGui::Selectable("圆形障碍", tool == "circle"))
+            if (ImGui::Selectable(tr("圆形障碍"), tool == "circle"))
                 tool = "circle";
             for (auto &t : plugins.types)
-                if (ImGui::Selectable(t.api.name, tool == t.api.id))
+                if (ImGui::Selectable(tr(t.api.name), tool == t.api.id))
                     tool = t.api.id;
-            ImGui::Checkbox("网格吸附", &grid);
-            ImGui::TextDisabled("点击画布放置\n拖动调整位置\nDelete 删除\nCtrl+Z 撤销");
+            ImGui::Checkbox(tr("网格吸附"), &grid);
+            ImGui::TextDisabled("%s", tr("点击画布放置\n拖动调整位置\nDelete 删除\nCtrl+Z 撤销"));
         }
         ImGui::SetCursorPosY(std::max(ImGui::GetCursorPosY() + 20, ImGui::GetWindowHeight() - 125));
         ImGui::Separator();
         ImGui::PushStyleColor(ImGuiCol_HeaderHovered, color(.35f, .12f, .12f, .75f));
         ImGui::PushStyleColor(ImGuiCol_HeaderActive, color(.45f, .15f, .15f, .75f));
         ImGui::PushStyleColor(ImGuiCol_Text, color(.95f, .42f, .42f));
-        if (ImGui::Selectable("退出游戏", false, 0, {0, 32})) {
+        if (ImGui::Selectable(tr("退出游戏"), false, 0, {0, 32})) {
             click();
             quitConfirm = true;
         }
         ImGui::PopStyleColor(3);
         ImGui::TextDisabled("ORBDUEL / STUDIO");
-        ImGui::TextDisabled("C++17 / 离线创作");
+        ImGui::TextDisabled("%s", tr("C++17 / 离线创作"));
         ImGui::EndChild();
     }
     void properties() {
         ImGui::BeginChild("properties", {290, 0}, true);
         ImGui::PushItemWidth(120);
-        ImGui::Text("属性");
-        ImGui::TextDisabled("修改后可直接开始测试");
+        ImGui::TextUnformatted(tr("属性"));
+        ImGui::TextDisabled("%s", tr("修改后可直接开始测试"));
         if (kind == 0 && selected >= 0 && selected < int(doc.objects.size())) {
             auto &o = doc.objects[selected];
             auto *t = plugins.find(o.type);
-            section(t ? t->api.name : o.type.c_str());
-            ImGui::TextDisabled("对象 #%d", o.id);
+            section(t ? tr(t->api.name) : o.type.c_str());
+            ImGui::TextDisabled(tr("对象 #%d"), o.id);
             float pos[2] = {o.pos.x, o.pos.y};
-            if (ImGui::DragFloat2("位置", pos, 1)) {
+            if (ImGui::DragFloat2(tr("位置"), pos, 1)) {
                 o.pos = {pos[0], pos[1]};
                 change();
             }
-            if (ImGui::DragFloat("半径", &o.radius, 1, 4, 600))
+            if (ImGui::DragFloat(tr("半径"), &o.radius, 1, 4, 600))
                 change();
-            if (ImGui::SliderFloat("朝向", &o.angle, -180, 180, "%.0f°"))
+            if (ImGui::SliderFloat(tr("朝向"), &o.angle, -180, 180, "%.0f°"))
                 change();
-            const char *owners[] = {"固定在地图", "跟随左方角色", "跟随右方角色"};
+            const char *owners[] = {tr("固定在地图"), tr("跟随左方角色"), tr("跟随右方角色")};
             int own = o.owner + 1;
-            if (ImGui::Combo("附着", &own, owners, 3)) {
+            if (ImGui::Combo(tr("附着"), &own, owners, 3)) {
                 o.owner = own - 1;
                 change();
             }
             if (t) {
-                ImGui::TextWrapped("%s", t->api.description);
-                section("模组参数");
+                ImGui::TextWrapped("%s", tr(t->api.description));
+                section(tr("模组参数"));
                 for (int i = 0; i < t->api.paramCount; ++i) {
                     auto &p = t->api.params[i];
                     ImGui::PushID(p.key);
@@ -544,19 +552,19 @@ class Studio {
                     bool edit = false;
                     if (p.kind == orbmod::ParamKind::Number) {
                         float x = j[p.key].get<float>();
-                        if (ImGui::DragFloat(p.label, &x, .5f, p.minimum, p.maximum)) {
+                        if (ImGui::DragFloat(tr(p.label), &x, .5f, p.minimum, p.maximum)) {
                             j[p.key] = x;
                             edit = true;
                         }
                     } else if (p.kind == orbmod::ParamKind::Integer) {
                         int x = int(j[p.key].get<float>());
-                        if (ImGui::DragInt(p.label, &x, 1, int(p.minimum), int(p.maximum))) {
+                        if (ImGui::DragInt(tr(p.label), &x, 1, int(p.minimum), int(p.maximum))) {
                             j[p.key] = x;
                             edit = true;
                         }
                     } else if (p.kind == orbmod::ParamKind::Toggle) {
                         bool x = j[p.key].is_boolean() ? j[p.key].get<bool>() : j[p.key].get<float>() != 0;
-                        if (ImGui::Checkbox(p.label, &x)) {
+                        if (ImGui::Checkbox(tr(p.label), &x)) {
                             j[p.key] = x;
                             edit = true;
                         }
@@ -570,10 +578,10 @@ class Studio {
                                 names.push_back(all.substr(start, k - start));
                                 start = k + 1;
                             }
-                        if (ImGui::BeginCombo(p.label,
-                                              x >= 0 && x < int(names.size()) ? names[x].c_str() : "选择")) {
+                        if (ImGui::BeginCombo(tr(p.label),
+                                              x >= 0 && x < int(names.size()) ? tr(names[x].c_str()) : tr("选择"))) {
                             for (int k = 0; k < int(names.size()); ++k)
-                                if (ImGui::Selectable(names[k].c_str(), k == x)) {
+                                if (ImGui::Selectable(tr(names[k].c_str()), k == x)) {
                                     j[p.key] = k;
                                     edit = true;
                                 }
@@ -581,12 +589,12 @@ class Studio {
                         }
                     } else if (p.kind == orbmod::ParamKind::ObjectRef) {
                         int target = int(j[p.key].get<float>());
-                        std::string label = "未关联";
+                        std::string label = tr("未关联");
                         for (auto &other : doc.objects)
                             if (other.id == target)
                                 label = "#" + std::to_string(target) + " " + other.type;
-                        if (ImGui::BeginCombo(p.label, label.c_str())) {
-                            if (ImGui::Selectable("未关联", target < 0)) {
+                        if (ImGui::BeginCombo(tr(p.label), label.c_str())) {
+                            if (ImGui::Selectable(tr("未关联"), target < 0)) {
                                 j[p.key] = -1;
                                 edit = true;
                             }
@@ -603,20 +611,20 @@ class Studio {
                     } else if (p.kind == orbmod::ParamKind::Color) {
                         auto x = j[p.key];
                         float a[4] = {x.at(0), x.at(1), x.at(2), x.at(3)};
-                        if (ImGui::ColorEdit4(p.label, a)) {
+                        if (ImGui::ColorEdit4(tr(p.label), a)) {
                             j[p.key] = {a[0], a[1], a[2], a[3]};
                             edit = true;
                         }
                     } else {
                         char b[512];
                         std::snprintf(b, sizeof(b), "%s", j[p.key].get<std::string>().c_str());
-                        if (ImGui::InputText(p.label, b, sizeof(b))) {
+                        if (ImGui::InputText(tr(p.label), b, sizeof(b))) {
                             j[p.key] = b;
                             edit = true;
                         }
                     }
                     if (p.help && *p.help && ImGui::IsItemHovered())
-                        ImGui::SetTooltip("%s", p.help);
+                        ImGui::SetTooltip("%s", tr(p.help));
                     change(edit);
                     ImGui::PopID();
                 }
@@ -628,10 +636,10 @@ class Studio {
                             if (other.id == target && target != o.id)
                                 found = true;
                         if (!found)
-                            ImGui::TextColored({1, .66f, .4f, 1}, "请选择有效的关联对象");
+                            ImGui::TextColored({1, .66f, .4f, 1}, "%s", tr("请选择有效的关联对象"));
                     }
             }
-            if (ImGui::Button("复制对象")) {
+            if (ImGui::Button(tr("复制对象"))) {
                 checkpoint();
                 auto copy = o;
                 copy.id = doc.nextId();
@@ -640,7 +648,7 @@ class Studio {
                 selected = int(doc.objects.size()) - 1;
             }
             ImGui::SameLine();
-            if (ImGui::Button("删除")) {
+            if (ImGui::Button(tr("删除"))) {
                 checkpoint();
                 doc.objects.erase(doc.objects.begin() + selected);
                 kind = -1;
@@ -648,95 +656,95 @@ class Studio {
             }
         } else if (kind == 1 && selected >= 0 && selected < int(doc.map.obstacles.size())) {
             auto &o = doc.map.obstacles[selected];
-            section("障碍");
+            section(tr("障碍"));
             float a[2] = {o.pos.x, o.pos.y};
-            if (ImGui::DragFloat2("位置", a, 1)) {
+            if (ImGui::DragFloat2(tr("位置"), a, 1)) {
                 o.pos = {a[0], a[1]};
                 change();
             }
             if (o.shape == "circle") {
-                if (ImGui::DragFloat("半径", &o.radius, 1, 5, 300))
+                if (ImGui::DragFloat(tr("半径"), &o.radius, 1, 5, 300))
                     change();
             } else {
                 float b[2] = {o.size.x, o.size.y};
-                if (ImGui::DragFloat2("大小", b, 1, 5, 600)) {
+                if (ImGui::DragFloat2(tr("大小"), b, 1, 5, 600)) {
                     o.size = {b[0], b[1]};
                     change();
                 }
             }
-            if (ImGui::SliderFloat("弹性", &o.restitution, 0, 1))
+            if (ImGui::SliderFloat(tr("弹性"), &o.restitution, 0, 1))
                 change();
-            if (ImGui::Button("删除障碍")) {
+            if (ImGui::Button(tr("删除障碍"))) {
                 checkpoint();
                 doc.map.obstacles.erase(doc.map.obstacles.begin() + selected);
                 kind = -1;
             }
         } else if (kind == 2 && selected >= 0 && selected < 2) {
-            section(selected == 0 ? "左方出生点" : "右方出生点");
+            section(selected == 0 ? tr("左方出生点") : tr("右方出生点"));
             auto &s = doc.map.spawns[selected];
             float a[2] = {s.pos.x, s.pos.y};
-            if (ImGui::DragFloat2("位置", a, 1)) {
+            if (ImGui::DragFloat2(tr("位置"), a, 1)) {
                 s.pos = {a[0], a[1]};
                 change();
             }
             float angle = radToDeg(std::atan2(s.dir.y, s.dir.x));
-            if (ImGui::SliderFloat("方向", &angle, -180, 180)) {
+            if (ImGui::SliderFloat(tr("方向"), &angle, -180, 180)) {
                 s.dir = {std::cos(degToRad(angle)), std::sin(degToRad(angle))};
                 change();
             }
         } else {
-            section("地图设置");
+            section(tr("地图设置"));
             char name[512];
             std::snprintf(name, sizeof(name), "%s", doc.name.c_str());
-            if (ImGui::InputText("名称", name, sizeof(name))) {
+            if (ImGui::InputText(tr("名称"), name, sizeof(name))) {
                 doc.name = name;
                 change();
             }
             int size[2] = {int(doc.map.size.x), int(doc.map.size.y)};
-            if (ImGui::InputInt2("尺寸", size)) {
+            if (ImGui::InputInt2(tr("尺寸"), size)) {
                 doc.map.size = {float(std::max(640, size[0])), float(std::max(480, size[1]))};
                 change();
             }
-            ImGui::TextDisabled("点击对象查看专属参数");
+            ImGui::TextDisabled("%s", tr("点击对象查看专属参数"));
         }
-        section("场景表现");
-        if (ImGui::SliderFloat("装饰密度", &doc.decoration, 0, 1))
+        section(tr("场景表现"));
+        if (ImGui::SliderFloat(tr("装饰密度"), &doc.decoration, 0, 1))
             change();
-        if (ImGui::Checkbox("场景动画", &doc.animate))
+        if (ImGui::Checkbox(tr("场景动画"), &doc.animate))
             change();
-        if (ImGui::Checkbox("自定义配色", &doc.customColors))
+        if (ImGui::Checkbox(tr("自定义配色"), &doc.customColors))
             change();
         if (doc.customColors) {
-            if (ImGui::ColorEdit3("背景色", doc.background.data()))
+            if (ImGui::ColorEdit3(tr("背景色"), doc.background.data()))
                 change();
-            if (ImGui::ColorEdit3("强调色", doc.accent.data()))
+            if (ImGui::ColorEdit3(tr("强调色"), doc.accent.data()))
                 change();
         }
-        section("对战规则");
-        if (ImGui::DragFloat("时间上限", &doc.timeLimit, 1, 1, 600, "%.0f 秒"))
+        section(tr("对战规则"));
+        if (ImGui::DragFloat(tr("时间上限"), &doc.timeLimit, 1, 1, 600, tr("%.0f 秒")))
             change();
-        if (ImGui::SliderFloat("普通碰撞倍率", &doc.map.physics.damageScale, 0, 5))
+        if (ImGui::SliderFloat(tr("普通碰撞倍率"), &doc.map.physics.damageScale, 0, 5))
             change();
         if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("只影响普通碰撞；技能和模组主动伤害另行结算。");
-        if (ImGui::Checkbox("缩圈", &doc.shrink))
+            ImGui::SetTooltip("%s", tr("只影响普通碰撞；技能和模组主动伤害另行结算。"));
+        if (ImGui::Checkbox(tr("缩圈"), &doc.shrink))
             change();
         if (doc.shrink) {
-            if (ImGui::SliderFloat("最大缩圈比例", &doc.map.shrink.minInset, 0, 1))
+            if (ImGui::SliderFloat(tr("最大缩圈比例"), &doc.map.shrink.minInset, 0, 1))
                 change();
-            if (ImGui::DragFloat("首次缩圈", &doc.map.shrink.firstAt, 1, 1, 300, "%.0f 秒"))
+            if (ImGui::DragFloat(tr("首次缩圈"), &doc.map.shrink.firstAt, 1, 1, 300, tr("%.0f 秒")))
                 change();
-            if (ImGui::DragFloat("挤压伤害/秒", &doc.map.shrink.damagePerSec, .2f, 0, 50))
+            if (ImGui::DragFloat(tr("挤压伤害/秒"), &doc.map.shrink.damagePerSec, .2f, 0, 50))
                 change();
         }
-        if (ImGui::Checkbox("防僵局吸引", &doc.stall))
+        if (ImGui::Checkbox(tr("防僵局吸引"), &doc.stall))
             change();
-        if (ImGui::CollapsingHeader("角色与技能"))
+        if (ImGui::CollapsingHeader(tr("角色与技能")))
             for (int i = 0; i < 2; ++i) {
                 ImGui::PushID(i);
                 auto &f = doc.fighters[i];
-                ImGui::Text("%s", i == 0 ? "左方" : "右方");
-                if (ImGui::BeginCombo("角色", displayName(f.name))) {
+                ImGui::Text("%s", i == 0 ? tr("左方") : tr("右方"));
+                if (ImGui::BeginCombo(tr("角色"), displayName(f.name))) {
                     for (auto &c : loader.pack().characters)
                         if (ImGui::Selectable(displayName(c.name), f.id == c.id)) {
                             f = c;
@@ -744,32 +752,32 @@ class Studio {
                         }
                     ImGui::EndCombo();
                 }
-                if (ImGui::SmallButton("应用当前角色预设"))
+                if (ImGui::SmallButton(tr("应用当前角色预设")))
                     if (auto *c = loader.pack().findCharacter(f.id)) {
                         f = *c;
                         change();
                     }
-                ImGui::TextWrapped("%s", f.description.zh.c_str());
-                if (ImGui::DragFloat("生命", &f.stats.maxHp, 1, 1, 10000))
+                ImGui::TextWrapped("%s", displayDescription(f.description).c_str());
+                if (ImGui::DragFloat(tr("生命"), &f.stats.maxHp, 1, 1, 10000))
                     change();
-                if (ImGui::DragFloat("攻击", &f.stats.attack, .2f, 0, 200))
+                if (ImGui::DragFloat(tr("攻击"), &f.stats.attack, .2f, 0, 200))
                     change();
-                if (ImGui::DragFloat("护甲", &f.stats.armor, .2f, 0, 100))
+                if (ImGui::DragFloat(tr("护甲"), &f.stats.armor, .2f, 0, 100))
                     change();
-                if (ImGui::DragFloat("初速", &f.stats.startSpeed, 5, 0, 1800))
+                if (ImGui::DragFloat(tr("初速"), &f.stats.startSpeed, 5, 0, 1800))
                     change();
-                if (ImGui::DragFloat("质量", &f.stats.mass, .05f, .1f, 20))
+                if (ImGui::DragFloat(tr("质量"), &f.stats.mass, .05f, .1f, 20))
                     change();
-                if (ImGui::TreeNode("身体与成长")) {
-                    if (ImGui::Checkbox("可穿入身体", &f.hitbox.ghost))
+                if (ImGui::TreeNode(tr("身体与成长"))) {
+                    if (ImGui::Checkbox(tr("可穿入身体"), &f.hitbox.ghost))
                         change();
-                    if (ImGui::DragFloat("挨撞系数", &f.hitbox.contact, .02f, 0, 10))
+                    if (ImGui::DragFloat(tr("挨撞系数"), &f.hitbox.contact, .02f, 0, 10))
                         change();
                     if (ImGui::IsItemHovered())
-                        ImGui::SetTooltip("与地图伤害倍率相乘；1 为正常受伤，0 为显式免疫普通碰撞。");
-                    if (ImGui::DragFloat("质量上限", &f.stats.massMax, .05f, 0, 20))
+                        ImGui::SetTooltip("%s", tr("与地图伤害倍率相乘；1 为正常受伤，0 为显式免疫普通碰撞。"));
+                    if (ImGui::DragFloat(tr("质量上限"), &f.stats.massMax, .05f, 0, 20))
                         change();
-                    if (ImGui::DragFloat("成长秒数", &f.stats.massRamp, 1, .1f, 600))
+                    if (ImGui::DragFloat(tr("成长秒数"), &f.stats.massRamp, 1, .1f, 600))
                         change();
                     ImGui::TreePop();
                 }
@@ -777,8 +785,8 @@ class Studio {
                     ImGui::PushID(slot);
                     std::string id = slot < int(f.skills.size()) ? f.skills[slot] : "";
                     const auto *chosen = loader.pack().findSkill(id);
-                    if (ImGui::BeginCombo("技能", chosen ? displayName(chosen->name) : "无")) {
-                        if (ImGui::Selectable("无", id.empty())) {
+                    if (ImGui::BeginCombo(tr("技能"), chosen ? displayName(chosen->name) : tr("无"))) {
+                        if (ImGui::Selectable(tr("无"), id.empty())) {
                             if (slot < int(f.skills.size()))
                                 f.skills.erase(f.skills.begin() + slot);
                             change();
@@ -794,7 +802,7 @@ class Studio {
                         ImGui::EndCombo();
                     }
                     if (chosen && ImGui::IsItemHovered())
-                        ImGui::SetTooltip("%s\n冷却 %.1f 秒", chosen->description.zh.c_str(),
+                        ImGui::SetTooltip(tr("%s\n冷却 %.1f 秒"), displayDescription(chosen->description).c_str(),
                                           chosen->trigger.cooldown);
                     ImGui::PopID();
                 }
@@ -976,11 +984,11 @@ class Studio {
         if (game && game->match.phase() == MatchPhase::Finished) {
             int winner = game->match.result().winnerId;
             std::string text =
-                winner < 0 ? "平局" : std::string(displayName(scene.fighters[winner].name)) + " 获胜";
+                winner < 0 ? tr("平局") : std::string(displayName(scene.fighters[winner].name)) + tr(" 获胜");
             d->AddRectFilled({r.x, r.y}, {r.x + r.w, r.y + r.h}, IM_COL32(7, 10, 20, 180), 8);
             auto s = ImGui::CalcTextSize(text.c_str());
             d->AddText({r.x + (r.w - s.x) / 2, r.y + r.h * .43f}, IM_COL32(245, 235, 207, 255), text.c_str());
-            const char *hint = "重新测试，或返回编辑器调整你的组合";
+            const char *hint = tr("重新测试，或返回编辑器调整你的组合");
             s = ImGui::CalcTextSize(hint);
             d->AddText({r.x + (r.w - s.x) / 2, r.y + r.h * .54f}, IM_COL32(170, 185, 215, 255), hint);
         }
@@ -1081,17 +1089,17 @@ class Studio {
     void overview() {
         ImGui::TextDisabled("CREATE / SIMULATE / SHARE");
         ImGui::SetWindowFontScale(1.8f);
-        ImGui::Text("让规则，成为你的作品。");
+        ImGui::TextUnformatted(tr("让规则，成为你的作品。"));
         ImGui::SetWindowFontScale(1);
-        ImGui::TextDisabled("用 C++ 模组创造新能力，在地图里组合它们，再离线分享你的竞技场。");
+        ImGui::TextDisabled("%s", tr("用 C++ 模组创造新能力，在地图里组合它们，再离线分享你的竞技场。"));
         ImGui::Spacing();
-        if (primary("开始自动对战", {170, 40}))
+        if (primary(tr("开始自动对战"), {170, 40}))
             start();
         ImGui::SameLine();
-        if (ImGui::Button("进入地图编辑器", {170, 40}))
+        if (ImGui::Button(tr("进入地图编辑器"), {170, 40}))
             page = 1;
         ImGui::SameLine();
-        if (ImGui::Button("导入分享码", {140, 40}))
+        if (ImGui::Button(tr("导入分享码"), {140, 40}))
             share = true;
         ImGui::Spacing();
         if (ImGui::BeginTable("roster-pickers", 2, ImGuiTableFlags_SizingStretchSame)) {
@@ -1104,51 +1112,51 @@ class Studio {
         ImGui::Spacing();
         canvas(false, std::max(220.f, ImGui::GetContentRegionAvail().y - 115));
         ImGui::Spacing();
-        ImGui::Text("%s / %s", doc.name.c_str(), themeName(doc.theme));
-        ImGui::TextDisabled("%zu 个机关 · %zu 个障碍 · %zu 个已加载类型", doc.objects.size(),
+        ImGui::Text("%s / %s", doc.name.c_str(), tr(themeName(doc.theme)));
+        ImGui::TextDisabled(tr("%zu 个机关 · %zu 个障碍 · %zu 个已加载类型"), doc.objects.size(),
                             doc.map.obstacles.size(), plugins.types.size());
-        ImGui::TextWrapped("同一个种子生成同一个场地；拖动、调整参数，或者自己写一个新的模组。");
+        ImGui::TextWrapped("%s", tr("同一个种子生成同一个场地；拖动、调整参数，或者自己写一个新的模组。"));
     }
     void editor() {
-        ImGui::Text("%s%s / %s", doc.name.c_str(), modified ? " *" : "", themeName(doc.theme));
-        if (ImGui::Button("保存"))
+        ImGui::Text("%s%s / %s", doc.name.c_str(), modified ? " *" : "", tr(themeName(doc.theme)));
+        if (ImGui::Button(tr("保存")))
             save();
         ImGui::SameLine();
-        if (ImGui::Button("打开 / 另存"))
+        if (ImGui::Button(tr("打开 / 另存")))
             files = true;
         ImGui::SameLine();
-        if (ImGui::Button("分享码"))
+        if (ImGui::Button(tr("分享码")))
             share = true;
         ImGui::SameLine();
-        if (ImGui::Button("撤销"))
+        if (ImGui::Button(tr("撤销")))
             restore(false);
         ImGui::SameLine();
-        if (ImGui::Button("重做"))
+        if (ImGui::Button(tr("重做")))
             restore(true);
         ImGui::SameLine();
-        if (primary("测试地图"))
+        if (primary(tr("测试地图")))
             start();
         ImGui::Spacing();
         ImGui::SetNextItemWidth(155);
         int seed = int(doc.map.seed);
-        if (ImGui::InputInt("种子", &seed, 0, 0)) {
+        if (ImGui::InputInt(tr("种子"), &seed, 0, 0)) {
             doc.map.seed = std::uint32_t(seed);
             change();
         }
         ImGui::SameLine();
         ImGui::SetNextItemWidth(65);
-        ImGui::SliderInt("障碍组", &pairs, 0, 5);
+        ImGui::SliderInt(tr("障碍组"), &pairs, 0, 5);
         ImGui::SameLine();
         ImGui::SetNextItemWidth(65);
-        ImGui::SliderInt("机关组", &groups, 0, 6);
-        if (ImGui::Button("按种子生成")) {
+        ImGui::SliderInt(tr("机关组"), &groups, 0, 6);
+        if (ImGui::Button(tr("按种子生成"))) {
             checkpoint();
             generateScene(doc, doc.map.seed, pairs, groups, plugins.generationTypes());
             syncMods();
             kind = -1;
         }
         ImGui::SameLine();
-        if (ImGui::Button("换个种子")) {
+        if (ImGui::Button(tr("换个种子"))) {
             checkpoint();
             Rng r{std::uint64_t(SDL_GetPerformanceCounter())};
             generateScene(doc, r.nextU32(), pairs, groups, plugins.generationTypes());
@@ -1156,85 +1164,83 @@ class Studio {
             kind = -1;
         }
         ImGui::SameLine();
-        if (ImGui::Button("清空机关")) {
+        if (ImGui::Button(tr("清空机关"))) {
             checkpoint();
             doc.objects.clear();
             syncMods();
             kind = -1;
         }
         canvas(true, std::max(180.f, ImGui::GetContentRegionAvail().y - 35));
-        ImGui::TextDisabled("工具：%s | %d × %d | 点击对象查看属性", tool == "select" ? "选择" : tool.c_str(),
+        ImGui::TextDisabled(tr("工具：%s | %d × %d | 点击对象查看属性"), tool == "select" ? tr("选择") : tool.c_str(),
                             int(doc.map.size.x), int(doc.map.size.y));
     }
     void modPage() {
         ImGui::SetWindowFontScale(1.5f);
-        ImGui::Text("模组工坊");
+        ImGui::TextUnformatted(tr("模组工坊"));
         ImGui::SetWindowFontScale(1);
-        ImGui::TextWrapped("模组可独立增加新能力。导入文件夹后重新加载，参数会自动出现在编辑器中。");
-        if (primary("重新加载模组和内容"))
+        ImGui::TextWrapped("%s", tr("模组可独立增加新能力。导入文件夹后重新加载，参数会自动出现在编辑器中。"));
+        if (primary(tr("重新加载模组和内容")))
             reload();
         ImGui::TextDisabled("%s", modRoot.c_str());
-        section("已安装");
+        section(tr("已安装"));
         for (auto &m : plugins.mods) {
             ImGui::PushID(m.id.c_str());
             bool enabled = std::find(disabled.begin(), disabled.end(), m.id) == disabled.end();
-            if (ImGui::Checkbox(m.name.c_str(), &enabled)) {
+            if (ImGui::Checkbox(tr(m.name.c_str()), &enabled)) {
                 if (enabled)
                     disabled.erase(std::remove(disabled.begin(), disabled.end(), m.id), disabled.end());
                 else
                     disabled.push_back(m.id);
-                message = "点击重新加载以应用启用状态";
+                message = tr("点击重新加载以应用启用状态");
             }
             ImGui::TextDisabled("%s", m.id.c_str());
             ImGui::PopID();
         }
-        section("可用能力");
+        section(tr("可用能力"));
         for (auto &t : plugins.types) {
-            ImGui::BulletText("%s", t.api.name);
-            ImGui::TextWrapped("%s", t.api.description);
+            ImGui::BulletText("%s", tr(t.api.name));
+            ImGui::TextWrapped("%s", tr(t.api.description));
             ImGui::TextDisabled("%s", t.api.id);
             ImGui::Spacing();
         }
         for (auto &e : plugins.issues)
             ImGui::TextColored({1, .65f, .45f, 1}, "%s", e.c_str());
-        section("自己制作模组");
-        ImGui::TextWrapped("从 mod-sdk/template 复制模板，修改 C++ "
-                           "行为并构建；将生成的整个文件夹放进此模组目录。参数标签、默认值和说明会自动显示，"
-                           "无需另外编写界面。");
-        ImGui::TextWrapped("传送门、引力场和弹射板使用相同接口；模板还提供了第四种机制：旋风。");
+        section(tr("自己制作模组"));
+        ImGui::TextWrapped("%s", tr("从 mod-sdk/template 复制模板，修改 C++ 行为并构建；将生成的整个文件夹放进此模组目录。参数标签、默认值和说明会自动显示，无需另外编写界面。"));
+        ImGui::TextWrapped("%s", tr("传送门、引力场和弹射板使用相同接口；模板还提供了第四种机制：旋风。"));
     }
     void battle() {
         if (!game)
             return;
-        ImGui::Text("自动对战 / %s", game->scene.name.c_str());
+        ImGui::Text(tr("自动对战 / %s"), game->scene.name.c_str());
         ImGui::SameLine();
         if (game->scene.timeLimit > 0)
-            ImGui::TextDisabled("%.1f / %.0f 秒", game->match.elapsed(), game->scene.timeLimit);
+            ImGui::TextDisabled(tr("%.1f / %.0f 秒"), game->match.elapsed(), game->scene.timeLimit);
         else
-            ImGui::TextDisabled("%.1f 秒 / 无时限", game->match.elapsed());
-        if (ImGui::Button(paused ? "继续" : "暂停"))
+            ImGui::TextDisabled(tr("%.1f 秒 / 无时限"), game->match.elapsed());
+        if (ImGui::Button(paused ? tr("继续") : tr("暂停")))
             paused = !paused;
         ImGui::SameLine();
-        if (ImGui::Button("重新测试"))
+        if (ImGui::Button(tr("重新测试")))
             start();
         ImGui::SameLine();
-        const char *backTo = "返回概览";
+        const char *backTo = tr("返回概览");
         if (returnPage == 1)
-            backTo = "返回编辑器";
+            backTo = tr("返回编辑器");
         if (ImGui::Button(backTo)) {
             stop();
             return;
         }
         ImGui::SameLine();
         ImGui::SetNextItemWidth(100);
-        ImGui::SliderFloat("速度", &speed, .25f, 4, "%.2fx");
+        ImGui::SliderFloat(tr("速度"), &speed, .25f, 4, "%.2fx");
         ImGui::SameLine();
-        if (ImGui::Button(fullscreen ? "退出全屏" : "全屏"))
+        if (ImGui::Button(fullscreen ? tr("退出全屏") : tr("全屏")))
             setFullscreen(!fullscreen);
         for (int i = 0; i < 2; ++i) {
             auto &f = game->match.fighter(i);
             ImGui::PushID(i);
-            ImGui::Text("%s %.0f / %.0f HP 护盾 %.0f", displayName(game->scene.fighters[i].name), f.hp,
+            ImGui::Text(tr("%s %.0f / %.0f HP 护盾 %.0f"), displayName(game->scene.fighters[i].name), f.hp,
                         f.maxHp, f.shield);
             auto tint = game->scene.fighters[i].skin.tint;
             ImGui::PushStyleColor(ImGuiCol_PlotHistogram,
@@ -1245,15 +1251,15 @@ class Studio {
                 const bool passive = state.def->trigger.kind == TriggerKind::Passive;
                 const char *status =
                     passive
-                        ? "被动"
+                        ? tr("被动")
                         : (state.charging
-                               ? "蓄力"
+                               ? tr("蓄力")
                                : (state.pullLeft > 0
-                                      ? "牵引"
-                                      : (state.active ? "生效"
+                                      ? tr("牵引")
+                                      : (state.active ? tr("生效")
                                                       : (state.lowTriggered
-                                                             ? "已使用"
-                                                             : (state.cooldownLeft > 0 ? "冷却" : "待命")))));
+                                                             ? tr("已使用")
+                                                             : (state.cooldownLeft > 0 ? tr("冷却") : tr("待命"))))));
                 const float left =
                     state.charging
                         ? state.chargeLeft
@@ -1264,16 +1270,16 @@ class Studio {
                 else
                     ImGui::TextDisabled("%s  %s %.1fs", displayName(state.def->name), status, left);
                 if (ImGui::IsItemHovered())
-                    ImGui::SetTooltip("%s", state.def->description.zh.c_str());
+                    ImGui::SetTooltip("%s", displayDescription(state.def->description).c_str());
             }
             ImGui::PopID();
         }
         canvas(false, std::max(170.f, ImGui::GetContentRegionAvail().y - 150));
         ImGui::BeginChild("battle-log", {0, 125}, true);
-        ImGui::TextDisabled("对战记录 / 碰撞 %d · 机关触发 %d", game->match.hitCount(), game->modActivations);
+        ImGui::TextDisabled(tr("对战记录 / 碰撞 %d · 机关触发 %d"), game->match.hitCount(), game->modActivations);
         for (int i = 0; i < 2; ++i) {
             auto &f = game->match.fighter(i);
-            ImGui::Text("%s 伤害 %.1f 护盾吸收 %.1f 治疗 %.1f", displayName(game->scene.fighters[i].name),
+            ImGui::Text(tr("%s 伤害 %.1f 护盾吸收 %.1f 治疗 %.1f"), displayName(game->scene.fighters[i].name),
                         f.damageDealt, f.damageAbsorbed, f.healingDone);
         }
         for (auto i = game->log.rbegin(); i != game->log.rend(); ++i)
@@ -1282,39 +1288,39 @@ class Studio {
     }
     void dialogs() {
         if (quitConfirm) {
-            ImGui::OpenPopup("退出游戏");
+            ImGui::OpenPopup(tr("退出游戏"));
             quitConfirm = false;
         }
-        if (ImGui::BeginPopupModal("退出游戏", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("确定退出 OrbDuel？");
-            ImGui::TextDisabled("当前草稿会写入 user/last-scene.json，下次启动可恢复。");
+        if (ImGui::BeginPopupModal(tr("退出游戏"), nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::TextUnformatted(tr("确定退出 OrbDuel？"));
+            ImGui::TextDisabled("%s", tr("当前草稿会写入 user/last-scene.json，下次启动可恢复。"));
             ImGui::Spacing();
-            if (danger("退出", {100, 32})) {
+            if (danger(tr("退出"), {100, 32})) {
                 quitRequested = true;
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SameLine();
-            if (ImGui::Button("取消", {100, 32}))
+            if (ImGui::Button(tr("取消"), {100, 32}))
                 ImGui::CloseCurrentPopup();
             ImGui::EndPopup();
         }
         if (share) {
-            ImGui::OpenPopup("离线分享");
+            ImGui::OpenPopup(tr("离线分享"));
             share = false;
         }
         ImGui::SetNextWindowSize({720, 490}, ImGuiCond_Appearing);
-        if (ImGui::BeginPopupModal("离线分享", nullptr, ImGuiWindowFlags_NoResize)) {
-            ImGui::TextWrapped("分享码保存地图、规则和风格。接收者需要安装相同的模组文件夹，无需联网。");
-            if (primary("生成并复制分享码")) {
+        if (ImGui::BeginPopupModal(tr("离线分享"), nullptr, ImGuiWindowFlags_NoResize)) {
+            ImGui::TextWrapped("%s", tr("分享码保存地图、规则和风格。接收者需要安装相同的模组文件夹，无需联网。"));
+            if (primary(tr("生成并复制分享码"))) {
                 auto s = shareCode(doc);
                 if (s.size() >= code.size())
                     code.resize(s.size() + 4096);
                 std::memcpy(code.data(), s.c_str(), s.size() + 1);
                 SDL_SetClipboardText(s.c_str());
-                message = "分享码已复制；自定义模组文件夹请另行分享";
+                message = tr("分享码已复制；自定义模组文件夹请另行分享");
             }
             ImGui::SameLine();
-            if (ImGui::Button("从剪贴板粘贴")) {
+            if (ImGui::Button(tr("从剪贴板粘贴"))) {
                 char *t = SDL_GetClipboardText();
                 if (t) {
                     auto n = std::strlen(t);
@@ -1325,7 +1331,7 @@ class Studio {
                 }
             }
             ImGui::InputTextMultiline("##code", code.data(), code.size(), {-1, 250});
-            if (primary("导入到编辑器")) {
+            if (primary(tr("导入到编辑器"))) {
                 SceneDocument candidate;
                 std::string e;
                 if (importCode(code.data(), candidate, e) && plugins.available(candidate, e)) {
@@ -1335,38 +1341,38 @@ class Studio {
                     page = 1;
                     kind = -1;
                     dirty = true;
-                    message = "分享地图已还原";
+                    message = tr("分享地图已还原");
                     ImGui::CloseCurrentPopup();
                 } else
                     message = e;
             }
             ImGui::SameLine();
-            if (ImGui::Button("保存分享码文本")) {
+            if (ImGui::Button(tr("保存分享码文本"))) {
                 std::error_code ec;
                 fs::create_directories(fs::u8path(userRoot), ec);
                 std::ofstream f(fs::u8path(userRoot + "/share-code.txt"));
                 f << code.data();
-                message = f ? "已保存到 user/share-code.txt" : "无法保存分享码";
+                message = f ? tr("已保存到 user/share-code.txt") : tr("无法保存分享码");
             }
             ImGui::SameLine();
-            if (ImGui::Button("关闭"))
+            if (ImGui::Button(tr("关闭")))
                 ImGui::CloseCurrentPopup();
             ImGui::TextWrapped("%s", message.c_str());
             ImGui::EndPopup();
         }
         if (files) {
-            ImGui::OpenPopup("地图文件");
+            ImGui::OpenPopup(tr("地图文件"));
             files = false;
         }
         ImGui::SetNextWindowSize({700, 400}, ImGuiCond_Appearing);
-        if (ImGui::BeginPopupModal("地图文件", nullptr, 0)) {
-            ImGui::InputText("文件路径", file, sizeof(file));
-            if (primary("保存到此文件")) {
+        if (ImGui::BeginPopupModal(tr("地图文件"), nullptr, 0)) {
+            ImGui::InputText(tr("文件路径"), file, sizeof(file));
+            if (primary(tr("保存到此文件"))) {
                 save();
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SameLine();
-            if (ImGui::Button("打开此文件")) {
+            if (ImGui::Button(tr("打开此文件"))) {
                 SceneDocument candidate;
                 std::string e;
                 if (openScene(file, candidate, e) && plugins.available(candidate, e)) {
@@ -1374,22 +1380,22 @@ class Studio {
                     doc = std::move(candidate);
                     dirty = true;
                     kind = -1;
-                    message = "地图已打开";
+                    message = tr("地图已打开");
                     ImGui::CloseCurrentPopup();
                 } else
                     message = e;
             }
             ImGui::SameLine();
-            if (ImGui::Button("关闭"))
+            if (ImGui::Button(tr("关闭")))
                 ImGui::CloseCurrentPopup();
-            section("已保存的地图");
+            section(tr("已保存的地图"));
             std::error_code ec;
             fs::create_directories(fs::u8path(userRoot), ec);
             for (auto &e : fs::directory_iterator(fs::u8path(userRoot), ec))
                 if (e.path().extension() == ".json")
                     if (ImGui::Selectable(e.path().filename().u8string().c_str()))
                         std::snprintf(file, sizeof(file), "%s", e.path().u8string().c_str());
-            section("内置示例地图");
+            section(tr("内置示例地图"));
             for (auto &e : fs::directory_iterator(fs::u8path(root + "/content/studio"), ec))
                 if (e.path().extension() == ".json")
                     if (ImGui::Selectable(e.path().filename().u8string().c_str()))
@@ -1495,7 +1501,7 @@ class Studio {
             ImGui::SameLine();
             ImGui::TextDisabled("/ MOD STUDIO");
             ImGui::SameLine(io.DisplaySize.x - 300);
-            ImGui::TextDisabled("%zu 个能力已加载 · 离线就绪", plugins.types.size());
+            ImGui::TextDisabled(tr("%zu 个能力已加载 · 离线就绪"), plugins.types.size());
             ImGui::Separator();
             ImGui::BeginChild("workspace", {0, message.empty() ? -12.f : -40.f}, false);
             if (page != 3) {
