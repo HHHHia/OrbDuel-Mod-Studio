@@ -34,5 +34,6 @@ class PluginManager {
   private:
     void clear();
     std::string registeringId_, registeringRoot_;
+    std::vector<std::string> cacheFiles_, cacheDirectories_;
 };
 } // namespace orbduel

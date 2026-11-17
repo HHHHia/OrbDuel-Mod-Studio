@@ -16,20 +16,11 @@
 
 ## 2. 第一个 C++ 模组
 
-1. 复制整个 `mod-sdk` 文件夹到自己的工作位置，保留 `include/` 和 `template/` 的相对关系。
-2. 打开 `template/my_mod.cpp`。模板提供一个切向施力的旋风，逻辑只有“查询球—判断距离—施加加速度”。
-3. 修改 `Vortex::step` 就能改变机制。修改 `Param` 中的标签、默认值和说明，编辑器控件同步变化。
-4. 使用 VS 2022 x64 构建：
+先按 [第一个模组实操教程](FIRST_MOD.md) 完成复制、参数修改、一键安装和游戏重新加载。
 
-```powershell
-cmake -S template -B build -A x64
-cmake --build build --config Release
-```
+`mod-sdk/new-mod.ps1` 会带上 SDK 头文件和许可证，生成的工程不依赖原 SDK 位置。配置集中在 mod.json；类型 ID 自动组合为 `<id>.<typeId>`。双击 build-install.cmd 后选择目标游戏，即可构建安装；后续会记住位置。
 
-5. 将 `build/package/my-mod/` 整个文件夹放进游戏旁边的 `mods/`。
-6. 回到模组工坊，点击“重新加载模组和内容”。编辑器工具箱会出现“旋风”。
-
-创建自己的名称时，同步修改 `mod.json` 的 ID、显示名称和 DLL 文件名，以及注册类型的 ID。类型名形如 `my-mod.vortex`，用于区分名称，不是校验指纹。更改 CMake 目标名后也要同步 DLL 文件名。
+也可保留旧的 CMake 方式单独构建 template，生成目录仍为 build/package/<id>。运行中的新版游戏使用 DLL 副本，不会锁住安装文件；重新加载前仍会销毁预览和比赛。默认参数改变只影响新对象，已有对象保留自己的参数。
 
 ## 3. 注册一个行为
 
@@ -70,7 +61,7 @@ DLL 使用简单结构与函数表，创建者销毁自己的实例；不跨 DLL
 - `examples/portal.cpp`：区域进入、对象引用、传送、速度方向、冷却、颜色与自定义事件。
 - `examples/gravity.cpp`：持续力场、吸引/排斥、作用对象和范围。
 - `examples/launch.cpp`：区域进入后弹射，并可附带护盾。
-- `examples/lava.cpp`：范围持续掉血，每 0.25 秒结算一次并记为环境伤害（示例场景 `content/studio/lava-pool.json`）。
+- `examples/lava.cpp`：范围环境伤害，每 0.25 秒结算；示例地图 content/studio/lava-pool.json。
 - `template/my_mod.cpp`：用相同接口增加第四种能力——旋风。
 
 技能式能力可把对象附着在角色上，再根据事件与自己的冷却逻辑施放。需要引擎尚未开放的物理量或绘制能力时，扩展 SDK；不要求所有可能机制都塞进预设效果枚举。

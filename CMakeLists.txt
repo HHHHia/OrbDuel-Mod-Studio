@@ -68,4 +68,14 @@ if(BUILD_TESTING)
   target_compile_options(orbduel_contact_tests PRIVATE /utf-8)
   add_test(NAME contact COMMAND orbduel_contact_tests "${CMAKE_CURRENT_SOURCE_DIR}/content")
   add_test(NAME balance_smoke COMMAND orbduel_balance "${CMAKE_CURRENT_SOURCE_DIR}/content" "${CMAKE_BINARY_DIR}/bin/mods" "${CMAKE_BINARY_DIR}/test-data/balance-smoke.json" 1 4242)
+  add_executable(orbduel_mod_workflow_tests tests/mod_workflow_tests.cpp)
+  target_link_libraries(orbduel_mod_workflow_tests PRIVATE orbduel_logic)
+  target_compile_options(orbduel_mod_workflow_tests PRIVATE /utf-8)
+  add_dependencies(orbduel_mod_workflow_tests orbduel)
+  add_test(NAME mod_workflow COMMAND powershell.exe -NoProfile -ExecutionPolicy Bypass -File
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/mod_workflow.ps1"
+    -HostExe "$<TARGET_FILE:orbduel_mod_workflow_tests>" -GameBin "${CMAKE_BINARY_DIR}/bin"
+    -SdkRoot "${CMAKE_CURRENT_SOURCE_DIR}/mod-sdk" -ContentRoot "${CMAKE_CURRENT_SOURCE_DIR}/content"
+    -ScratchRoot "${CMAKE_BINARY_DIR}/workflow-data")
+  set_tests_properties(mod_workflow PROPERTIES TIMEOUT 180)
 endif()

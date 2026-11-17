@@ -1,3 +1,4 @@
+#include "mod_config.hpp"
 #include "orbduel_mod.hpp"
 using namespace orbmod;
 // 示例新机制：沿切线推动范围内的球，形成旋风；修改 strength 即可调参。
@@ -10,7 +11,7 @@ struct Vortex : Behavior {
             float dist = distance(e.pos, o.pos);
             if (!e.alive || dist < 5 || dist > o.radius)
                 continue;
-            float s = number("strength", 300);
+            float s = number("strength", config::strength);
             host->accelerate(host->user, e.id,
                              {-(e.pos.y - o.pos.y) / dist * s, (e.pos.x - o.pos.x) / dist * s});
         }
@@ -22,8 +23,8 @@ struct Vortex : Behavior {
 };
 ORBDUEL_MOD_EXPORT void orbduel_register(Registrar *r) {
     static const Param params[] = {
-        {"strength", "旋转强度", ParamKind::Number, 300, -1200, 1200, "", "负数反向旋转"}};
-    auto t = behavior<Vortex>("my-mod.vortex", "旋风", "通过切向加速度创造新的运动轨迹。", params, 1, 1,
-                              {210, 130, 255, 255});
+        {"strength", "旋转强度", ParamKind::Number, config::strength, -1200, 1200, "", "负数反向旋转"}};
+    auto t = behavior<Vortex>(config::typeId, config::typeName, "通过切向加速度创造新的运动轨迹。", params, 1,
+                              1, {210, 130, 255, 255});
     r->add(r->user, &t);
 }

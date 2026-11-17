@@ -1,1 +1,8 @@
-{"id":"my-mod","name":"我的旋风 / My vortex","library":"my_mod.dll"}
+{
+  "id": "my-mod",
+  "name": "我的旋风 / My vortex",
+  "library": "my_mod.dll",
+  "typeId": "vortex",
+  "typeName": "旋风",
+  "defaults": { "strength": 300 }
+}

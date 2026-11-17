@@ -1,0 +1,7 @@
+#pragma once
+// 由 mod.json 生成；修改原始 JSON 后重新构建，不编辑此文件。
+namespace config {
+inline constexpr char typeId[] = "@TYPE_ID@";
+inline constexpr char typeName[] = "@TYPE_NAME@";
+inline constexpr float strength = @STRENGTH@f;
+}

@@ -47,12 +47,12 @@ ctest --test-dir build -C Release --output-on-failure
 普通玩家只改界面参数；作者从 `mod-sdk/template` 的旋风模组开始，编写新的 C++ 行为。
 
 ```powershell
-cmake -S mod-sdk/template -B build-template -A x64
-cmake --build build-template --config Release
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\mod-sdk\new-mod.ps1 -Id my-vortex -Name "我的旋风"
 ```
 
-把 `build-template/package/my-mod/` 整个文件夹复制到 `build/bin/mods/`，在“模组工坊”点击重新加载，即可在编辑器放置旋风。游戏不需要重新编译。
+打开生成的 user/mod-projects/my-vortex，修改 mod.json，双击 build-install.cmd；首次选择目标游戏，后续会记住位置。游戏运行时也能安装，回到模组工坊重新加载后，新放置的对象使用新默认参数。
 
+- [复制模板到实际使用：新手教程](docs/FIRST_MOD.md)
 - [新手与作者教程](docs/MOD_STUDIO.md)
 - [公共 SDK](mod-sdk/include/orbduel_mod.hpp)
 - [地图与分享格式](docs/CONTENT_FORMAT.md)
@@ -119,7 +119,6 @@ cmake --build build-template --config Release
 | 发布包自检      | 跑 `tools/package.ps1`，在仓库外双击运行，确认 DLL、字体、模组齐全                   | 低   |
 
 建议的认领顺序：手动验收 → 界面中英文 → 发布包自检。
-
 
 ## 许可证
 
