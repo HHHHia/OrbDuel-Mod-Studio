@@ -1,0 +1,20 @@
+{
+  "format": 1,
+  "id": "boulder",
+  "name": { "en": "Boulder", "zh": "磐岩" },
+  "description": {
+    "en": "Heavy body: slow to start, but contact damage bounces back and a shield buys time.",
+    "zh": "重体型：起步慢，但挨撞会反伤，还能靠护盾拖时间。"
+  },
+  "skin": { "texture": "skin.png", "tint": [176, 166, 150, 255], "scale": 1.0, "pattern": "hex" },
+  "hitbox": { "shape": "circle", "radius": 28.0, "offset": [0, 0], "contact": 1.0 },
+  "stats": {
+    "mass": 2.4,
+    "restitution": 0.86,
+    "maxHp": 190.0,
+    "startSpeed": 320.0,
+    "attack": 14.0,
+    "armor": 10.0
+  },
+  "skills": ["thorns", "ice-guard"]
+}

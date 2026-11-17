@@ -1,0 +1,20 @@
+{
+  "format": 1,
+  "id": "wisp",
+  "name": { "en": "Wisp", "zh": "幽灯" },
+  "description": {
+    "en": "Bruiser with regen: heals back chip damage and slips through the enemy once in a while.",
+    "zh": "消耗型：靠回血抵掉零碎伤害，偶尔穿身脱离贴脸。"
+  },
+  "skin": { "texture": "skin.png", "tint": [160, 240, 190, 255], "scale": 1.0, "pattern": "leaf" },
+  "hitbox": { "shape": "circle", "radius": 22.0, "offset": [0, 0], "contact": 1.0 },
+  "stats": {
+    "mass": 1.0,
+    "restitution": 0.96,
+    "maxHp": 118.0,
+    "startSpeed": 440.0,
+    "attack": 11.0,
+    "armor": 3.0
+  },
+  "skills": ["regeneration", "phase-step"]
+}
