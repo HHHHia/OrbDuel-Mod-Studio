@@ -154,6 +154,8 @@ int main(int argc, char **argv) {
             options.modsRoot = argv[++i];
         } else if (arg == "--theme" && i + 1 < argc) {
             options.theme = argv[++i];
+        } else if (arg == "--ui-skin" && i + 1 < argc) {
+            options.uiSkin = argv[++i];
         } else if (arg == "--view" && i + 1 < argc) {
             options.view = argv[++i];
         } else if (arg == "--autotest" && i + 1 < argc) {
@@ -188,6 +190,7 @@ int main(int argc, char **argv) {
             std::printf("  orbduel --autotest 600          快速无窗口物理回归\n");
             std::printf("  orbduel --no-menu               Alias for --play\n");
             std::printf("  orbduel --lang en|zh            UI, fighter and skill language (default en)\n");
+            std::printf("  orbduel --ui-skin aurora        Use a UI skin from content/ui/skins\n");
             std::printf("  orbduel --shot-at 11            Screenshot at 11 seconds\n");
             std::printf("  orbduel --play                  直接开始自动对战\n");
             return 0;

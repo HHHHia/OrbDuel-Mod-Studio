@@ -40,6 +40,8 @@ ctest --test-dir build -C Release --output-on-failure
 
 五种风格：星空、地下城、霓虹都市、熔岩遗迹、冰晶圣殿。背景、边界和障碍配色随风格变化；可以调整装饰密度、动画和自定义配色。风格不改变物理规则。
 
+界面皮肤与地图风格分开设置。左侧“界面皮肤”可在深夜（原有外观）和极光之间切换，选择会保存在 `user/settings.json`；点击“重新加载皮肤”可读取刚修改的配置。皮肤文件位于 `content/ui/skins/`，可复制一份并修改颜色、圆角、间距和字号，新文件会在重新加载后出现在列表中。也可在启动时指定 `--ui-skin aurora`。无效配置会显示错误并保留当前皮肤；文件格式见 [内容与工作台格式](docs/CONTENT_FORMAT.md)。
+
 ## 模组不只是调数值
 
 游戏通过 `orbduel_register` 加载独立 DLL。传送门、引力场、弹射板的逻辑均在模组中，宿主通过统一接口读取类型与参数。模组可以查询实体、改变速度和位置、生成/移除机关、处理事件、自定义绘制；也可以附着在角色上。
@@ -83,6 +85,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\mod-sdk\new-mod.ps1 -I
 .\build\bin\orbduel.exe --autotest 600
 .\build\bin\orbduel.exe --scene user/arena.json --play
 .\build\bin\orbduel.exe --mods path/to/mods
+.\build\bin\orbduel.exe --ui-skin aurora
 .\build\bin\orbduel.exe --sfx-test
 ```
 
@@ -112,7 +115,6 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\mod-sdk\new-mod.ps1 -I
 
 | 任务            | 说明                                                                                 | 难度 |
 | --------------- | ------------------------------------------------------------------------------------ | ---- |
-| 界面美化        | 菜单配色、圆角、字号写在 `style()` 里，改为读取 `content/` 下的配置后可做皮肤        | 中   |
 | 自带中文字体    | 目前依赖系统的 `msyh.ttc`，换机器可能缺字                                            | 低   |
 | 平衡调参        | 八个竞技角色的测量与规则边界见 [BALANCE.md](docs/BALANCE.md)                 | 中   |
 | 发布包自检      | 跑 `tools/package.ps1`，在仓库外双击运行，确认 DLL、字体、模组齐全                   | 低   |

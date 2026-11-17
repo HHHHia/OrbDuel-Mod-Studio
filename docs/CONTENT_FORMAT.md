@@ -33,6 +33,14 @@
 
 分享码将完整地图 JSON 编码为 Base64URL 并加 `OD1:` 前缀，不压缩、不加密、不添加哈希和签名。包含实际对象列表，因此手工位置不会丢失；DLL 和外部贴图不嵌入其中。
 
+## 工作台界面皮肤
+
+界面皮肤在 `content/ui/skins/<id>.json`，与地图文档的 `style` 分开。文件名 ID 只能包含英文字母、数字、`-` 和 `_`。默认使用 `midnight.json`；可在左侧菜单切换、点击“重新加载皮肤”读取改动，或用 `--ui-skin <id>` 启动。选择保存在 `user/settings.json`，命令行参数优先。
+
+皮肤文件包含 `name.en`、`name.zh`，以及 `font.size`（14–26 像素）、两个标题倍率 `overviewTitleScale` / `workshopTitleScale`。`layout` 配置窗口/控件间距、滚动条宽度及边框宽度；`rounding` 配置各类圆角。`colors` 中颜色为 `[红, 绿, 蓝]` 或 `[红, 绿, 蓝, 透明度]`，每项在 0–1 之间。复制 [默认皮肤](../content/ui/skins/midnight.json) 后修改即可；所有现有字段都需要保留，配置缺项或无效时不会替换正在使用的皮肤。
+
+皮肤只影响工作台控件和窗口外观，不改变地图的五套风格、分享码或对战规则。新增的 `content/ui/skins/` 文件会随发布包中的 `content/` 一起复制。
+
 ## 地图自带区域效果（fields）
 
 地图可以带任意个圆形「区域效果」，纯数据，不用写 C++、不用编译模组。写在 `map.json` 的 `fields` 里：
