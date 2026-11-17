@@ -210,6 +210,7 @@ class Studio {
         if (!options.mapId.empty()) {
             if (auto *m = loader.pack().findMap(options.mapId)) {
                 doc.map = *m;
+                doc.name = m->name.en; // --map 换场地时标题也跟着换
                 doc.shrink = true;
                 doc.timeLimit = 0;
             } else {
