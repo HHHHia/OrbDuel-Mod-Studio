@@ -81,3 +81,20 @@
 - 三个功能 PR 与最新 main 的音效、全屏、键盘修正、地图区域和熔岩池同时保留。接触公式统一为乘法与各攻击方的有界正向速度。
 - 新增额外实体的零碰撞倍率、独立显式伤害、队伍区域伤害/加速/治疗，以及熔岩池环境死亡回归。旧 SDK DLL 继续可加载。
 - CTest 覆盖 entities、studio、integration、contact、balance_smoke 与 mod_workflow；完整胜率测量范围见 BALANCE，不将自定义召唤玩法宣称为竞技平衡。
+
+## 待办 / Next tasks
+
+不用写代码：
+
+- 加地图：编辑器里摆好后存进 `content/studio/`；仓库目前只有 `content/maps/duel-basic` 一张内置地图。
+- 加角色或技能：复制 `content/characters/blaze/` 改 JSON，再跑 `tools/validate_content.ps1`。
+- 手动验收：逐页检查概览、编辑器、模组工坊、对战、保存/读档、分享码导入，记下卡住的地方。
+- 补演示脚本：DEMO_SCRIPT.md 目前 5 步，可扩成能照着念的完整稿。
+- 更新预览图：五套风格与蓄力、黑洞的截图是旧的，内容改动后需要重截。
+
+要动代码：
+
+- 平衡调参：八个竞技角色的测量与规则边界见 BALANCE.md。
+- 发布包自检：跑 `tools/package.ps1`，在仓库外双击运行，确认 DLL、字体、模组齐全。
+
+建议顺序：手动验收 → 发布包自检。
