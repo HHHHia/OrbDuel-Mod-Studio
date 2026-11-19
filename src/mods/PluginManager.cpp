@@ -1,14 +1,47 @@
 #include "orbduel/mods/PluginManager.hpp"
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
+#include <windows.h>
+#else
+#include <dlfcn.h>
+#include <unistd.h>
+#endif
 #include <algorithm>
 #include <cwctype>
 #include <filesystem>
 #include <fstream>
-#include <windows.h>
+#include <map>
 
 namespace orbduel {
 namespace fs = std::filesystem;
+namespace {
+#if defined(_WIN32)
+using Library = HMODULE;
+void closeLibrary(Library h) {
+    FreeLibrary(h);
+}
+auto symbol(Library h, const char *name) {
+    return GetProcAddress(h, name);
+}
+unsigned long processId() {
+    return GetCurrentProcessId();
+}
+const wchar_t *librarySuffix = L".dll";
+#else
+using Library = void *;
+void closeLibrary(Library h) {
+    dlclose(h);
+}
+auto symbol(Library h, const char *name) {
+    return dlsym(h, name);
+}
+unsigned long processId() {
+    return static_cast<unsigned long>(getpid());
+}
+const wchar_t *librarySuffix = L".dylib";
+#endif
+} // namespace
 PluginManager::~PluginManager() {
     clear();
 }
@@ -16,7 +49,7 @@ void PluginManager::clear() {
     types.clear();
     for (auto &m : mods)
         if (m.library)
-            FreeLibrary(static_cast<HMODULE>(m.library));
+            closeLibrary(static_cast<Library>(m.library));
     mods.clear();
     // 仅删除本实例创建并记录的文件和空目录，不递归清理用户模组目录。
     std::error_code ec;
@@ -27,17 +60,37 @@ void PluginManager::clear() {
     cacheFiles_.clear();
     cacheDirectories_.clear();
 }
-void PluginManager::load(const std::string &root, const std::vector<std::string> &disabled) {
+void PluginManager::load(const std::string &root, const std::vector<std::string> &disabled,
+                         const std::vector<std::string> &extraRoots) {
     clear();
     issues.clear();
     std::error_code ec;
-    auto path = fs::u8path(root);
-    fs::create_directories(path, ec);
+
     std::vector<fs::path> dirs;
-    for (const auto &e : fs::directory_iterator(path, ec))
-        if (e.is_directory())
-            dirs.push_back(e.path());
-    std::sort(dirs.begin(), dirs.end());
+    std::vector<std::string> roots{root};
+    roots.insert(roots.end(), extraRoots.begin(), extraRoots.end());
+    std::map<std::string, fs::path> selected;
+    for (const auto &source : roots) {
+        std::vector<fs::path> entries;
+        fs::create_directories(fs::u8path(source), ec);
+        for (const auto &e : fs::directory_iterator(fs::u8path(source), ec))
+            if (e.is_directory() && e.path().filename() != ".orbduel-cache")
+                entries.push_back(e.path());
+        std::sort(entries.begin(), entries.end());
+        for (const auto &entry : entries) {
+            dirs.push_back(entry);
+            if (extraRoots.empty())
+                continue;
+            // 只做目录优先级选择；错误仍由下方加载阶段统一报告。
+            try {
+                std::ifstream in(entry / "mod.json");
+                auto manifest = nlohmann::json::parse(in, nullptr, false);
+                if (manifest.is_object() && manifest.contains("id") && manifest["id"].is_string())
+                    selected[manifest["id"].get<std::string>()] = entry;
+            } catch (...) {
+            }
+        }
+    }
     fs::path session;
     static unsigned long serial = 0;
     int ordinal = 0;
@@ -49,13 +102,15 @@ void PluginManager::load(const std::string &root, const std::vector<std::string>
         if (!fs::exists(file))
             continue;
         const auto first = types.size();
-        HMODULE handle = nullptr;
+        Library handle = nullptr;
         try {
             std::ifstream stream(file);
             nlohmann::json j;
             stream >> j;
             LoadedMod m;
             m.id = j.at("id").get<std::string>();
+            if (selected.count(m.id) && selected[m.id] != dir)
+                continue;
             m.name = j.value("name", m.id);
             m.path = dir.u8string();
             m.enabled = std::find(disabled.begin(), disabled.end(), m.id) == disabled.end();
@@ -66,10 +121,11 @@ void PluginManager::load(const std::string &root, const std::vector<std::string>
             auto dll = fs::absolute(dir / fs::u8path(j.at("library").get<std::string>()));
             // 加载副本，原安装目录保持可写；作者可在游戏运行时重新构建安装。
             if (session.empty()) {
-                const auto base = fs::absolute(path / ".orbduel-cache");
+                const auto cacheRoot = extraRoots.empty() ? root : extraRoots.back();
+                const auto base = fs::absolute(fs::u8path(cacheRoot) / ".orbduel-cache");
                 fs::create_directories(base);
                 do {
-                    session = base / (std::to_string(GetCurrentProcessId()) + "-" + std::to_string(++serial));
+                    session = base / (std::to_string(processId()) + "-" + std::to_string(++serial));
                 } while (!fs::create_directory(session));
                 cacheDirectories_.push_back(session.u8string());
             }
@@ -79,23 +135,27 @@ void PluginManager::load(const std::string &root, const std::vector<std::string>
             for (const auto &peer : fs::directory_iterator(dll.parent_path())) {
                 auto ext = peer.path().extension().wstring();
                 std::transform(ext.begin(), ext.end(), ext.begin(), ::towlower);
-                if (!peer.is_regular_file() || ext != L".dll")
+                if (!peer.is_regular_file() || ext != librarySuffix)
                     continue;
                 const auto copy = cache / peer.path().filename();
                 cacheFiles_.push_back(copy.u8string());
                 fs::copy_file(peer.path(), copy, fs::copy_options::overwrite_existing);
             }
             const auto loaded = cache / dll.filename();
+#if defined(_WIN32)
             handle = LoadLibraryExW(loaded.c_str(), nullptr,
                                     LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+#else
+            handle = dlopen(loaded.c_str(), RTLD_NOW | RTLD_LOCAL);
+#endif
             if (!handle)
-                throw std::runtime_error("DLL 无法加载，请重新构建模组或确认 x64 运行库");
-            auto entry = reinterpret_cast<orbmod::Entry>(GetProcAddress(handle, "orbduel_register"));
+                throw std::runtime_error("原生模组无法加载，请确认与游戏使用相同系统和 CPU 架构并重新构建");
+            auto entry = reinterpret_cast<orbmod::Entry>(symbol(handle, "orbduel_register"));
             if (!entry)
                 throw std::runtime_error("找不到 orbduel_register 入口");
             registeringId_ = m.id;
-            if (auto receive = reinterpret_cast<orbmod::EntityApiReceiver>(
-                    GetProcAddress(handle, "orbduel_set_entity_api")))
+            if (auto receive =
+                    reinterpret_cast<orbmod::EntityApiReceiver>(symbol(handle, "orbduel_set_entity_api")))
                 receive(entityApi_);
             registeringRoot_ = dir.u8string();
             orbmod::Registrar reg{this, [](void *p, const orbmod::Type *t) {
@@ -112,7 +172,7 @@ void PluginManager::load(const std::string &root, const std::vector<std::string>
         } catch (const std::exception &e) {
             types.resize(first);
             if (handle)
-                FreeLibrary(handle);
+                closeLibrary(handle);
             issues.push_back(dir.filename().u8string() + ": " + e.what());
         }
     }
@@ -142,7 +202,7 @@ nlohmann::json PluginManager::defaults(const RegisteredType &t) const {
 std::vector<GenerationType> PluginManager::generationTypes() const {
     std::vector<GenerationType> v;
     for (const auto &t : types)
-        if (t.api.placement)
+        if (t.api.placement > 0)
             v.push_back({t.api.id, t.api.placement, defaults(t)});
     return v;
 }

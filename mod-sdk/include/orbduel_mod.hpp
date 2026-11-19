@@ -79,7 +79,7 @@ struct Type {
     const char *description;
     const Param *params;
     int paramCount;
-    int placement; // 0=仅手工，1=单个生成，2=成对生成并关联 ObjectRef 参数。
+    int placement; // -1=仅运行时，0=仅手工，1=单个生成，2=成对生成并关联 ObjectRef 参数。
     Color color;
     void *(*create)(const Host *, Id);
     void (*destroy)(void *);

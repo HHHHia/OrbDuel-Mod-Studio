@@ -110,3 +110,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\user\mod-projects\my-v
 ## 制作分身与召唤物
 
 复制时加 `-Kind summon` 即可获得完整召唤/追踪能力模板，仍可只改 mod.json 参数、双击构建安装并在游戏重新加载。步骤与战斗实体接口见 [战斗实体与分身模组](COMBAT_ENTITIES.md)。默认旋风模板和原工程继续可用。
+
+Apple Silicon 的 C++ 工程生成、构建安装与用户目录流程见 [macOS 指南](MACOS.md)。
+
+用 `-Kind ability` 创建可编辑的 C++ 作者模板，用 `-Kind rewind` 或 `-Kind guardian` 从完整示例开始。见 [自建能力教程](CUSTOM_ABILITIES.md)。

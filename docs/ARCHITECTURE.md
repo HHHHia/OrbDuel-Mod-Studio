@@ -31,7 +31,7 @@ ContentLoader ──角色/技能──> SceneDocument ←┴─ 编辑器 / 种
 
 公开 SDK 在 `mod-sdk/include/orbduel_mod.hpp`。独立 DLL 导出 `orbduel_register`，注册类型描述和实例回调。C++ 便捷包装隐藏函数表细节，作者写 step/event/draw 即可新增机制。宿主不按机关名称分派逻辑，示例类型均来自 DLL。
 
-回调里的机关增删在步末提交；实例销毁后再卸载 DLL。重新加载仅发生在菜单/编辑器。当前以 MSVC x64 为统一构建配置，不提供跨平台二进制插件支持。
+回调里的机关增删在步末提交；实例销毁后再卸载 DLL。重新加载仅发生在菜单/编辑器。模组使用与宿主相同的操作系统、CPU 架构和工具链构建。
 
 ## 分享与风格
 
@@ -46,3 +46,9 @@ ADR-016 将扩展机制从纯 JSON 固定效果扩展为独立 C++ DLL。内容�
 ## 战斗实体扩展
 
 World 使用稳定 ID 与可回收存储，Match 持有动态 Fighter/SkillSystem 和额外角色定义快照；Simulation 在步首/步末统一提交实体与能力增删。原 SDK 布局不变，独立 EntityApi 通过可选 DLL 入口注入。实体仍以 Body 参与物理，HP 留在 Match；召唤与 AI 逻辑由模组实现。详细生命周期和示例见 [战斗实体与分身模组](COMBAT_ENTITIES.md)。
+
+## Windows / macOS 源码适配
+
+核心和玩法继续为 C++17。CMake 根据平台选择 MSVC 离线 SDL 库或 Apple Clang/pkg-config，PluginManager 使用原生动态库函数且保持原 SDK 布局；Mac 的用户数据和自制模组独立于游戏源目录。Shell/CMake 只负责构建安装。新增 Mac 入口作为未编译、未实机验证的适配源码交付；Windows 回归与独立工程验证见 VALIDATION，Mac 上手见 MACOS。
+
+C++ 作者层 orbduel_abilities.hpp 仅组合现有 Host/EntityApi；状态与算法归模组 DLL，宿主维持通用生命周期。回溯和护卫是独立注册类型，内部控制器不进入玩家放置和随机地图生成列表。

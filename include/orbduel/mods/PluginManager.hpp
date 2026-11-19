@@ -27,7 +27,9 @@ class PluginManager {
         entityApi_ = api;
     }
     // 只能在所有对局和预览实例销毁后重新加载。失败信息放 issues，不修改游戏源码。
-    void load(const std::string &root, const std::vector<std::string> &disabled = {});
+    // extraRoots 为可写用户模组目录；同 ID 的后置目录覆盖内置版本。
+    void load(const std::string &root, const std::vector<std::string> &disabled = {},
+              const std::vector<std::string> &extraRoots = {});
     const RegisteredType *find(const std::string &) const;
     nlohmann::json defaults(const RegisteredType &) const;
     std::vector<GenerationType> generationTypes() const;

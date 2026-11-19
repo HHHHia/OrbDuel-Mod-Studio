@@ -93,4 +93,6 @@ if (child >= 0)
 
 旧 SDK 的 `Host/Entity/Type/Registrar` 布局保持不变；旧 DLL 无需重编译。新模组要判空扩展指针；旧游戏忽略扩展入口时，分身示例安全停用召唤。宿主集成方须在 `PluginManager::load` 前设置 `Simulation::entityApi()`，且先销毁对局再卸载 DLL。不添加哈希、签名或版本锁。
 
+也可用 [C++ 作者辅助头](CUSTOM_ABILITIES.md) 封装 EntityApi 的查询、绑定与清理。从 `-Kind guardian` 开始可查看如何给召唤物绑定独立控制器。
+
 地图 fields 对全部战斗实体生效；affect=0 作用于所有队伍，1/2 分别筛选左/右队伍及其召唤物。熔岩池 DLL 的“所有球”也包含额外实体。

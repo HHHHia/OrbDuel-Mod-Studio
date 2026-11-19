@@ -1,4 +1,4 @@
-build/
+build*/
 .orbduel-user.json
 .orbduel-cache/
 *.pdb

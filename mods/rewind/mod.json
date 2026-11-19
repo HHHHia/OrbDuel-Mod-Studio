@@ -1,0 +1,5 @@
+{
+  "id": "rewind",
+  "name": "时间回溯 / Recall",
+  "library": "rewind.dll"
+}
