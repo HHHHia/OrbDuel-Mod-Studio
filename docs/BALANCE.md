@@ -6,6 +6,8 @@
 
 本次机关场地包含传送门、引力场、弹射板及新增的熔岩池，生成候选和默认参数记录在 [联合版本报告](balance/integrated.json) 的 generationTypes。分身为手工放置的扩展玩法，不参与这轮默认双主角色统计；训练木人桩仍排除。原 competitive.json 保留为旧机关候选下的历史结果，不用它替代本次测量。
 
+可运行 `python3 tools/check_balance_report.py` 核对这份报告的八角色名单、当前角色与技能配置、样本数量、对阵和地图分项，以及下文的验收边界。此检查只验证已有测量记录；角色、技能、机关或比赛规则改动后，仍须在 Windows 上重新构建并运行完整循环赛，不把旧报告当成新数值的结果。
+
 ```powershell
 .\build\Release\orbduel_balance.exe content build/bin/mods build/balance/integrated.json 128 90000
 ```
