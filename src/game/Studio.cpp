@@ -141,7 +141,7 @@ class Studio {
     std::unique_ptr<AssetCache> assets;
     std::string root, modRoot, userRoot, message, tool = "select";
     std::vector<SceneDocument> undoStack, redoStack;
-    std::vector<std::string> disabled;
+    std::vector<std::string> disabled, userModRoots;
     UiSkin uiSkin;
     std::vector<std::string> skinIds;
     std::string skinId = "midnight", pendingSkinId;
@@ -157,6 +157,13 @@ class Studio {
     explicit Studio(const Options &o) : options(o), loader(o.contentRoot) {
         root = fs::u8path(o.contentRoot).parent_path().u8string();
         userRoot = root + "/user";
+#if defined(__APPLE__)
+        if (char *preferences = SDL_GetPrefPath("OrbDuel", "OrbDuel")) {
+            userRoot = preferences;
+            SDL_free(preferences);
+            userModRoots.push_back((fs::u8path(userRoot) / "mods").u8string());
+        }
+#endif
         modRoot = o.modsRoot;
         if (modRoot.empty()) {
             char *b = SDL_GetBasePath();
@@ -167,6 +174,10 @@ class Studio {
                 modRoot = root + "/build/bin/mods";
         }
         std::snprintf(file, sizeof(file), "%s", (userRoot + "/arena.json").c_str());
+    }
+    std::size_t visibleTypes() const {
+        return std::count_if(plugins.types.begin(), plugins.types.end(),
+                             [](const auto &type) { return type.api.placement >= 0; });
     }
     void syncMods() {
         doc.mods.clear();
@@ -205,7 +216,7 @@ class Studio {
             skinLoaded = loadUiSkin(fs::u8path(options.contentRoot), skinId, uiSkin, skinError);
         }
         plugins.setEntityApi(Simulation::entityApi());
-        plugins.load(modRoot, disabled);
+        plugins.load(modRoot, disabled, userModRoots);
         doc = SceneDocument::fromPack(loader.pack());
         if (!options.mapId.empty()) {
             if (auto *m = loader.pack().findMap(options.mapId)) {
@@ -338,7 +349,7 @@ class Studio {
         game.reset();
         preview.reset();
         plugins.setEntityApi(Simulation::entityApi());
-        plugins.load(modRoot, disabled);
+        plugins.load(modRoot, disabled, userModRoots);
         loader.loadAll();
         assets->clear();
         dirty = true;
@@ -560,7 +571,7 @@ class Studio {
             if (ImGui::Selectable(tr("圆形障碍"), tool == "circle"))
                 tool = "circle";
             for (auto &t : plugins.types)
-                if (ImGui::Selectable(tr(t.api.name), tool == t.api.id))
+                if (t.api.placement >= 0 && ImGui::Selectable(tr(t.api.name), tool == t.api.id))
                     tool = t.api.id;
             ImGui::Checkbox(tr("网格吸附"), &grid);
             ImGui::TextDisabled("%s", tr("点击画布放置\n拖动调整位置\nDelete 删除\nCtrl+Z 撤销"));
@@ -1178,7 +1189,7 @@ class Studio {
         ImGui::Spacing();
         ImGui::Text("%s / %s", doc.name.c_str(), tr(themeName(doc.theme)));
         ImGui::TextDisabled(tr("%zu 个机关 · %zu 个障碍 · %zu 个已加载类型"), doc.objects.size(),
-                            doc.map.obstacles.size(), plugins.types.size());
+                            doc.map.obstacles.size(), visibleTypes());
         ImGui::TextWrapped("%s", tr("同一个种子生成同一个场地；拖动、调整参数，或者自己写一个新的模组。"));
     }
     void editor() {
@@ -1262,6 +1273,8 @@ class Studio {
         }
         section(tr("可用能力"));
         for (auto &t : plugins.types) {
+            if (t.api.placement < 0)
+                continue;
             ImGui::BulletText("%s", tr(t.api.name));
             ImGui::TextWrapped("%s", tr(t.api.description));
             ImGui::TextDisabled("%s", t.api.id);
@@ -1515,6 +1528,9 @@ class Studio {
                 if (e.type == SDL_KEYDOWN && !io.WantTextInput &&
                     !ImGui::IsPopupOpen(0, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel)) {
                     bool ctrl = (e.key.keysym.mod & KMOD_CTRL) != 0;
+#if defined(__APPLE__)
+                    ctrl = ctrl || (e.key.keysym.mod & KMOD_GUI) != 0;
+#endif
                     if (ctrl && e.key.keysym.sym == SDLK_s)
                         save();
                     if (ctrl && e.key.keysym.sym == SDLK_z)
@@ -1571,7 +1587,7 @@ class Studio {
             ImGui::SameLine();
             ImGui::TextDisabled("/ MOD STUDIO");
             ImGui::SameLine(io.DisplaySize.x - 300);
-            ImGui::TextDisabled(tr("%zu 个能力已加载 · 离线就绪"), plugins.types.size());
+            ImGui::TextDisabled(tr("%zu 个能力已加载 · 离线就绪"), visibleTypes());
             ImGui::Separator();
             ImGui::BeginChild("workspace", {0, message.empty() ? -12.f : -40.f}, false);
             if (page != 3) {

@@ -238,3 +238,9 @@ Windows 会锁住已加载的 DLL。宿主因此加载独立副本，保留原�
 工作台原先读取 Windows 系统的 `msyh.ttc`；新机器或发布包可能没有该字体，中文会缺字。改为从 `content/fonts/NotoSansSC-wght.ttf` 加载，并让发布包复制字体及其 SIL OFL 许可证。字体从 Google Fonts 官方 Noto Sans SC 文件原样取得，不改字形；与仓库现有的 Press Start 2P 一样，作为字体的 OFL 许可例外登记在 `content/ASSETS.md`。
 
 代价是仓库增加约 17 MB，完整中文 ImGui 字形图集也占用更多内存。若发布包漏掉字体，工作台回退到内置英文字体并显示提示；不复制系统的微软雅黑。
+
+## macOS 原生模组与 C++ 作者层
+
+macOS 分支通过 pkg-config 链接 SDL2 接口，通过 dlopen 加载原生模组，用户数据与自制模组放在 Application Support。Windows 继续使用离线 SDL 库与 MSVC。SDK 函数表布局保持一致，模组针对同操作系统与 CPU 架构构建。
+
+可选作者头组合现有 Host 与 EntityApi，把触发、选敌、冷却和能力状态放在模组中。护卫控制器使用仅运行时类型，注册表可查找它供实体绑定。

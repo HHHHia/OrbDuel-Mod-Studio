@@ -15,13 +15,15 @@ Windows x64；开发需要 Visual Studio 2022 / Build Tools 的“使用 C++ 的
 .\build\bin\orbduel.exe
 ```
 
-`build.ps1` 会自动寻找 VS 附带的 CMake，默认构建 Release 游戏与五个独立示例模组。手动构建：
+`build.ps1` 会自动寻找 VS 附带的 CMake，默认构建 Release 游戏与七个独立示例模组。手动构建：
 
 ```powershell
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64
 cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
+
+Apple Silicon 的构建、启动和用户模组安装见 [macOS 指南](docs/MACOS.md)。当前提供 macOS 适配源码，编译和实机运行待验证。
 
 ## 创作流程
 
@@ -49,6 +51,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\mod-sdk\new-mod.ps1 -I
 ```
 
 打开生成的 `user/mod-projects/my-vortex`，修改 `mod.json`，双击 `build-install.cmd`；首次选择目标游戏，后续会记住位置。游戏运行时也能安装，回到模组工坊重新加载后，新放置的对象使用新默认参数。
+
+[用 C++ 自建能力](docs/CUSTOM_ABILITIES.md) 介绍如何从作者模板写一个新行为，以及如何用回溯与护卫示例测试战斗实体。
 
 ## 文档
 

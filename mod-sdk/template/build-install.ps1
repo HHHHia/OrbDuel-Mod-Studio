@@ -36,7 +36,8 @@ if(-not $cmake){
 }
 if(-not $cmake){throw '请安装 Visual Studio 2022 / Build Tools，勾选 C++ 桌面开发与 CMake 工具。'}
 $build=Join-Path $ProjectRoot 'build'
-& $cmake -S $ProjectRoot -B $build -G 'Visual Studio 17 2022' -A x64
+$generator = if ($env:CMAKE_GENERATOR) { $env:CMAKE_GENERATOR } else { 'Visual Studio 17 2022' }
+& $cmake -S $ProjectRoot -B $build -G $generator -A x64
 if($LASTEXITCODE -ne 0){throw '模组配置失败，请查看上方提示；已有安装未改动。'}
 & $cmake --build $build --config Release --parallel
 if($LASTEXITCODE -ne 0){throw '模组编译失败，请修正上方错误后重试；已有安装未改动。'}

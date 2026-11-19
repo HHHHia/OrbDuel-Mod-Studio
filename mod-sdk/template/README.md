@@ -20,3 +20,13 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build-install.ps1 -Gam
 `my_mod.cpp` 是玩法逻辑。`mod_config.hpp.in` 由配置生成，改名时只改 `mod.json`，不要手工编辑生成的头文件。用生成器创建的工程包含 `include/orbduel_mod.hpp`，可整个移动到其他位置独立构建。
 
 分身模板使用可选的 include/orbduel_entities.hpp，创建会移动、碰撞、受伤和死亡的额外实体；需要支持战斗实体扩展的新版游戏。旧宿主忽略扩展入口时示例不会召唤。完整教程位于游戏 docs/COMBAT_ENTITIES.md。
+
+Mac 入口：修改 mod.json 后双击 Build-Install.command，或运行 bash build-install.sh；安装到用户 Application Support 的 OrbDuel/OrbDuel/mods，回游戏工坊重载。跨系统分享工程源码重新构建，Windows 用 DLL，Mac 用 dylib。Mac 平台适配本次未做编译和实机验证，完整说明在游戏 docs/MACOS.md。
+
+## C++ 自建能力
+
+生成器还支持 ability、rewind、guardian：分别为受伤保护作者起步模板、时间回溯、护卫召唤。修改 my_mod.cpp 的 step/event/draw 写自己的算法，修改 mod.json 的 defaults 调整已声明参数，构建安装后回工坊重载。在编辑器放置后选择附着的角色。
+
+include/orbduel_abilities.hpp 提供冷却、范围/队伍查询、移动以及本能力创建资源的自动清理。护卫控制器是 runtime-only 类型，由召唤能力绑定，不在编辑器直接放置。完整教程见游戏 docs/CUSTOM_ABILITIES.md。
+
+在 Windows 上，一键构建默认使用 Visual Studio 2022。若已安装其他受 CMake 支持的 Visual Studio 版本，可在当前 PowerShell 会话设置 `$env:CMAKE_GENERATOR` 后运行 `build-install.cmd`，例如 `$env:CMAKE_GENERATOR = 'Visual Studio 18 2026'`。已有构建目录继续使用原来的生成器；切换前先移走该目录。

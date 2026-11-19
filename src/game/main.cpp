@@ -65,6 +65,14 @@ fs::path resolveContentRoot(const std::string &requested, const char *argv0) {
         return candidate;
     }
 
+#if defined(__APPLE__)
+    if (char *base = SDL_GetBasePath()) {
+        const auto resources = fs::u8path(base) / "content";
+        SDL_free(base);
+        if (fs::is_directory(resources / "characters", ec))
+            return resources;
+    }
+#endif
     if (argv0 != nullptr) {
         fs::path dir = fs::absolute(fs::path(argv0), ec).parent_path();
         for (int depth = 0; depth < 4; ++depth) {

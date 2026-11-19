@@ -120,7 +120,23 @@ int main(int argc, char **argv) {
         root.params = plugins.defaults(*plugins.find(root.type));
         scene.objects.push_back(root);
         scene.mods.push_back("rookie-summon");
-        check(saveScene(argv[3], scene, error), "cannot save installed summon scene");
+        const auto *guardian = plugins.find("rookie-guardian.guardian");
+        check(guardian && plugins.find("rookie-guardian.guardian.controller"),
+              "one-click guardian and its bound controller must both register");
+        SceneObject guard;
+        guard.id = scene.nextId();
+        guard.type = guardian->api.id;
+        guard.owner = 0;
+        guard.params = plugins.defaults(*guardian);
+        scene.objects.push_back(guard);
+        scene.mods.push_back("rookie-guardian");
+
+        Simulation combined(scene, pack, plugins);
+        for (int i = 0; i < 4; ++i)
+            combined.step();
+        check(combined.match.fighterCount() == 4 && combined.match.fighter(0).shield > 0,
+              "one-click guardian must shield its owner alongside the installed summon");
+        check(saveScene(argv[3], scene, error), "cannot save installed summon and guardian scene");
         std::cout << "DONE" << std::endl;
         return 0;
     } catch (const std::exception &e) {

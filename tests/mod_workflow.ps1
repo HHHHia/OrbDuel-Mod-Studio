@@ -1,6 +1,6 @@
 ﻿# 端到端验证复制模板、双击入口、安装、运行时重装、重新加载与失败保留。
 [CmdletBinding()]
-param([string]$HostExe,[string]$GameBin,[string]$SdkRoot,[string]$ContentRoot,[string]$ScratchRoot)
+param([string]$HostExe,[string]$GameBin,[string]$SdkRoot,[string]$ContentRoot,[string]$ScratchRoot,[string]$Generator='Visual Studio 17 2022')
 $ErrorActionPreference='Stop'
 $run=Join-Path $ScratchRoot ('run-'+$PID)
 $index=0
@@ -31,6 +31,7 @@ function Build-Install([string]$Source,[bool]$First=$false,[bool]$ExpectFailure=
     $info.RedirectStandardOutput=$true
     $info.RedirectStandardError=$true
     $info.EnvironmentVariables['ORBDUEL_NO_PAUSE']='1'
+    $info.EnvironmentVariables['CMAKE_GENERATOR']=$Generator
     $extra=if($First){' -GameDirectory "'+$game+'"'}else{''}
     $info.Arguments='/d /c build-install.cmd -NonInteractive'+$extra
     $proc=New-Object Diagnostics.Process
@@ -53,6 +54,13 @@ $summonJson.defaults.speed=345
 $summonJson.defaults.maxAlive=1
 [IO.File]::WriteAllText($summonManifest,($summonJson|ConvertTo-Json -Depth 10),[Text.UTF8Encoding]::new($false))
 Build-Install $summon $true
+foreach($kind in @('ability','rewind','guardian')){
+    $abilityProject=Join-Path $run ('作者 ['+$kind+']')
+    & $newScript -Id ('rookie-'+$kind) -Kind $kind -Name '自建能力' -Destination $abilityProject | Out-Null
+    if(-not (Test-Path -LiteralPath (Join-Path $abilityProject 'include\orbduel_abilities.hpp'))){throw '作者辅助头未复制'}
+    Build-Install $abilityProject $true
+    if(-not (Test-Path -LiteralPath (Join-Path $game ('mods\rookie-'+$kind+'\rookie-'+$kind+'.dll')))){throw '新能力未通过一键入口安装'}
+}
 if(-not (Test-Path -LiteralPath (Join-Path $game 'mods\rookie-vortex\rookie-vortex.dll'))){throw '未安装 DLL'}
 if(Test-Path -LiteralPath (Join-Path $game 'mods\rookie-vortex\.orbduel-user.json')){throw '本地安装路径混入分享文件'}
 if(-not (Test-Path -LiteralPath (Join-Path $game 'mods\rookie-vortex\SDK_LICENSE.txt'))){throw '遗漏 SDK 许可证'}

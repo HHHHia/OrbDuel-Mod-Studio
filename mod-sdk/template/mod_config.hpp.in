@@ -10,5 +10,15 @@ inline constexpr float hpScale = @hpScale@f;
 inline constexpr float radiusScale = @radiusScale@f;
 inline constexpr float attackScale = @attackScale@f;
 inline constexpr float speed = @speed@f;
+inline constexpr float lookback = @lookback@f;
+inline constexpr float cooldown = @cooldown@f;
+inline constexpr float threshold = @threshold@f;
+inline constexpr float respawn = @respawn@f;
+inline constexpr float followDistance = @followDistance@f;
+inline constexpr float interceptRadius = @interceptRadius@f;
+inline constexpr float shieldRadius = @shieldRadius@f;
+inline constexpr float shieldAmount = @shieldAmount@f;
+inline constexpr float shieldDuration = @shieldDuration@f;
+inline constexpr float shieldInterval = @shieldInterval@f;
 inline constexpr float strength = @STRENGTH@f;
 }
