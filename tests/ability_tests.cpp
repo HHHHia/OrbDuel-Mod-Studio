@@ -18,6 +18,30 @@ struct Observer : orbmod::Behavior {
             ++recalls;
     }
 };
+struct EventCreator : orbmod::Ability {
+    bool sent = false;
+    EventCreator(const orbmod::Host *h, int id) : Ability(h, id, Simulation::entityApi()) {}
+    void step(float) {
+        beginStep();
+        if (!sent) {
+            sent = true;
+            orbmod::Event signal{"test.create_resources", ownerId(), -1, id, {}, 0, "test"};
+            host->emit(host->user, &signal);
+        }
+    }
+    void event(const orbmod::Event &e) {
+        if (std::strcmp(e.name, "test.create_resources") || e.object != id)
+            return;
+        orbmod::EntitySpec spec;
+        spec.owner = ownerId();
+        spec.pos = {350, 360};
+        create(spec);
+        spawn("test.ability-observer", {400, 360});
+        bind(spec.owner, "test.ability-observer");
+        if (number("unbindImmediately", 0))
+            api->unbind(host->user, id);
+    }
+};
 void check(bool ok, const char *name) {
     if (!ok)
         throw std::runtime_error(name);
@@ -85,6 +109,28 @@ int main(int argc, char **argv) {
               "runtime controller is hidden and does not change generated mechanism palette");
         auto scene = fixture(content.pack());
         auto *api = Simulation::entityApi();
+        auto creator =
+            orbmod::behavior<EventCreator>("test.event-creator", "creator", "", nullptr, 0, 0, {0, 0, 0, 0});
+        plugins.types.push_back({creator, "test", ""});
+        for (bool unbindImmediately : {false, true}) {
+            auto a = scene;
+            attach(a, "test.event-creator", 0, 2, {{"unbindImmediately", unbindImmediately ? 1 : 0}});
+            Simulation s(a, content.pack(), plugins);
+            s.step();
+            s.step();
+            if (!unbindImmediately) {
+                check(guardId(s) >= 2 && s.scene.objects.size() == 4,
+                      "custom event creates a combatant, object and bound ability before pruning");
+                api->unbind(host->user, 2);
+            } else {
+                check(guardId(s) < 0, "removal at the same boundary cancels the pending combatant");
+            }
+            s.step();
+            s.step();
+            check(s.match.fighterCount() == 2 && s.scene.objects.size() == 1 && s.match.fighter(0).alive,
+                  unbindImmediately ? "same-boundary removal cleans pending event resources"
+                                    : "removing an event creator cleans all tracked resources");
+        }
         {
             recalls = 0;
             auto a = scene;

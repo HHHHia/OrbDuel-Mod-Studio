@@ -36,7 +36,7 @@ Windows 双击 build-install.cmd；Mac 使用 Build-Install.command 或 bash bui
 | moveTowards(id,point,speed,stopDistance) | 设置朝目标移动的速度，进入停止距离后停下；碰撞仍由物理处理 |
 | Cooldown / Interval | 每实例冷却和周期触发；在 step 中推进 |
 | create / bind / spawn | 创建由本能力管理的实体、绑定实例或模组对象 |
-| beginStep() / cleanup() | 步首剔除失效记录；能力销毁时自动清理自己创建的资源 |
+| beginStep() / cleanup() | 每次 step 开头调用一次，保留尚待提交的请求并剔除失效记录；能力销毁时自动清理自己创建的资源 |
 
 自己创建资源时使用 Ability 的包装，才能自动登记清理。直接调用原始 Host/EntityApi 时，作者自行管理其生命周期。cleanup 可重复调用，增删仍在宿主的安全边界提交，不在事件遍历中销毁实例。不能复制 Ability 对象，避免两个实例重复认领同一资源。
 

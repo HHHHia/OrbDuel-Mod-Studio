@@ -55,7 +55,7 @@ class Simulation {
         Vec2 pos, velocity;
         float lifetime;
     };
-    std::vector<PendingEntity> pendingEntities_;
+    std::vector<PendingEntity> pendingEntities_, committingEntities_;
     std::map<int, std::string> removingEntities_;
     std::set<std::pair<int, int>> inside_;
     int nextId_ = 1;
