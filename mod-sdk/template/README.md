@@ -1,6 +1,6 @@
 # 我的第一个模组
 
-需要 Windows x64、Visual Studio 2022 / Build Tools 的 C++ 桌面开发和 CMake 工具。
+需要 Windows x64、Visual Studio 2022 或 2026（或 Build Tools）的 C++ 桌面开发和 CMake 工具。VS 2026 需要 CMake 4.2 或更新。双击会自动寻找工具，并沿用已有工程的生成器。
 
 1. 打开 `mod.json`，修改 `name`、`typeName` 和 `defaults`。旋风模板调整 `strength`（如 300 改为 -600，反向旋转）；分身模板调整 `interval`、`maxAlive`、`lifetime`、`hpScale`、`radiusScale`、`attackScale`、`speed`。
 2. 双击 `build-install.cmd`。首次选择游戏的 `orbduel.exe`，成功后会记住位置。

@@ -26,20 +26,55 @@ if(-not (Test-Path -LiteralPath (Join-Path $GameDirectory 'orbduel.exe'))){throw
 $manifest=Get-Content -LiteralPath (Join-Path $ProjectRoot 'mod.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 if($manifest.id -notmatch '^[a-z][a-z0-9_-]*$'){throw 'mod.json 的 id 请使用小写字母开头，后接字母、数字、- 或 _。'}
 if($manifest.library -notmatch '^[A-Za-z0-9_.-]+\.dll$'){throw 'library 应是 DLL 文件名，不要填写路径。'}
-$cmake=(Get-Command cmake -ErrorAction SilentlyContinue).Source
-if(-not $cmake){
+# 保留已构建工程的生成器。显式设置 CMAKE_GENERATOR 时沿用原有优先级。
+$build=Join-Path $ProjectRoot 'build'
+$cache=Join-Path $build 'CMakeCache.txt'
+$generator=$env:CMAKE_GENERATOR
+if(-not $generator -and (Test-Path -LiteralPath $cache)){
+    $entry=Select-String -LiteralPath $cache -Pattern '^CMAKE_GENERATOR:INTERNAL=(.+)$'
+    if($entry){$generator=$entry.Matches[0].Groups[1].Value}
+}
+
+function Find-ModToolchain([string]$RequestedGenerator){
+    $versions=[ordered]@{
+        'Visual Studio 17 2022'='[17.0,18.0)'
+        'Visual Studio 18 2026'='[18.0,19.0)'
+    }
+    if($RequestedGenerator -and -not $versions.Contains($RequestedGenerator)){
+        throw "模组使用 Visual Studio 2022 或 2026 x64。请检查 CMAKE_GENERATOR（当前为 $RequestedGenerator）。"
+    }
     $vswhere=Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
-    if(Test-Path -LiteralPath $vswhere){
-        $vsPath=& $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-        if($vsPath){$candidate=Join-Path $vsPath 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe';if(Test-Path -LiteralPath $candidate){$cmake=$candidate}}
+    if(-not (Test-Path -LiteralPath $vswhere)){return}
+    $pathCmake=(Get-Command cmake -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1).Source
+    $generators=if($RequestedGenerator){$RequestedGenerator}else{$versions.Keys}
+    foreach($name in $generators){
+        $instances=& $vswhere -products '*' -version $versions[$name] -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+        foreach($instance in $instances){
+            $bundled=Join-Path $instance 'Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe'
+            foreach($exe in @($bundled,$pathCmake)){
+                if(-not $exe -or -not (Test-Path -LiteralPath $exe -PathType Leaf)){continue}
+                $capabilities=& $exe -E capabilities
+                if($LASTEXITCODE -ne 0){continue}
+                if(($capabilities | ConvertFrom-Json).generators.name -contains $name){
+                    return [pscustomobject]@{CMake=$exe; Generator=$name; Instance=$instance}
+                }
+            }
+        }
     }
 }
-if(-not $cmake){throw '请安装 Visual Studio 2022 / Build Tools，勾选 C++ 桌面开发与 CMake 工具。'}
-$build=Join-Path $ProjectRoot 'build'
-$generator = if ($env:CMAKE_GENERATOR) { $env:CMAKE_GENERATOR } else { 'Visual Studio 17 2022' }
-& $cmake -S $ProjectRoot -B $build -G $generator -A x64
+
+$toolchain=Find-ModToolchain $generator
+if(-not $toolchain){
+    throw '请安装有 C++ 桌面开发与 CMake 的 Visual Studio 2022 / 2026（或 Build Tools）。VS 2026 需要 CMake 4.2 或更新。若此前切换过工具链，请检查 CMAKE_GENERATOR 和该模组工程的 build 目录。'
+}
+Write-Host ("模组编译工具："+$toolchain.Generator)
+$configureArgs=@('-S',$ProjectRoot,'-B',$build,'-G',$toolchain.Generator,'-A','x64')
+if(-not (Test-Path -LiteralPath $cache)){
+    $configureArgs+=("-DCMAKE_GENERATOR_INSTANCE="+$toolchain.Instance)
+}
+& $toolchain.CMake @configureArgs
 if($LASTEXITCODE -ne 0){throw '模组配置失败，请查看上方提示；已有安装未改动。'}
-& $cmake --build $build --config Release --parallel
+& $toolchain.CMake --build $build --config Release --parallel
 if($LASTEXITCODE -ne 0){throw '模组编译失败，请修正上方错误后重试；已有安装未改动。'}
 $package=Join-Path (Join-Path $build 'package') $manifest.id
 $library=Join-Path $package $manifest.library
