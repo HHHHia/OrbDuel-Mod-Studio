@@ -6,6 +6,12 @@ OrbDuel is an auto-battler and arena workshop: native mods register new behavior
 
 ![地图编辑器](docs/previews/cosmos.png)
 
+## 下载 / Download
+
+Windows x64 免安装包：[Releases · v0.3.0](https://github.com/HHHHia/OrbDuel-Mod-Studio/releases/tag/v0.3.0)。解压后双击 `orbduel.exe` 即可运行，不需要安装 Visual Studio。
+
+Windows x64 build: [Releases · v0.3.0](https://github.com/HHHHia/OrbDuel-Mod-Studio/releases/tag/v0.3.0). Unzip and run `orbduel.exe`; no Visual Studio installation is required.
+
 ## 运行与构建
 
 Windows x64；开发需要 Visual Studio 2022 / Build Tools 的“使用 C++ 的桌面开发”及 CMake。SDL2 和 Dear ImGui 已随仓库提供，不需要在线下载依赖。只支持 MSVC 2022 x64；`third_party/sdl2/mingw` 为历史遗留，不参与构建。
