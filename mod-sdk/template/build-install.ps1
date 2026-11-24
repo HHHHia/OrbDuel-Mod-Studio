@@ -62,7 +62,6 @@ function Find-ModToolchain([string]$RequestedGenerator){
         }
     }
 }
-<<<<<<< fix/ability-cleanup-mod-installer
 
 $toolchain=Find-ModToolchain $generator
 if(-not $toolchain){
@@ -74,12 +73,6 @@ if(-not (Test-Path -LiteralPath $cache)){
     $configureArgs+=("-DCMAKE_GENERATOR_INSTANCE="+$toolchain.Instance)
 }
 & $toolchain.CMake @configureArgs
-=======
-if(-not $cmake){throw '请安装 Visual Studio 2022 / Build Tools，勾选 C++ 桌面开发与 CMake 工具。'}
-$build=Join-Path $ProjectRoot 'build'
-$generator = if ($env:CMAKE_GENERATOR) { $env:CMAKE_GENERATOR } else { 'Visual Studio 17 2022' }
-& $cmake -S $ProjectRoot -B $build -G $generator -A x64
->>>>>>> main
 if($LASTEXITCODE -ne 0){throw '模组配置失败，请查看上方提示；已有安装未改动。'}
 & $toolchain.CMake --build $build --config Release --parallel
 if($LASTEXITCODE -ne 0){throw '模组编译失败，请修正上方错误后重试；已有安装未改动。'}
