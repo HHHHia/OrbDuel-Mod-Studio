@@ -28,7 +28,10 @@ const orbmod::EntityApi *Simulation::entityApi() {
                 return;
             auto &s = *static_cast<Simulation *>(p);
             const auto *f = s.match.fighterById(id);
-            if ((f && !f->primary) || (!f && s.entityKnown(id)))
+            // 析构回调也能取消当前边界尚未创建的实体。
+            const bool committing = std::any_of(s.committingEntities_.begin(), s.committingEntities_.end(),
+                                                [id](const auto &e) { return e.id == id; });
+            if ((f && !f->primary) || (!f && (s.entityKnown(id) || committing)))
                 s.removingEntities_[id] = "destroyed";
         },
         [](void *p, int id, orbmod::Entity *out) {
@@ -134,8 +137,8 @@ void Simulation::followOwners() {
 }
 void Simulation::flushChanges() {
     // 快照队列：销毁或构造回调产生的新请求留到下一边界。
-    auto creating = std::move(pendingEntities_);
-    pendingEntities_.clear();
+    committingEntities_.swap(pendingEntities_);
+    auto &creating = committingEntities_;
     auto spawning = std::move(pendingSpawn_);
     pendingSpawn_.clear();
     auto removed = std::move(pendingRemove_);
@@ -211,7 +214,8 @@ void Simulation::flushChanges() {
     if (!finished)
         for (const auto &e : creating) {
             const auto *owner = match.fighterById(e.owner);
-            if (doomed.count(e.id) || (e.owner >= 0 && (!owner || !owner->alive)))
+            const bool cancelled = removingEntities_.erase(e.id) != 0;
+            if (cancelled || doomed.count(e.id) || (e.owner >= 0 && (!owner || !owner->alive)))
                 continue;
             if (match.addCombatant(e.id, e.def, e.pos, e.velocity, e.team, e.owner, e.lifetime) >= 0) {
                 Event event;
@@ -222,6 +226,7 @@ void Simulation::flushChanges() {
                 events.publish(event);
             }
         }
+    creating.clear();
     if (!finished)
         for (auto &o : spawning) {
             const auto *f = match.fighterById(o.owner);

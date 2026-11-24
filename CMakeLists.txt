@@ -134,7 +134,7 @@ if(BUILD_TESTING)
       "${CMAKE_CURRENT_SOURCE_DIR}/tests/mod_workflow.ps1"
       -HostExe "$<TARGET_FILE:orbduel_mod_workflow_tests>" -GameBin "${CMAKE_BINARY_DIR}/bin"
       -SdkRoot "${CMAKE_CURRENT_SOURCE_DIR}/mod-sdk" -ContentRoot "${CMAKE_CURRENT_SOURCE_DIR}/content"
-      -ScratchRoot "${CMAKE_BINARY_DIR}/workflow-data" -Generator "${CMAKE_GENERATOR}")
+      -ScratchRoot "${CMAKE_BINARY_DIR}/workflow-data")
     set_tests_properties(mod_workflow PROPERTIES TIMEOUT 180)
   endif()
 endif()

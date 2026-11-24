@@ -5,7 +5,7 @@
 ## 准备
 
 - 使用包含本轮模组工具的游戏发布包。源码用户先在仓库根目录运行 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build.ps1 -SkipRun`，之后游戏位于 `build/bin/orbduel.exe`。
-- 安装 Visual Studio 2022 或 Build Tools，勾选“使用 C++ 的桌面开发”和 CMake 工具。模组是 C++ DLL，需要编译器；脚本会自动寻找工具，不要求手动配置 PATH。
+- 安装 Visual Studio 2022 或 2026（也可只装 Build Tools），勾选“使用 C++ 的桌面开发”和 CMake 工具。VS 2026 需要 CMake 4.2 或更新。双击时会自动寻找工具，已有工程继续使用其构建缓存中的生成器。两版都装时，新工程优先选 2022；可通过 CMAKE_GENERATOR 指定与游戏一致的版本。
 - 以下第一条命令在游戏目录或仓库根目录的 PowerShell 中执行；两种目录都包含 `mod-sdk/`。
 
 ## 1. 复制模板

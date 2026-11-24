@@ -32,7 +32,22 @@ struct Interval {
 };
 enum class Relation { Any, Allies, Enemies };
 class Ability : public Behavior {
-    std::vector<Id> entities_, objects_, bindings_;
+    struct ManagedResource {
+        Id id;
+        bool firstStep = true;
+    };
+    std::vector<ManagedResource> entities_, objects_, bindings_;
+
+    template <class Exists> static void prune(std::vector<ManagedResource> &resources, Exists exists) {
+        auto next = resources.begin();
+        for (auto resource : resources) {
+            if (resource.firstStep || exists(resource.id)) {
+                resource.firstStep = false;
+                *next++ = resource;
+            }
+        }
+        resources.erase(next, resources.end());
+    }
 
   public:
     const EntityApi *api;
@@ -127,46 +142,44 @@ class Ability : public Behavior {
     Id create(const EntitySpec &spec) {
         Id value = api ? api->create(host->user, &spec) : -1;
         if (value >= 0)
-            entities_.push_back(value);
+            entities_.push_back({value});
         return value;
     }
     Id bind(Id target, const char *type, const char *params = nullptr) {
         Id value = api ? api->bind(host->user, target, type, params) : -1;
         if (value >= 0)
-            bindings_.push_back(value);
+            bindings_.push_back({value});
         return value;
     }
     Id spawn(const char *type, Vec pos, const char *params = nullptr) {
         Id value = host->spawn(host->user, type, pos, params);
         if (value >= 0)
-            objects_.push_back(value);
+            objects_.push_back({value});
         return value;
     }
-    // 每次 step 开头调用；剔除已离场对象，长局不积累失效编号。
+    // 每次 step 开头调用一次。新请求保留到下一步，等待宿主提交。
     void beginStep() {
-        entities_.erase(std::remove_if(entities_.begin(), entities_.end(),
-                                       [&](Id v) {
-                                           Entity e{};
-                                           return !get(v, e);
-                                       }),
-                        entities_.end());
-        auto missing = [&](Id v) {
+        prune(entities_, [&](Id value) {
+            Entity e{};
+            return get(value, e);
+        });
+        auto objectExists = [&](Id value) {
             Object o{};
-            return !host->getObject(host->user, v, &o);
+            return host->getObject(host->user, value, &o) != 0;
         };
-        objects_.erase(std::remove_if(objects_.begin(), objects_.end(), missing), objects_.end());
-        bindings_.erase(std::remove_if(bindings_.begin(), bindings_.end(), missing), bindings_.end());
+        prune(objects_, objectExists);
+        prune(bindings_, objectExists);
     }
     // 仅清理由本实例创建/绑定的资源；宿主继续在安全边界提交增删。
     void cleanup() {
         if (api)
-            for (Id value : bindings_)
-                api->unbind(host->user, value);
-        for (Id value : objects_)
-            host->remove(host->user, value);
+            for (const auto &resource : bindings_)
+                api->unbind(host->user, resource.id);
+        for (const auto &resource : objects_)
+            host->remove(host->user, resource.id);
         if (api)
-            for (Id value : entities_)
-                api->destroy(host->user, value);
+            for (const auto &resource : entities_)
+                api->destroy(host->user, resource.id);
         bindings_.clear();
         objects_.clear();
         entities_.clear();

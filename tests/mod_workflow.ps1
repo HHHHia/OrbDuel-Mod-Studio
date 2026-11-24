@@ -1,6 +1,6 @@
 ﻿# 端到端验证复制模板、双击入口、安装、运行时重装、重新加载与失败保留。
 [CmdletBinding()]
-param([string]$HostExe,[string]$GameBin,[string]$SdkRoot,[string]$ContentRoot,[string]$ScratchRoot,[string]$Generator='Visual Studio 17 2022')
+param([string]$HostExe,[string]$GameBin,[string]$SdkRoot,[string]$ContentRoot,[string]$ScratchRoot)
 $ErrorActionPreference='Stop'
 $run=Join-Path $ScratchRoot ('run-'+$PID)
 $index=0
@@ -31,7 +31,8 @@ function Build-Install([string]$Source,[bool]$First=$false,[bool]$ExpectFailure=
     $info.RedirectStandardOutput=$true
     $info.RedirectStandardError=$true
     $info.EnvironmentVariables['ORBDUEL_NO_PAUSE']='1'
-    $info.EnvironmentVariables['CMAKE_GENERATOR']=$Generator
+    # 按双击入口的默认流程自动寻找本机工具链。
+    $info.EnvironmentVariables.Remove('CMAKE_GENERATOR')
     $extra=if($First){' -GameDirectory "'+$game+'"'}else{''}
     $info.Arguments='/d /c build-install.cmd -NonInteractive'+$extra
     $proc=New-Object Diagnostics.Process

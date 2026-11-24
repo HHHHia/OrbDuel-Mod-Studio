@@ -24,6 +24,6 @@
 ## C++ 自建能力作者层
 
 - orbduel_abilities.hpp 提供每实例 Ability、Cooldown、Interval；不改变旧 Host/Entity/Type/Registrar/EntityApi 布局。Ability 包装主人/稳定 ID 查询、事件筛选、队伍范围/最近敌人、定向移动和自有资源清理。
-- create/bind/spawn 登记本能力创建的资源，beginStep 清理失效记录，析构或 cleanup 把清理请求交回安全边界；不负责作者绕过包装直接创建的对象。Ability 不可复制。
+- create/bind/spawn 登记本能力创建的资源，beginStep 每步调用一次，保留同一步可能尚未提交的资源并清理失效记录，析构或 cleanup 把清理请求交回安全边界；不负责作者绕过包装直接创建的对象。Ability 不可复制。
 - Type.placement=-1 为仅运行时类型：编辑器/工坊隐藏、不进入 generationTypes；0/1/2 旧含义不变。原生加载、查找及 bind 仍可使用内部类型。
 - 新增 ability/rewind/guardian 三种独立工程模板，两种 C++ DLL 示例和试验地图；没有宿主按能力名称分派的新逻辑。详见 CUSTOM_ABILITIES。
