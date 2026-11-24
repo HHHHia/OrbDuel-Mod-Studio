@@ -302,10 +302,10 @@ class Studio {
         page = 3;
         message.clear();
     }
-    // 工作台只有一个 SDL 窗口；ImGui 初始化也用同一个窗口 ID。
+    // 全屏切换使用渲染器所属窗口，避免依赖 SDL 分配的窗口 ID。
     void setFullscreen(bool on) {
         fullscreen = on;
-        SDL_SetWindowFullscreen(SDL_GetWindowFromID(1), on ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+        SDL_SetWindowFullscreen(SDL_RenderGetWindow(renderer.backend()), on ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
     }
     void stop() {
         game.reset();
@@ -1505,7 +1505,7 @@ class Studio {
             message += fontError;
         }
         style();
-        ImGui_ImplSDL2_InitForSDLRenderer(SDL_GetWindowFromID(1), renderer.backend());
+        ImGui_ImplSDL2_InitForSDLRenderer(SDL_RenderGetWindow(renderer.backend()), renderer.backend());
         ImGui_ImplSDLRenderer2_Init(renderer.backend());
         if (options.play || !options.startInMenu)
             start();
