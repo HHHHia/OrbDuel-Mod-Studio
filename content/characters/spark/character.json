@@ -1,0 +1,20 @@
+{
+  "format": 1,
+  "id": "spark",
+  "name": { "en": "Spark", "zh": "电光" },
+  "description": {
+    "en": "Light and fast: hits hard, dies fast. Attack buff plus a burst of speed.",
+    "zh": "轻快型：打得狠、也死得快，靠攻击增益和瞬时加速抢先手。"
+  },
+  "skin": { "texture": "skin.png", "tint": [130, 210, 255, 255], "scale": 1.0, "pattern": "spark" },
+  "hitbox": { "shape": "circle", "radius": 20.0, "offset": [0, 0], "contact": 1.0 },
+  "stats": {
+    "mass": 0.8,
+    "restitution": 0.99,
+    "maxHp": 96.0,
+    "startSpeed": 540.0,
+    "attack": 16.0,
+    "armor": 0.0
+  },
+  "skills": ["overcharge", "burst-dash"]
+}

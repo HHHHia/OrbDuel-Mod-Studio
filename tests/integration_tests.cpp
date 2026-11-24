@@ -30,7 +30,8 @@ int main(int argc, char **argv) {
         const auto *lancer = pack.findCharacter("lancer");
         const auto *singularity = pack.findCharacter("singularity");
         const auto *dummy = pack.findCharacter("wooden-dummy");
-        require(lancer && singularity && dummy && pack.characters.size() == 9,
+        // 12 个角色：八个竞技角色 + 木人桩 + 队友提交的 boulder / spark / wisp
+        require(lancer && singularity && dummy && pack.characters.size() == 12,
                 "preserve teammate characters alongside the studio roster");
         require(lancer->competitive && singularity->competitive && !dummy->competitive &&
                     lancer->skin.shape == "triangle" && singularity->hitbox.ghost &&

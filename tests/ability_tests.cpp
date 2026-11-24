@@ -18,6 +18,7 @@ struct Observer : orbmod::Behavior {
             ++recalls;
     }
 };
+<<<<<<< fix/ability-cleanup-mod-installer
 struct EventCreator : orbmod::Ability {
     bool sent = false;
     EventCreator(const orbmod::Host *h, int id) : Ability(h, id, Simulation::entityApi()) {}
@@ -42,6 +43,8 @@ struct EventCreator : orbmod::Ability {
             api->unbind(host->user, id);
     }
 };
+=======
+>>>>>>> main
 void check(bool ok, const char *name) {
     if (!ok)
         throw std::runtime_error(name);
@@ -109,6 +112,7 @@ int main(int argc, char **argv) {
               "runtime controller is hidden and does not change generated mechanism palette");
         auto scene = fixture(content.pack());
         auto *api = Simulation::entityApi();
+<<<<<<< fix/ability-cleanup-mod-installer
         auto creator =
             orbmod::behavior<EventCreator>("test.event-creator", "creator", "", nullptr, 0, 0, {0, 0, 0, 0});
         plugins.types.push_back({creator, "test", ""});
@@ -131,6 +135,8 @@ int main(int argc, char **argv) {
                   unbindImmediately ? "same-boundary removal cleans pending event resources"
                                     : "removing an event creator cleans all tracked resources");
         }
+=======
+>>>>>>> main
         {
             recalls = 0;
             auto a = scene;
