@@ -1,27 +1,23 @@
 # OrbDuel / Mod Studio
 
-C++17 + SDL2 自动物理对战与地图创作工具。通过独立 C++ DLL 新增能力，在地图编辑器中调参数，再通过离线分享码还原地图和规则。
+OrbDuel is a C++17 physics auto-battler and offline arena workshop. Design an arena, write a gameplay mechanic as a standalone C++ mod, and playtest it without rebuilding the game.
 
-OrbDuel is an auto-battler and arena workshop: native mods register new behaviors without recompiling the game, arenas are tuned in a live editor, and the finished layout is shared offline as text.
+![Arena editor](docs/previews/cosmos.png)
 
-![地图编辑器](docs/previews/cosmos.png)
+## Download
 
-## 下载 / Download
+Download the standalone Windows x64 build from [Release v0.3.0](https://github.com/HHHHia/OrbDuel-Mod-Studio/releases/tag/v0.3.0). Extract the archive and run `orbduel.exe`. The packaged game runs without Visual Studio.
 
-Windows x64 免安装包：[Releases · v0.3.0](https://github.com/HHHHia/OrbDuel-Mod-Studio/releases/tag/v0.3.0)。解压后双击 `orbduel.exe` 即可运行，不需要安装 Visual Studio。
+## Build from Source
 
-Windows x64 build: [Releases · v0.3.0](https://github.com/HHHHia/OrbDuel-Mod-Studio/releases/tag/v0.3.0). Unzip and run `orbduel.exe`; no Visual Studio installation is required.
-
-## 运行与构建
-
-Windows x64；开发需要 Visual Studio 2022 / Build Tools 的“使用 C++ 的桌面开发”及 CMake。SDL2 和 Dear ImGui 已随仓库提供，不需要在线下载依赖。只支持 MSVC 2022 x64；`third_party/sdl2/mingw` 为历史遗留，不参与构建。
+On Windows x64, install Visual Studio 2022 or Build Tools with the **Desktop development with C++** workload and CMake. SDL2 and Dear ImGui are included in the repository.
 
 ```powershell
 .\build.ps1
 .\build\bin\orbduel.exe
 ```
 
-`build.ps1` 会自动寻找 VS 附带的 CMake，默认构建 Release 游戏与七个独立示例模组。手动构建：
+The script locates the CMake installation included with Visual Studio and builds the game and example mods. To build manually with MSVC x64:
 
 ```powershell
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64
@@ -29,65 +25,41 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-Apple Silicon 的构建、启动和用户模组安装见 [macOS 指南](docs/MACOS.md)。当前提供 macOS 适配源码，编译和实机运行待验证。
+The repository also includes source build and launch scripts for Apple Silicon. The validation notes describe the Windows test coverage. [macOS build guide](docs/MACOS.md) · [Validation notes](docs/VALIDATION.md)
 
-## 创作流程
+## Create and Share an Arena
 
-1. 打开“地图编辑器”，输入种子并生成场地。
-2. 选择矩形、圆形障碍或模组机关，点击画布放置；拖动对象调整位置。
-3. 选中传送门，在右侧选择关联出口、出口方向和速度倍率；其他机关也会自动显示自己的参数。
-4. 调整角色、技能、时间上限、缩圈和风格，点击“测试地图”。
-5. 返回编辑器继续修改；测试不会改写地图草稿。
-6. 保存地图，或打开“分享码”复制完整配置。对方安装相同的模组文件夹后离线导入。
+1. Open the Arena Editor and generate an arena from a seed.
+2. Place rectangular or circular obstacles and mod objects on the canvas. Drag them to adjust their positions.
+3. Select a portal to set its paired exit, exit direction, and speed multiplier. Other objects expose their own settings in the same panel.
+4. Choose the fighters, abilities, time limit, shrinking rules, and theme. Start a playtest, then return to the editor to continue editing the same draft.
+5. Save the arena or copy its offline share code. Anyone with the same mods installed can import the configuration.
 
-快捷键：`Ctrl+S` 保存、`Ctrl+Z/Y` 撤销/重做、`Delete` 删除选中机关或障碍；`Esc` 从对战返回编辑器或取消当前选择。
+Use `Ctrl+S` to save, `Ctrl+Z` and `Ctrl+Y` to undo and redo, `Delete` to remove a selected item, and `Esc` to clear the selection or return from a match.
 
-五套程序化风格：星空、地下城、霓虹都市、熔岩遗迹、冰晶圣殿；背景、边界和障碍配色随风格变化，装饰密度与动画可调，风格不改变物理规则。界面皮肤与地图风格分开设置，可在深夜与极光之间切换，选择保存在 `user/settings.json`；皮肤文件在 `content/ui/skins/`，复制一份改颜色、圆角、间距和字号，重新加载后出现在列表中，也可用 `--ui-skin aurora` 在启动时指定。无效配置会报错并保留当前皮肤，格式见[内容与工作台格式](docs/CONTENT_FORMAT.md)。
+The five arena themes are Cosmos, Dungeon, Neon City, Lava Ruins, and Ice Temple. Backgrounds, obstacle colors, decoration density, and animation can be adjusted independently of the physics rules. The workshop also offers configurable UI skins and an English and Chinese interface. It ships with Noto Sans SC for Chinese text. [Content and UI skin formats](docs/CONTENT_FORMAT.md)
 
-工作台使用随 `content/fonts/` 提供的 Noto Sans SC 显示中英文，无需系统安装微软雅黑；发布包会复制这份字体和 SIL OFL 许可证。字体缺失时仍可启动，但会提示错误，中文可能显示异常。
+## Write a C++ Mod
 
-## 模组不只是调数值
+OrbDuel gives C++ learners a playable project they can extend. The mod API is designed to make the first change small and to support more involved ideas as authors gain experience. A beginner can change a few lines in a working template so an ability triggers only after a heavy hit. Using the same interface, a more experienced author can create a Guardian that tracks nearby enemies, intercepts them, and shields allies.
 
-游戏通过 `orbduel_register` 加载独立 DLL。传送门、引力场、弹射板的逻辑均在模组中，宿主通过统一接口读取类型与参数。模组可以查询实体、改变速度和位置、生成/移除机关、处理事件、自定义绘制；也可以附着在角色上，或创建独立战斗实体。
-
-普通玩家只改界面参数；作者从 `mod-sdk/template` 的旋风模组开始，编写新的 C++ 行为：
+The host loads standalone plugins through `orbduel_register` and generates editor controls from the parameters each mod declares. The API can query entities, change their movement, handle events, and create independent combat entities. Portals, gravity fields, and launch pads are included as examples.
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\mod-sdk\new-mod.ps1 -Id my-vortex -Name "我的旋风"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\mod-sdk\new-mod.ps1 -Id my-vortex -Name "My Vortex"
 ```
 
-打开生成的 `user/mod-projects/my-vortex`，修改 `mod.json`，双击 `build-install.cmd`；首次选择目标游戏，后续会记住位置。游戏运行时也能安装，回到模组工坊重新加载后，新放置的对象使用新默认参数。
+Open `user/mod-projects/my-vortex`, edit the C++ source to change behavior, or edit `mod.json` to change its defaults. Run `build-install.cmd`, select the game folder on the first run, and reload the mod in the Mod Workshop. New objects use the updated defaults.
 
-[用 C++ 自建能力](docs/CUSTOM_ABILITIES.md) 介绍如何从作者模板写一个新行为，以及如何用回溯与护卫示例测试战斗实体。
+[First mod tutorial](docs/FIRST_MOD.md) · [Custom C++ abilities](docs/CUSTOM_ABILITIES.md) · [Combat entities and summons](docs/COMBAT_ENTITIES.md) · [Public SDK header](mod-sdk/include/orbduel_mod.hpp)
 
-## 文档
+## Combat and Balance
 
-- [快速上手](docs/QUICK_START.md)（发布包内为“开始使用.md”）
-- [第一个模组：从复制到安装](docs/FIRST_MOD.md)
-- [模组与地图工作台](docs/MOD_STUDIO.md)
-- [战斗实体与分身模组](docs/COMBAT_ENTITIES.md)
-- [地图与分享格式](docs/CONTENT_FORMAT.md)
-- [当前架构](docs/ARCHITECTURE.md)
-- [平衡记录与复现方法](docs/BALANCE.md)
-- [实际验证记录](docs/STATUS.md)
-- [演示流程](docs/DEMO_SCRIPT.md)
-- [公共 SDK](mod-sdk/include/orbduel_mod.hpp)
+Fighters move automatically. Normal collision damage depends on the arena multiplier, the defender's contact multiplier, and the attacker's incoming speed. Charged rams, piercing attacks, gravity, and mod damage have separate rules. The workshop defaults to a one-minute match, with remaining health percentage deciding the result at timeout. Arena shrinking and stalemate prevention can be configured in the editor.
 
-## 九个角色与十六个技能
+The recorded balance benchmark covered eight fighters across four arena types. Over 28,672 seeded matches with sides swapped, overall scores ranged from 45.16% to 54.43%, with draws counted as half a point. New fighters and custom mods can be evaluated with the same runner. [Balance report and reproduction steps](docs/BALANCE.md)
 
-八个竞技角色：疾锋（Lancer，蓄力与贯穿）、黑洞（Singularity，质量成长与核心传送）、烈焰、磐石、霜棱、雷脉、青芽、逐风；另有训练用木人桩，不参与竞技统计。
-
-技能覆盖冲刺吸血、护盾反伤、反弹机动、领域追击、过载爆发与恢复续航。主页可直接选择角色与应用预设；对局显示技能冷却、生效状态和实际治疗量。
-
-八个竞技角色已完成 28672 局独立种子验证，总体得分率 45.16%–54.43%，各地图 26.37%–64.73%，结果与复现方法见[平衡记录](docs/BALANCE.md)。
-
-## 对战规则
-
-两球自动移动。普通碰撞伤害 = 地图倍率 × 挨撞角色 `hitbox.contact`（缺省 1），再按攻击方碰撞前朝向对手的速度加成，叠加连击、攻击增益、护甲与护盾；蓄力撞击、贯穿、引力和模组伤害独立结算，ghost 本身不提供免伤。
-
-工作台默认一分钟上限，超时比较剩余血量比例；缩圈和防僵局可开关，场地缩到无法容纳角色时按原始 HP 结算。技能与数值都能在编辑器中修改，自定义模组的平衡仍需试玩调整。完整字段与公式见[内容与工作台格式](docs/CONTENT_FORMAT.md)，设计取舍见[决策记录](docs/DECISIONS.md)。
-
-## 命令行
+## Command-Line Examples
 
 ```powershell
 .\build\bin\orbduel.exe --selftest --window
@@ -101,10 +73,17 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\mod-sdk\new-mod.ps1 -I
 .\build\bin\orbduel.exe --sfx-test
 ```
 
-`--headless` 不创建窗口，按固定步长推进；`--autotest` 连续跑多局，输出碰撞、机关触发和最长静默时间；`--hidden --view editor --theme cosmos --screenshot out.png` 生成截图；`--sfx-test` 按文件名顺序试听 `content/audio/orbduel` 的 WAV。`--lang en|zh` 切换工作台、角色、技能与说明文字，默认英文，内置模组参数随之切换，自制模组显示作者提供的文字。
+`--headless` runs the simulation without a window. `--autotest` runs repeated matches and reports collisions, mod activations, and the longest idle interval. `--lang en|zh` selects the interface and built-in content language. `--sfx-test` plays the bundled WAV files in filename order. Use `tools/package.ps1` to assemble a standalone Windows package with the game, mods, assets, SDK, and tutorials.
 
-发布包用 `tools/package.ps1` 生成，包含游戏、模组、资源、SDK 和教程；双击包里的游戏即可运行。
+## Documentation and Demos
 
-## 许可证
+- [Quick Start](docs/QUICK_START.md)
+- [Mod Studio Guide](docs/MOD_STUDIO.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Implementation and validation status](docs/STATUS.md)
+- [Demo script](docs/DEMO_SCRIPT.md)
+- [Gameplay videos and screenshots](docs/presentation-media)
 
-项目代码 MIT。SDL2 系列为 zlib，Dear ImGui 为 MIT，内置字体为 SIL OFL，许可证随仓库和发布包提供。程序化场景由本项目绘制；素材来源见 `content/ASSETS.md`。
+## License
+
+OrbDuel is available under the MIT license. SDL2 uses the zlib license, Dear ImGui uses the MIT license, and the bundled font uses the SIL Open Font License. License notices are included with the source and release package. [Project license](LICENSE) · [Asset credits](content/ASSETS.md)
